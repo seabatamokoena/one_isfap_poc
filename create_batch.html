@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Payment Batch – ISFAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #1093DB;
+            --sidebar-color: #094781;
+            --accent-color: #337C96;
+            --bg-color: #E5F5FF;
+            --border-color: #ACC8CB;
+            --text-color: #094781;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; min-height: 100vh; }
+
+        /* ===== Sidebar ===== */
+        .sidebar { width: 240px; min-height: 100vh; background: linear-gradient(180deg, #094781 0%, #0d6ebd 60%, #1093DB 100%); display: flex; flex-direction: column; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; box-shadow: 4px 0 18px rgba(9,71,129,0.25); }
+        .sidebar-brand { padding: 20px 16px 12px; font-size: 1.1rem; font-weight: 700; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.15); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.75); font-size: 0.92rem; font-weight: 500; padding: 10px 16px; border-radius: 6px; display: flex; align-items: center; gap: 10px; transition: background 0.2s, color 0.2s; text-decoration: none; }
+        .sidebar .nav-link:hover { background: rgba(255,255,255,0.18); color: #fff; transform: translateX(4px); }
+        .sidebar .nav-link.active { background: rgba(255,255,255,0.22); color: #fff; font-weight: 600; border-left: 3px solid #fff; }
+        .sidebar details summary { color: rgba(255,255,255,0.75); font-size: 0.92rem; font-weight: 500; padding: 10px 16px; border-radius: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; list-style: none; transition: background 0.2s, color 0.2s; user-select: none; }
+        .sidebar details summary::-webkit-details-marker { display: none; }
+        .sidebar details summary:hover { background: rgba(255,255,255,0.18); color: #fff; }
+        .sidebar details[open] > summary { background: rgba(255,255,255,0.12); color: #fff; }
+        .sidebar details summary .chevron { margin-left: auto; font-size: 0.75rem; transition: transform 0.2s; }
+        .sidebar details[open] summary .chevron { transform: rotate(90deg); }
+        .sidebar details .sub-nav { list-style: none; padding: 2px 0 4px 0; margin: 0; }
+        .sidebar details .sub-nav li a { color: rgba(255,255,255,0.65); font-size: 0.87rem; padding: 8px 16px 8px 40px; border-radius: 6px; display: flex; align-items: center; gap: 8px; text-decoration: none; transition: background 0.2s, color 0.2s; }
+        .sidebar details .sub-nav li a:hover, .sidebar details .sub-nav li a.active { background: rgba(255,255,255,0.18); color: #fff; }
+        .sidebar details .sub-nav li a.active { border-left: 3px solid #fff; padding-left: 37px; }
+
+        /* ===== Main ===== */
+        .main-content { flex: 1; padding: 30px 30px 100px; overflow-y: auto; background: linear-gradient(135deg, #E5F5FF 0%, #f0f8ff 100%); }
+        .breadcrumb { font-size: 0.82rem; color: #888; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--primary-color); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .page-header h2 { margin: 0; color: var(--sidebar-color); font-weight: 700; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+
+        /* ===== Panel ===== */
+        .panel { background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(9,71,129,0.10); margin-bottom: 22px; overflow: hidden; }
+        .panel-header { padding: 16px 22px; background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color)); color: #fff; display: flex; align-items: center; justify-content: space-between; }
+        .panel-header h3 { margin: 0; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 9px; }
+        .panel-body { padding: 22px; }
+
+        /* ===== Form ===== */
+        .fg { display: grid; gap: 16px; margin-bottom: 18px; }
+        .fg-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .fg-2 { grid-template-columns: 1fr 1fr; }
+        .form-field label { display: block; font-size: 0.82rem; font-weight: 600; color: #555; margin-bottom: 5px; }
+        .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.88rem; color: #333; background: #fdfdfe; box-sizing: border-box; transition: border-color 0.15s, box-shadow 0.15s; }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(16,147,219,0.12); }
+        .field-hint { font-size: 0.75rem; color: #999; margin-top: 4px; }
+        .req { color: #e74c3c; }
+
+        /* ===== Allowance Type Cards ===== */
+        .allowance-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 22px; }
+        .allowance-card { border: 2px solid var(--border-color); border-radius: 10px; padding: 18px 12px 14px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; background: #fff; position: relative; }
+        .allowance-card:hover { border-color: var(--primary-color); background: #f0f8ff; box-shadow: 0 2px 12px rgba(16,147,219,0.12); }
+        .allowance-card.selected { border-color: var(--primary-color); background: #dbeafe; box-shadow: 0 2px 14px rgba(16,147,219,0.18); }
+        .allowance-card.selected::after { content: '✓'; position: absolute; top: 7px; right: 10px; font-size: 0.8rem; font-weight: 800; color: var(--primary-color); }
+        .ac-icon { font-size: 1.8rem; display: block; margin-bottom: 7px; }
+        .ac-name { font-size: 0.84rem; font-weight: 700; color: var(--sidebar-color); }
+        .ac-amount { font-size: 0.74rem; color: #888; margin-top: 3px; }
+
+        /* ===== Info Banner ===== */
+        .info-banner { background: #e8f4fd; border: 1px solid #bee3f8; border-radius: 7px; padding: 11px 14px; margin-bottom: 18px; font-size: 0.85rem; color: #0c5282; display: flex; align-items: center; gap: 9px; }
+
+        /* ===== Exclusion Chips ===== */
+        .excl-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid #f0f4f8; margin-top: 4px; }
+        .excl-chip { display: inline-flex; align-items: center; gap: 6px; background: #f4f8fc; border: 1px solid var(--border-color); border-radius: 20px; padding: 5px 13px; font-size: 0.8rem; font-weight: 600; color: #555; cursor: pointer; transition: background 0.15s; user-select: none; }
+        .excl-chip:hover { background: #e8f4fd; }
+        .excl-chip input { accent-color: var(--primary-color); width: 14px; height: 14px; }
+
+        /* ===== Preview Stats ===== */
+        .preview-stats { display: flex; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
+        .prev-stat { flex: 1; padding: 16px 20px; background: #f8fcff; border-right: 1px solid var(--border-color); }
+        .prev-stat:last-child { border-right: none; background: #f0f8ff; }
+        .prev-stat-val { font-size: 1.35rem; font-weight: 700; color: var(--sidebar-color); line-height: 1; margin-bottom: 4px; }
+        .prev-stat-lbl { font-size: 0.72rem; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* ===== Preview Table ===== */
+        .batch-table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+        .batch-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; background: #fff; }
+        .batch-table thead tr { background: var(--sidebar-color); }
+        .batch-table thead th { padding: 11px 14px; font-weight: 600; text-align: left; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; color: #fff; }
+        .batch-table tbody tr { border-bottom: 1px solid #edf2f7; transition: background 0.15s, opacity 0.2s; }
+        .batch-table tbody tr:last-child { border-bottom: none; }
+        .batch-table tbody tr:nth-child(even) { background: #f8fcff; }
+        .batch-table tbody tr:hover { background: var(--bg-color); }
+        .batch-table td { padding: 10px 14px; color: var(--text-color); vertical-align: middle; }
+        .batch-table tfoot td { padding: 11px 14px; background: #eef6ff; font-weight: 700; color: var(--sidebar-color); font-size: 0.86rem; border-top: 2px solid var(--primary-color); }
+
+        /* ===== Action Footer ===== */
+        .action-footer { position: sticky; bottom: 0; background: #fff; border-top: 1px solid var(--border-color); padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -4px 16px rgba(9,71,129,0.09); margin: 0 -30px -100px; }
+
+        /* ===== Buttons ===== */
+        .btn-outline { padding: 9px 20px; background: #fff; color: var(--sidebar-color); border: 1.5px solid var(--border-color); border-radius: 7px; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.15s, border-color 0.15s; }
+        .btn-outline:hover { background: #f0f8ff; border-color: var(--primary-color); }
+        .btn-draft { padding: 9px 20px; background: #f4f8fc; color: var(--sidebar-color); border: 1.5px solid var(--border-color); border-radius: 7px; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.15s; }
+        .btn-draft:hover { background: #e0eefa; }
+        .btn-primary-action { padding: 10px 24px; background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color)); color: #fff; border: none; border-radius: 7px; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(9,71,129,0.3); transition: opacity 0.2s; }
+        .btn-primary-action:hover { opacity: 0.88; }
+
+        /* ===== Modal ===== */
+        .modal-ov { display: none; position: fixed; inset: 0; background: rgba(9,29,55,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 16px; }
+        .modal-ov.active { display: flex; }
+        .modal-box { background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(9,71,129,0.22); width: 100%; max-width: 480px; animation: slideIn 0.22s ease; }
+        @keyframes slideIn { from { transform: translateY(-14px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color)); color: #fff; border-radius: 12px 12px 0 0; }
+        .modal-head h5 { margin: 0; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .modal-close { background: none; border: none; color: rgba(255,255,255,0.85); font-size: 1.4rem; cursor: pointer; line-height: 1; }
+        .modal-close:hover { color: #fff; }
+        .modal-body { padding: 22px; }
+        .modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px; border-top: 1px solid #eee; }
+        .confirm-row { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.87rem; }
+        .confirm-row:last-child { border-bottom: none; }
+        .cr-label { color: #888; font-weight: 600; }
+        .cr-value { color: var(--sidebar-color); font-weight: 700; text-align: right; }
+
+        /* ===== Toast ===== */
+        .toast-msg { position: fixed; bottom: 28px; right: 28px; background: #1a7a31; color: #fff; padding: 13px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 9px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); opacity: 0; transform: translateY(10px); transition: opacity 0.3s, transform 0.3s; z-index: 9999; }
+        .toast-msg.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <details>
+            <summary><i class="bi bi-people-fill"></i> Students <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="index.html">Profile</a></li>
+                <li><a href="#">Check-In</a></li>
+                <li><a href="#">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-person-badge-fill"></i> Programme Managers <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-house-fill"></i> Landlords <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-check2-square"></i> Tasks <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-chat-dots-fill"></i> Communications <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <!-- Payments (active) -->
+        <details open>
+            <summary><i class="bi bi-credit-card-fill"></i> Payments <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="create_batch.html" class="active">Create Batch</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-bank2"></i> Funder Management <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="funding_selection.html">Allocations</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <a href="#" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="#" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="payments.html"><i class="bi bi-credit-card"></i> Payments</a>
+        <i class="bi bi-chevron-right" style="font-size:0.7rem;color:#ccc;"></i>
+        <span>Create Batch</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-plus-circle-fill"></i> Create Payment Batch</h2>
+        <a href="payments.html" class="btn-outline">
+            <i class="bi bi-arrow-left"></i> Back to Overview
+        </a>
+    </div>
+
+    <!-- ===== Panel 1 – Batch Configuration ===== -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="bi bi-1-circle-fill"></i> Batch Configuration</h3>
+        </div>
+        <div class="panel-body">
+
+            <label style="display:block;font-size:0.82rem;font-weight:700;color:#555;margin-bottom:10px;">
+                Allowance Type <span class="req">*</span>
+            </label>
+            <div class="allowance-grid">
+                <div class="allowance-card" data-type="transport" onclick="selectAllowance(this,'transport',1500)">
+                    <span class="ac-icon" style="color:#1093DB;"><i class="bi bi-bus-front-fill"></i></span>
+                    <div class="ac-name">Transport</div>
+                    <div class="ac-amount">R 1 500 / student</div>
+                </div>
+                <div class="allowance-card" data-type="meal" onclick="selectAllowance(this,'meal',1800)">
+                    <span class="ac-icon" style="color:#28a745;"><i class="bi bi-egg-fried"></i></span>
+                    <div class="ac-name">Meal</div>
+                    <div class="ac-amount">R 1 800 / student</div>
+                </div>
+                <div class="allowance-card" data-type="accommodation" onclick="selectAllowance(this,'accommodation',4500)">
+                    <span class="ac-icon" style="color:#fd7e14;"><i class="bi bi-building"></i></span>
+                    <div class="ac-name">Accommodation</div>
+                    <div class="ac-amount">R 4 500 / student</div>
+                </div>
+                <div class="allowance-card" data-type="bursary" onclick="selectAllowance(this,'bursary',0)">
+                    <span class="ac-icon" style="color:#6f42c1;"><i class="bi bi-mortarboard-fill"></i></span>
+                    <div class="ac-name">Bursary</div>
+                    <div class="ac-amount">Custom amount</div>
+                </div>
+                <div class="allowance-card" data-type="material" onclick="selectAllowance(this,'material',800)">
+                    <span class="ac-icon" style="color:#337C96;"><i class="bi bi-book-fill"></i></span>
+                    <div class="ac-name">Study Material</div>
+                    <div class="ac-amount">R 800 / student</div>
+                </div>
+            </div>
+
+            <div class="fg fg-3">
+                <div class="form-field">
+                    <label>Batch Reference</label>
+                    <input type="text" id="batchRef" placeholder="Auto-generated on save">
+                    <div class="field-hint">Leave blank to auto-generate</div>
+                </div>
+                <div class="form-field">
+                    <label>Payment Period <span class="req">*</span></label>
+                    <select id="payPeriod">
+                        <option>May 2026</option>
+                        <option selected>June 2026</option>
+                        <option>July 2026</option>
+                        <option>Q2 2026</option>
+                        <option>Q3 2026</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Scheduled Release Date <span class="req">*</span></label>
+                    <input type="date" id="releaseDate" value="2026-06-01">
+                </div>
+            </div>
+
+            <div class="fg fg-3">
+                <div class="form-field">
+                    <label>Amount per Student (R) <span class="req">*</span></label>
+                    <input type="number" id="amountPerStudent" placeholder="0.00" min="0" step="0.01" oninput="recalculate()">
+                    <div class="field-hint">Pre-filled when an allowance type is selected</div>
+                </div>
+                <div class="form-field">
+                    <label>Funding Source</label>
+                    <select>
+                        <option>ISFAP – General Fund</option>
+                        <option>Funder Pool – Sanlam Foundation</option>
+                        <option>Funder Pool – Anglo American Zimele</option>
+                        <option>Funder Pool – National Skills Fund</option>
+                        <option>Funder Pool – Sasol Bursary Programme</option>
+                        <option>Funder Pool – Dept. of Higher Education</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Payment Channel</label>
+                    <select>
+                        <option>Student Wallet (ISFAP App)</option>
+                        <option>Bank Transfer (EFT)</option>
+                        <option>Direct Payment to Institution</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-field" style="margin-bottom:0;">
+                <label>Internal Notes</label>
+                <textarea rows="2" placeholder="Optional internal notes about this batch…"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Panel 2 – Eligibility Criteria ===== -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="bi bi-2-circle-fill"></i> Eligibility Criteria</h3>
+        </div>
+        <div class="panel-body">
+
+            <div class="info-banner">
+                <i class="bi bi-globe2" style="flex-shrink:0;font-size:1.1rem;"></i>
+                <span>This batch automatically includes all qualifying students <strong>across all universities</strong>. Use the filters below to narrow eligibility.</span>
+            </div>
+
+            <div class="fg fg-3">
+                <div class="form-field">
+                    <label>Level of Study</label>
+                    <select id="filterLevel" onchange="recalculate()">
+                        <option value="all">All Levels</option>
+                        <option value="first">First Year</option>
+                        <option value="second">2nd Year</option>
+                        <option value="third">3rd Year</option>
+                        <option value="fourth">4th Year</option>
+                        <option value="postgrad">Postgraduate</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Academic Status</label>
+                    <select id="filterStatus" onchange="recalculate()">
+                        <option value="active">Active only</option>
+                        <option value="active_cond">Active + Conditional</option>
+                        <option value="any">Any Status</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Funding Pool</label>
+                    <select onchange="recalculate()">
+                        <option value="">Any Pool</option>
+                        <option>Engineering Bursary Pool</option>
+                        <option>Actuarial Sciences Pool</option>
+                        <option>Mining Engineering Pool</option>
+                        <option>Skills Development Pool 2025</option>
+                        <option>Chemical Engineering Pool</option>
+                        <option>Environmental Sciences Pool</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="fg fg-3" style="margin-bottom:0;">
+                <div class="form-field">
+                    <label>Funder</label>
+                    <select onchange="recalculate()">
+                        <option value="">All Funders</option>
+                        <option>Sanlam Foundation</option>
+                        <option>Anglo American Zimele</option>
+                        <option>National Skills Fund</option>
+                        <option>Sasol Bursary Programme</option>
+                        <option>Dept. of Higher Education</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Contract Type</label>
+                    <select onchange="recalculate()">
+                        <option value="">All Contract Types</option>
+                        <option>ISFAP Funding</option>
+                        <option>External Funding</option>
+                        <option>Bursary</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Minimum Academic Standing</label>
+                    <select onchange="recalculate()">
+                        <option value="">No Minimum</option>
+                        <option value="50">Pass (50%+)</option>
+                        <option value="60">Merit (60%+)</option>
+                        <option value="70">Distinction (70%+)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="excl-wrap">
+                <span style="font-size:0.8rem;font-weight:700;color:#666;white-space:nowrap;">Auto-exclude:</span>
+                <label class="excl-chip"><input type="checkbox" checked onchange="recalculate()"> Students with active holds</label>
+                <label class="excl-chip"><input type="checkbox" checked onchange="recalculate()"> Already paid this period</label>
+                <label class="excl-chip"><input type="checkbox" onchange="recalculate()"> Pending verification</label>
+                <label class="excl-chip"><input type="checkbox" onchange="recalculate()"> Deregistered students</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Panel 3 – Qualifying Students Preview ===== -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="bi bi-3-circle-fill"></i> Qualifying Students Preview</h3>
+            <button type="button" onclick="recalculate()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:5px;padding:5px 12px;font-size:0.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+        <div class="panel-body">
+
+            <!-- Summary stat bar -->
+            <div class="preview-stats">
+                <div class="prev-stat">
+                    <div class="prev-stat-val" id="statStudents">—</div>
+                    <div class="prev-stat-lbl">Qualifying Students</div>
+                </div>
+                <div class="prev-stat">
+                    <div class="prev-stat-val" id="statUnis">—</div>
+                    <div class="prev-stat-lbl">Universities Covered</div>
+                </div>
+                <div class="prev-stat">
+                    <div class="prev-stat-val" id="statAmount">—</div>
+                    <div class="prev-stat-lbl">Amount / Student</div>
+                </div>
+                <div class="prev-stat">
+                    <div class="prev-stat-val" id="statTotal" style="color:var(--primary-color);">—</div>
+                    <div class="prev-stat-lbl">Total Batch Value</div>
+                </div>
+            </div>
+
+            <!-- Exclusion line -->
+            <div style="display:flex;gap:22px;margin-bottom:14px;font-size:0.83rem;color:#555;flex-wrap:wrap;">
+                <span><i class="bi bi-dash-circle-fill" style="color:#dc3545;margin-right:4px;"></i><span id="statExcluded">—</span> auto-excluded students (holds / already paid)</span>
+                <span><i class="bi bi-check-circle-fill" style="color:#28a745;margin-right:4px;"></i><strong><span id="statFinal">—</span> net qualifying students</strong> will be included in this batch</span>
+            </div>
+
+            <!-- Campus breakdown table -->
+            <div id="emptyState" style="text-align:center;padding:40px 20px;color:#aaa;">
+                <i class="bi bi-layers" style="font-size:2.5rem;display:block;margin-bottom:10px;"></i>
+                <div style="font-size:0.92rem;font-weight:600;">Select an allowance type above to preview qualifying students</div>
+            </div>
+
+            <div id="tableWrap" style="display:none;">
+                <div class="batch-table-wrapper">
+                    <table class="batch-table">
+                        <thead>
+                            <tr>
+                                <th style="width:42px;"><input type="checkbox" id="chkAll" checked onchange="toggleAll(this)" style="accent-color:#fff;width:15px;height:15px;cursor:pointer;"></th>
+                                <th>University / Campus</th>
+                                <th style="text-align:center;">Qualifying</th>
+                                <th style="text-align:center;">Excluded</th>
+                                <th style="text-align:center;">Net Students</th>
+                                <th style="text-align:right;">Per Student</th>
+                                <th style="text-align:right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody"></tbody>
+                        <tfoot id="previewFoot"></tfoot>
+                    </table>
+                </div>
+
+                <div style="background:#fffbea;border:1px solid #fcd34d;border-radius:7px;padding:10px 14px;margin-top:14px;font-size:0.82rem;color:#78350f;display:flex;gap:9px;align-items:flex-start;">
+                    <i class="bi bi-exclamation-triangle-fill" style="flex-shrink:0;margin-top:2px;"></i>
+                    <span>Unchecking a campus removes it from this batch entirely. You can create a separate batch for excluded campuses. Individual student-level exclusions can be applied after batch creation.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Action Footer ===== -->
+    <div class="action-footer">
+        <a href="payments.html" class="btn-outline">
+            <i class="bi bi-x-circle"></i> Cancel
+        </a>
+        <div style="display:flex;gap:10px;">
+            <button class="btn-draft" onclick="saveDraft()">
+                <i class="bi bi-floppy"></i> Save as Draft
+            </button>
+            <button class="btn-primary-action" onclick="submitBatch()">
+                <i class="bi bi-send-check-fill"></i> Submit for Approval
+            </button>
+        </div>
+    </div>
+
+</div><!-- /main-content -->
+
+<!-- ===== Confirm Submit Modal ===== -->
+<div class="modal-ov" id="confirmModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h5><i class="bi bi-send-check-fill"></i> Submit for Approval</h5>
+            <button class="modal-close" onclick="closeModal('confirmModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.87rem;color:#555;margin:0 0 16px;">Please review the batch details before submitting for approval.</p>
+            <div id="confirmDetails"></div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-outline" onclick="closeModal('confirmModal')">Cancel</button>
+            <button class="btn-primary-action" onclick="confirmSubmit()">
+                <i class="bi bi-send-check-fill"></i> Confirm &amp; Submit
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== Campus data per allowance type =====
+    var allCampusData = {
+        transport: [
+            { name: 'Main Campus',              students: 93,  excluded: 2 },
+            { name: 'Regional Campus – East',   students: 58,  excluded: 1 },
+            { name: 'Regional Campus – West',   students: 47,  excluded: 1 },
+            { name: 'Extension Centre',         students: 19,  excluded: 1 },
+            // Online students not eligible for transport
+        ],
+        meal: [
+            { name: 'Main Campus',              students: 93,  excluded: 2 },
+            { name: 'Regional Campus – East',   students: 58,  excluded: 1 },
+            { name: 'Regional Campus – West',   students: 47,  excluded: 1 },
+            { name: 'Online Campus',            students: 31,  excluded: 0 },
+            { name: 'Extension Centre',         students: 19,  excluded: 1 },
+        ],
+        accommodation: [
+            { name: 'Main Campus',              students: 87,  excluded: 3 },
+            { name: 'Regional Campus – East',   students: 42,  excluded: 1 },
+            { name: 'Regional Campus – West',   students: 38,  excluded: 1 },
+            { name: 'Extension Centre',         students: 16,  excluded: 0 },
+            // Online students not eligible for accommodation
+        ],
+        bursary: [
+            { name: 'Main Campus',              students: 93,  excluded: 1 },
+            { name: 'Regional Campus – East',   students: 58,  excluded: 1 },
+            { name: 'Regional Campus – West',   students: 47,  excluded: 1 },
+            { name: 'Online Campus',            students: 31,  excluded: 0 },
+            { name: 'Extension Centre',         students: 19,  excluded: 1 },
+        ],
+        material: [
+            { name: 'Main Campus',              students: 93,  excluded: 1 },
+            { name: 'Regional Campus – East',   students: 58,  excluded: 1 },
+            { name: 'Regional Campus – West',   students: 47,  excluded: 0 },
+            { name: 'Online Campus',            students: 31,  excluded: 0 },
+            { name: 'Extension Centre',         students: 19,  excluded: 0 },
+        ],
+    };
+
+    var allowanceMeta = {
+        transport:     { label: 'Transport Allowance',  prefix: 'TRN' },
+        meal:          { label: 'Meal Allowance',        prefix: 'MEL' },
+        accommodation: { label: 'Accommodation',         prefix: 'ACC' },
+        bursary:       { label: 'Bursary',               prefix: 'BRS' },
+        material:      { label: 'Study Material',        prefix: 'STM' },
+    };
+
+    var currentType    = null;
+    var currentCampusData = [];
+
+    // ===== Allowance selection =====
+    function selectAllowance(card, type, amount) {
+        document.querySelectorAll('.allowance-card').forEach(function(c) { c.classList.remove('selected'); });
+        card.classList.add('selected');
+        currentType = type;
+        currentCampusData = allCampusData[type] || [];
+
+        var amtField = document.getElementById('amountPerStudent');
+        if (amount > 0) amtField.value = amount;
+        else amtField.value = '';
+
+        var meta = allowanceMeta[type];
+        var now  = new Date();
+        var mm   = String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('batchRef').placeholder = meta.prefix + '-' + now.getFullYear() + '-' + mm + '-001';
+
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('tableWrap').style.display  = '';
+        renderTable();
+        recalculate();
+    }
+
+    // ===== Render campus rows =====
+    function renderTable() {
+        var tbody = document.getElementById('previewBody');
+        tbody.innerHTML = '';
+        currentCampusData.forEach(function(s, i) {
+            var net = s.students - s.excluded;
+            var excCell = s.excluded > 0
+                ? '<span style="color:#dc3545;font-weight:700;">' + s.excluded + '</span>'
+                : '<span style="color:#bbb;">—</span>';
+            var tr = document.createElement('tr');
+            tr.dataset.idx = i;
+            tr.innerHTML =
+                '<td><input type="checkbox" class="campus-chk" checked onchange="recalculate();syncHeaderChk();" style="accent-color:var(--primary-color);width:15px;height:15px;cursor:pointer;"></td>' +
+                '<td><strong>' + s.name + '</strong></td>' +
+                '<td style="text-align:center;">' + s.students + '</td>' +
+                '<td style="text-align:center;">' + excCell + '</td>' +
+                '<td style="text-align:center;font-weight:700;color:var(--sidebar-color);">' + net + '</td>' +
+                '<td style="text-align:right;" class="col-per">—</td>' +
+                '<td style="text-align:right;font-weight:700;" class="col-sub">—</td>';
+            tbody.appendChild(tr);
+        });
+
+        var tfoot = document.getElementById('previewFoot');
+        tfoot.innerHTML =
+            '<tr>' +
+            '<td></td>' +
+            '<td>Total</td>' +
+            '<td style="text-align:center;" id="footQ">—</td>' +
+            '<td style="text-align:center;" id="footE">—</td>' +
+            '<td style="text-align:center;" id="footN">—</td>' +
+            '<td></td>' +
+            '<td style="text-align:right;" id="footT">—</td>' +
+            '</tr>';
+    }
+
+    // ===== Live recalculate =====
+    function recalculate() {
+        if (!currentCampusData.length) return;
+
+        var amount = parseFloat(document.getElementById('amountPerStudent').value) || 0;
+        var totalQ = 0, totalE = 0, totalN = 0, unis = 0;
+
+        document.querySelectorAll('#previewBody tr[data-idx]').forEach(function(row) {
+            var idx = parseInt(row.dataset.idx);
+            var s   = currentCampusData[idx];
+            if (!s) return;
+            var chk = row.querySelector('.campus-chk');
+            var net = s.students - s.excluded;
+            var on  = chk.checked;
+
+            row.querySelector('.col-per').textContent = amount > 0 ? fmtR(amount) : '—';
+            row.querySelector('.col-sub').textContent = on && amount > 0 ? fmtR(net * amount) : '—';
+            row.style.opacity = on ? '' : '0.42';
+
+            if (on) { totalQ += s.students; totalE += s.excluded; totalN += net; unis++; }
+        });
+
+        var grandTotal = totalN * amount;
+
+        document.getElementById('statStudents').textContent = totalQ ? totalQ.toLocaleString('en-ZA') : '—';
+        document.getElementById('statUnis').textContent     = unis || '—';
+        document.getElementById('statAmount').textContent   = amount > 0 ? fmtR(amount) : '—';
+        document.getElementById('statTotal').textContent    = amount > 0 && totalN ? fmtR(grandTotal) : '—';
+        document.getElementById('statExcluded').textContent = totalE;
+        document.getElementById('statFinal').textContent    = totalN ? totalN.toLocaleString('en-ZA') : '0';
+
+        document.getElementById('footQ').textContent = totalQ ? totalQ.toLocaleString('en-ZA') : '—';
+        document.getElementById('footE').innerHTML   = totalE > 0
+            ? '<span style="color:#dc3545;font-weight:700;">' + totalE + '</span>'
+            : '<span style="color:#bbb;">—</span>';
+        document.getElementById('footN').textContent = totalN ? totalN.toLocaleString('en-ZA') : '—';
+        document.getElementById('footT').textContent = amount > 0 && totalN ? fmtR(grandTotal) : '—';
+    }
+
+    function fmtR(n) {
+        return 'R\u00a0' + Math.round(n).toLocaleString('en-ZA');
+    }
+
+    // ===== Header checkbox sync =====
+    function toggleAll(chk) {
+        document.querySelectorAll('.campus-chk').forEach(function(c) { c.checked = chk.checked; });
+        recalculate();
+    }
+
+    function syncHeaderChk() {
+        var all  = document.querySelectorAll('.campus-chk');
+        var chkd = document.querySelectorAll('.campus-chk:checked');
+        var hdr  = document.getElementById('chkAll');
+        if (!hdr) return;
+        hdr.checked       = chkd.length === all.length;
+        hdr.indeterminate = chkd.length > 0 && chkd.length < all.length;
+    }
+
+    // ===== Submit =====
+    function submitBatch() {
+        var type    = currentType ? allowanceMeta[currentType].label : '—';
+        var amount  = parseFloat(document.getElementById('amountPerStudent').value) || 0;
+        var net     = parseInt((document.getElementById('statFinal').textContent || '0').replace(/\s/g, '')) || 0;
+        var total   = net * amount;
+        var period  = document.getElementById('payPeriod').value;
+        var date    = document.getElementById('releaseDate').value;
+        var unis    = document.getElementById('statUnis').textContent;
+        var ref     = document.getElementById('batchRef').value || document.getElementById('batchRef').placeholder;
+
+        var rows = [
+            ['Batch Reference',         ref],
+            ['Allowance Type',          type],
+            ['Payment Period',          period],
+            ['Scheduled Release Date',  date || '—'],
+            ['Universities / Campuses', unis + ' campus(es)'],
+            ['Net Qualifying Students', net.toLocaleString('en-ZA')],
+            ['Amount per Student',      amount > 0 ? fmtR(amount) : '—'],
+            ['Total Batch Value',       amount > 0 && net ? fmtR(total) : '—'],
+        ];
+
+        document.getElementById('confirmDetails').innerHTML = rows.map(function(r) {
+            return '<div class="confirm-row"><span class="cr-label">' + r[0] + '</span><span class="cr-value">' + r[1] + '</span></div>';
+        }).join('');
+
+        openModal('confirmModal');
+    }
+
+    function confirmSubmit() {
+        closeModal('confirmModal');
+        showToast('Batch submitted for approval successfully');
+        setTimeout(function() { window.location.href = 'payments.html'; }, 2200);
+    }
+
+    function saveDraft() {
+        showToast('Batch saved as draft');
+    }
+
+    // ===== Modal helpers =====
+    function openModal(id)  { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    document.querySelectorAll('.modal-ov').forEach(function(ov) {
+        ov.addEventListener('click', function(e) { if (e.target === ov) closeModal(ov.id); });
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-ov.active').forEach(function(m) { closeModal(m.id); });
+        }
+    });
+
+    // ===== Toast =====
+    function showToast(msg) {
+        var t = document.createElement('div');
+        t.className = 'toast-msg';
+        t.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + msg;
+        document.body.appendChild(t);
+        requestAnimationFrame(function() { t.classList.add('show'); });
+        setTimeout(function() {
+            t.classList.remove('show');
+            setTimeout(function() { t.remove(); }, 400);
+        }, 3000);
+    }
+</script>
+</body>
+</html>

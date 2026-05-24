@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Scheduler – ISFAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #1093DB;
+            --sidebar-color: #094781;
+            --accent-color: #337C96;
+            --bg-color: #E5F5FF;
+            --border-color: #ACC8CB;
+            --text-color: #094781;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #094781 0%, #0d6ebd 60%, #1093DB 100%);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 4px 0 18px rgba(9,71,129,0.25);
+        }
+
+        .sidebar-brand {
+            padding: 20px 16px 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, color 0.2s;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+            font-weight: 600;
+            border-left: 3px solid #fff;
+            box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+        }
+
+        .sidebar details summary {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            list-style: none;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+        }
+
+        .sidebar details summary::-webkit-details-marker { display: none; }
+
+        .sidebar details summary:hover {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+        }
+
+        .sidebar details[open] > summary {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+        }
+
+        .sidebar details summary .chevron {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .sidebar details[open] summary .chevron {
+            transform: rotate(90deg);
+        }
+
+        .sidebar details .sub-nav {
+            list-style: none;
+            padding: 2px 0 4px 0;
+            margin: 0;
+        }
+
+        .sidebar details .sub-nav li a {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.87rem;
+            padding: 8px 16px 8px 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar details .sub-nav li a:hover,
+        .sidebar details .sub-nav li a.active {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+        }
+
+        .sidebar details .sub-nav li a.active {
+            border-left: 3px solid #fff;
+            padding-left: 37px;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #E5F5FF 0%, #f0f8ff 100%);
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .page-header h2 {
+            margin: 0;
+            color: var(--sidebar-color);
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- Pocket Summary Cards --- */
+        .pocket-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .pocket-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px 22px;
+            box-shadow: 0 4px 16px rgba(9,71,129,0.10);
+            border-top: 4px solid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pocket-card::after {
+            content: '';
+            position: absolute;
+            right: -18px;
+            top: -18px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            opacity: 0.06;
+            background: currentColor;
+        }
+
+        .pocket-card.transport { border-color: #1093DB; color: #1093DB; }
+        .pocket-card.meal      { border-color: #28a745; color: #28a745; }
+        .pocket-card.accommodation { border-color: #fd7e14; color: #fd7e14; }
+
+        .pocket-card .pocket-icon {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        .pocket-card h4 {
+            margin: 0 0 12px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .pocket-card .pocket-amount {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .pocket-card .pocket-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 0.78rem;
+            color: #666;
+        }
+
+        .pocket-card .pocket-stats span strong {
+            display: block;
+            font-size: 0.92rem;
+            color: var(--text-color);
+        }
+
+        .pocket-progress {
+            height: 5px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 12px 0 0;
+            overflow: hidden;
+        }
+
+        .pocket-progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.4s;
+        }
+
+        .transport  .pocket-progress-bar { background: #1093DB; }
+        .meal       .pocket-progress-bar { background: #28a745; }
+        .accommodation .pocket-progress-bar { background: #fd7e14; }
+
+        /* --- Scheduler Panel --- */
+        .panel {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(9,71,129,0.10);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 16px 22px;
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .panel-body { padding: 22px; }
+
+        /* --- Form Controls --- */
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-row { margin-bottom: 16px; }
+
+        .form-field label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.88rem;
+            color: #333;
+            background: #fdfdfe;
+            box-sizing: border-box;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16,147,219,0.12);
+        }
+
+        .form-field .field-hint {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* --- Pocket selector tabs --- */
+        .pocket-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .pocket-tab {
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f1f5f9;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .pocket-tab:hover { opacity: 0.85; }
+        .pocket-tab.active-transport { background: #dbeafe; color: #1093DB; border-color: #1093DB; }
+        .pocket-tab.active-meal      { background: #d4edda; color: #1a7a31; border-color: #28a745; }
+        .pocket-tab.active-accommodation { background: #ffe8cc; color: #b85c00; border-color: #fd7e14; }
+
+        /* --- Batch Table --- */
+        .batch-table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(9,71,129,0.06);
+        }
+
+        .batch-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            background: #fff;
+        }
+
+        .batch-table thead tr {
+            background: var(--sidebar-color);
+        }
+
+        .batch-table thead th {
+            padding: 11px 14px;
+            font-weight: 600;
+            text-align: left;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: #fff;
+        }
+
+        .batch-table tbody tr {
+            border-bottom: 1px solid #edf2f7;
+            transition: background 0.15s;
+        }
+
+        .batch-table tbody tr:last-child { border-bottom: none; }
+        .batch-table tbody tr:nth-child(even) { background: #f8fcff; }
+        .batch-table tbody tr:hover { background: var(--bg-color); }
+
+        .batch-table td {
+            padding: 10px 14px;
+            color: var(--text-color);
+            vertical-align: middle;
+        }
+
+        /* --- Pocket Badge --- */
+        .badge-pocket {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge-transport     { background: #dbeafe; color: #1093DB; }
+        .badge-meal          { background: #d4edda; color: #1a7a31; }
+        .badge-accommodation { background: #ffe8cc; color: #b85c00; }
+
+        /* --- Batch Status Badges --- */
+        .badge-batch {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-draft     { background: #e2e3e5; color: #383d41; }
+        .badge-scheduled { background: #cce5ff; color: #004085; }
+        .badge-pending   { background: #fff3cd; color: #856404; }
+        .badge-released  { background: #d4edda; color: #155724; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; }
+
+        /* --- Action Buttons --- */
+        .btn-action {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-action:hover { opacity: 0.82; }
+        .btn-release  { background: #28a745; color: #fff; }
+        .btn-approve  { background: var(--primary-color); color: #fff; }
+        .btn-edit     { background: #6c757d; color: #fff; }
+        .btn-cancel   { background: #dc3545; color: #fff; }
+        .btn-view-batch { background: #063154; color: #fff; }
+
+        /* --- Primary Action Button --- */
+        .btn-primary-action {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color));
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(9,71,129,0.3);
+            transition: opacity 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary-action:hover { opacity: 0.88; box-shadow: 0 6px 20px rgba(9,71,129,0.4); }
+
+        .btn-outline {
+            padding: 9px 20px;
+            background: #fff;
+            color: var(--sidebar-color);
+            border: 1.5px solid var(--border-color);
+            border-radius: 7px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .btn-outline:hover { background: #f0f8ff; border-color: var(--primary-color); }
+
+        /* --- Section divider label --- */
+        .pocket-group-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 8px 14px;
+            color: #fff;
+        }
+
+        .pocket-group-transport     { background: #1093DB; }
+        .pocket-group-meal          { background: #28a745; }
+        .pocket-group-accommodation { background: #fd7e14; }
+
+        /* --- Summary row --- */
+        .summary-row td {
+            background: #f8fafc !important;
+            font-weight: 700;
+            color: var(--sidebar-color) !important;
+            font-size: 0.82rem;
+        }
+
+        /* Total banner */
+        .total-banner {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 30px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 14px 22px;
+            margin-top: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(9,71,129,0.07);
+        }
+
+        .total-banner .total-item {
+            text-align: right;
+        }
+
+        .total-banner .total-item label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+        }
+
+        .total-banner .total-item span {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+        }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(9,29,55,0.55);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(9,71,129,0.22);
+            width: 100%;
+            max-width: 520px;
+            animation: slideIn 0.22s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-16px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 22px;
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            color: #fff;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-header h5 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.85);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 4px;
+        }
+
+        .modal-close:hover { color: #fff; }
+
+        .modal-body { padding: 22px; }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 22px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-modal-cancel {
+            padding: 8px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #fff;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.87rem;
+            cursor: pointer;
+        }
+
+        .btn-modal-release {
+            padding: 8px 22px;
+            border: none;
+            border-radius: 6px;
+            background: #28a745;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.87rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-modal-release:hover { opacity: 0.87; }
+
+        .confirm-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.87rem;
+        }
+
+        .confirm-detail:last-child { border-bottom: none; }
+        .confirm-detail .cd-label { color: #888; font-weight: 600; }
+        .confirm-detail .cd-value { color: var(--sidebar-color); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <!-- Students -->
+        <details>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="index.html">Profile</a></li>
+                <li><a href="#">Check-In</a></li>
+                <li><a href="#">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <!-- Programme Managers -->
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <!-- Landlords -->
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <!-- Tasks -->
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <!-- Communications -->
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <!-- Payments (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html" class="active">Overview</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <!-- Funder Management -->
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="funding_selection.html">Allocations</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link">
+            <i class="bi bi-bar-chart-line"></i> Reports
+        </a>
+        <a href="#" class="nav-link">
+            <i class="bi bi-gear"></i> Settings
+        </a>
+
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="#" class="nav-link">
+            <i class="bi bi-box-arrow-left"></i> Log Out
+        </a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-calendar-check"></i> Payment Scheduler</h2>
+        <div style="display:flex;gap:10px;">
+            <button class="btn-outline" onclick="window.print()">
+                <i class="bi bi-printer"></i> Export
+            </button>
+            <button class="btn-primary-action" onclick="window.location.href='create_batch.html'">
+                <i class="bi bi-plus-circle"></i> New Batch
+            </button>
+        </div>
+    </div>
+
+    <!-- Pocket Summary Cards -->
+    <div class="pocket-cards">
+        <!-- Transport -->
+        <div class="pocket-card transport">
+            <div class="pocket-icon"><i class="bi bi-bus-front-fill"></i></div>
+            <h4>Transport Allowance</h4>
+            <div class="pocket-amount">R 842 500</div>
+            <div class="pocket-stats">
+                <span><strong>R 612 000</strong> Released</span>
+                <span><strong>R 230 500</strong> Pending</span>
+            </div>
+            <div class="pocket-progress">
+                <div class="pocket-progress-bar" style="width:73%"></div>
+            </div>
+            <div style="font-size:0.72rem;color:#888;margin-top:5px;">73% disbursed · 248 students</div>
+        </div>
+        <!-- Meal -->
+        <div class="pocket-card meal">
+            <div class="pocket-icon"><i class="bi bi-egg-fried"></i></div>
+            <h4>Meal Allowance</h4>
+            <div class="pocket-amount">R 1 240 000</div>
+            <div class="pocket-stats">
+                <span><strong>R 1 085 500</strong> Released</span>
+                <span><strong>R 154 500</strong> Pending</span>
+            </div>
+            <div class="pocket-progress">
+                <div class="pocket-progress-bar" style="width:88%"></div>
+            </div>
+            <div style="font-size:0.72rem;color:#888;margin-top:5px;">88% disbursed · 248 students</div>
+        </div>
+        <!-- Accommodation -->
+        <div class="pocket-card accommodation">
+            <div class="pocket-icon"><i class="bi bi-building"></i></div>
+            <h4>Accommodation</h4>
+            <div class="pocket-amount">R 3 720 000</div>
+            <div class="pocket-stats">
+                <span><strong>R 2 480 000</strong> Released</span>
+                <span><strong>R 1 240 000</strong> Pending</span>
+            </div>
+            <div class="pocket-progress">
+                <div class="pocket-progress-bar" style="width:67%"></div>
+            </div>
+            <div style="font-size:0.72rem;color:#888;margin-top:5px;">67% disbursed · 248 students</div>
+        </div>
+    </div>
+
+    <!-- Scheduled Batches -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="bi bi-list-check"></i> Payment Batches</h3>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <select style="padding:5px 10px;border-radius:5px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:#fff;font-size:0.82rem;cursor:pointer;">
+                    <option>All Pockets</option>
+                    <option>Transport</option>
+                    <option>Meal</option>
+                    <option>Accommodation</option>
+                </select>
+                <select style="padding:5px 10px;border-radius:5px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.12);color:#fff;font-size:0.82rem;cursor:pointer;">
+                    <option>All Statuses</option>
+                    <option>Draft</option>
+                    <option>Pending Approval</option>
+                    <option>Scheduled</option>
+                    <option>Released</option>
+                </select>
+            </div>
+        </div>
+        <div class="panel-body" style="padding:0;">
+            <div class="batch-table-wrapper">
+                <table class="batch-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Batch Reference</th>
+                            <th>Pocket</th>
+                            <th>University / Group</th>
+                            <th>Students</th>
+                            <th>Amount / Student</th>
+                            <th>Total Value</th>
+                            <th>Scheduled Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <!-- Transport Batches -->
+                        <tr class="pocket-group-label pocket-group-transport" style="pointer-events:none;">
+                            <td colspan="10"><i class="bi bi-bus-front-fill"></i> Transport Allowance</td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>TRN-2026-05-001</strong></td>
+                            <td><span class="badge-pocket badge-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                            <td>Main Campus – All Years</td>
+                            <td>87</td>
+                            <td>R 1 500</td>
+                            <td><strong>R 130 500</strong></td>
+                            <td>25 May 2026</td>
+                            <td><span class="badge-batch badge-scheduled">Scheduled</span></td>
+                            <td>
+                                <button class="btn-action btn-release" onclick="confirmRelease('TRN-2026-05-001','Transport','87','R 130 500','25 May 2026')"><i class="bi bi-send-check"></i> Release</button>
+                                <button class="btn-action btn-edit" style="margin-left:4px;"><i class="bi bi-pencil"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>TRN-2026-05-002</strong></td>
+                            <td><span class="badge-pocket badge-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                            <td>Regional Campus – East</td>
+                            <td>42</td>
+                            <td>R 1 500</td>
+                            <td><strong>R 63 000</strong></td>
+                            <td>25 May 2026</td>
+                            <td><span class="badge-batch badge-pending">Pending Approval</span></td>
+                            <td>
+                                <button class="btn-action btn-approve"><i class="bi bi-check-circle"></i> Approve</button>
+                                <button class="btn-action btn-edit" style="margin-left:4px;"><i class="bi bi-pencil"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>TRN-2026-04-009</strong></td>
+                            <td><span class="badge-pocket badge-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                            <td>Online Campus</td>
+                            <td>31</td>
+                            <td>R 1 200</td>
+                            <td><strong>R 37 200</strong></td>
+                            <td>30 Apr 2026</td>
+                            <td><span class="badge-batch badge-released">Released</span></td>
+                            <td>
+                                <button class="btn-action btn-view-batch"><i class="bi bi-eye"></i> View</button>
+                            </td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td colspan="6" style="text-align:right;padding-right:16px;">Transport Subtotal</td>
+                            <td>R 230 700</td>
+                            <td colspan="3"></td>
+                        </tr>
+
+                        <!-- Meal Batches -->
+                        <tr class="pocket-group-label pocket-group-meal" style="pointer-events:none;">
+                            <td colspan="10"><i class="bi bi-egg-fried"></i> Meal Allowance</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>MEL-2026-05-001</strong></td>
+                            <td><span class="badge-pocket badge-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                            <td>All Universities – Active</td>
+                            <td>248</td>
+                            <td>R 1 800</td>
+                            <td><strong>R 446 400</strong></td>
+                            <td>01 Jun 2026</td>
+                            <td><span class="badge-batch badge-draft">Draft</span></td>
+                            <td>
+                                <button class="btn-action btn-approve"><i class="bi bi-check-circle"></i> Approve</button>
+                                <button class="btn-action btn-edit" style="margin-left:4px;"><i class="bi bi-pencil"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><strong>MEL-2026-05-002</strong></td>
+                            <td><span class="badge-pocket badge-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                            <td>Main Campus – Postgraduate</td>
+                            <td>54</td>
+                            <td>R 2 200</td>
+                            <td><strong>R 118 800</strong></td>
+                            <td>25 May 2026</td>
+                            <td><span class="badge-batch badge-scheduled">Scheduled</span></td>
+                            <td>
+                                <button class="btn-action btn-release" onclick="confirmRelease('MEL-2026-05-002','Meal','54','R 118 800','25 May 2026')"><i class="bi bi-send-check"></i> Release</button>
+                                <button class="btn-action btn-edit" style="margin-left:4px;"><i class="bi bi-pencil"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><strong>MEL-2026-04-007</strong></td>
+                            <td><span class="badge-pocket badge-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                            <td>All Universities – Active</td>
+                            <td>248</td>
+                            <td>R 1 800</td>
+                            <td><strong>R 446 400</strong></td>
+                            <td>30 Apr 2026</td>
+                            <td><span class="badge-batch badge-released">Released</span></td>
+                            <td>
+                                <button class="btn-action btn-view-batch"><i class="bi bi-eye"></i> View</button>
+                            </td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td colspan="6" style="text-align:right;padding-right:16px;">Meal Subtotal</td>
+                            <td>R 1 011 600</td>
+                            <td colspan="3"></td>
+                        </tr>
+
+                        <!-- Accommodation Batches -->
+                        <tr class="pocket-group-label pocket-group-accommodation" style="pointer-events:none;">
+                            <td colspan="10"><i class="bi bi-building"></i> Accommodation</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td><strong>ACC-2026-05-001</strong></td>
+                            <td><span class="badge-pocket badge-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                            <td>Main Campus – All Years</td>
+                            <td>87</td>
+                            <td>R 4 500</td>
+                            <td><strong>R 391 500</strong></td>
+                            <td>01 Jun 2026</td>
+                            <td><span class="badge-batch badge-pending">Pending Approval</span></td>
+                            <td>
+                                <button class="btn-action btn-approve"><i class="bi bi-check-circle"></i> Approve</button>
+                                <button class="btn-action btn-edit" style="margin-left:4px;"><i class="bi bi-pencil"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td><strong>ACC-2026-05-002</strong></td>
+                            <td><span class="badge-pocket badge-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                            <td>Regional Campuses – 1st &amp; 2nd Year</td>
+                            <td>73</td>
+                            <td>R 5 200</td>
+                            <td><strong>R 379 600</strong></td>
+                            <td>25 May 2026</td>
+                            <td><span class="badge-batch badge-scheduled">Scheduled</span></td>
+                            <td>
+                                <button class="btn-action btn-release" onclick="confirmRelease('ACC-2026-05-002','Accommodation','73','R 379 600','25 May 2026')"><i class="bi bi-send-check"></i> Release</button>
+                                <button class="btn-action btn-edit" style="margin-left:4px;"><i class="bi bi-pencil"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td><strong>ACC-2026-04-011</strong></td>
+                            <td><span class="badge-pocket badge-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                            <td>All Universities – Active</td>
+                            <td>248</td>
+                            <td>R 4 800</td>
+                            <td><strong>R 1 190 400</strong></td>
+                            <td>30 Apr 2026</td>
+                            <td><span class="badge-batch badge-released">Released</span></td>
+                            <td>
+                                <button class="btn-action btn-view-batch"><i class="bi bi-eye"></i> View</button>
+                            </td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td colspan="6" style="text-align:right;padding-right:16px;">Accommodation Subtotal</td>
+                            <td>R 1 961 500</td>
+                            <td colspan="3"></td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Grand Total -->
+            <div class="total-banner">
+                <div class="total-item">
+                    <label>Total Batches</label>
+                    <span>9</span>
+                </div>
+                <div class="total-item">
+                    <label>Total Students</label>
+                    <span>248</span>
+                </div>
+                <div class="total-item">
+                    <label>Released</label>
+                    <span style="color:#28a745;">R 1 674 000</span>
+                </div>
+                <div class="total-item">
+                    <label>Pending / Scheduled</label>
+                    <span style="color:#e67e22;">R 1 529 800</span>
+                </div>
+                <div class="total-item" style="border-left:2px solid #e0e0e0;padding-left:28px;">
+                    <label>Grand Total</label>
+                    <span style="font-size:1.25rem;">R 5 802 500</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /main-content -->
+
+<!-- =========================================================== -->
+<!-- NEW BATCH MODAL                                              -->
+<!-- =========================================================== -->
+<div class="modal-overlay" id="schedulerModal">
+    <div class="modal-box" style="max-width:620px;">
+        <div class="modal-header">
+            <h5><i class="bi bi-plus-circle"></i> Schedule New Payment Batch</h5>
+            <button class="modal-close" onclick="closeSchedulerModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="newBatchForm" onsubmit="return false;">
+                <!-- Pocket selector -->
+                <div style="margin-bottom:18px;">
+                    <label style="font-size:0.82rem;font-weight:700;color:#555;display:block;margin-bottom:8px;">Payment Pocket <span style="color:#e74c3c">*</span></label>
+                    <div class="pocket-tabs" id="pocketTabs">
+                        <button type="button" class="pocket-tab" data-pocket="transport" onclick="selectPocket(this)">
+                            <i class="bi bi-bus-front-fill"></i> Transport
+                        </button>
+                        <button type="button" class="pocket-tab" data-pocket="meal" onclick="selectPocket(this)">
+                            <i class="bi bi-egg-fried"></i> Meal
+                        </button>
+                        <button type="button" class="pocket-tab" data-pocket="accommodation" onclick="selectPocket(this)">
+                            <i class="bi bi-building"></i> Accommodation
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-grid-3" style="grid-template-columns:1fr 1fr;">
+                    <div class="form-field">
+                        <label>Batch Reference <span style="color:#e74c3c">*</span></label>
+                        <input type="text" id="batchRef" placeholder="e.g. TRN-2026-06-001">
+                    </div>
+                    <div class="form-field">
+                        <label>Scheduled Release Date <span style="color:#e74c3c">*</span></label>
+                        <input type="date" id="releaseDate">
+                    </div>
+                </div>
+
+                <div class="form-grid-3" style="grid-template-columns:1fr 1fr;margin-bottom:16px;">
+                    <div class="form-field">
+                        <label>University / Campus</label>
+                        <select id="batchUniversity">
+                            <option value="">All Universities</option>
+                            <option>Main Campus</option>
+                            <option>Regional Campus – East</option>
+                            <option>Regional Campus – West</option>
+                            <option>Online Campus</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Year of Study</label>
+                        <select id="batchYear">
+                            <option value="">All Years</option>
+                            <option>1st Year</option>
+                            <option>2nd Year</option>
+                            <option>3rd Year</option>
+                            <option>4th Year</option>
+                            <option>Postgraduate</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid-3" style="grid-template-columns:1fr 1fr;margin-bottom:16px;">
+                    <div class="form-field">
+                        <label>Amount per Student (R) <span style="color:#e74c3c">*</span></label>
+                        <input type="number" id="amountPerStudent" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div class="form-field">
+                        <label>Funding Source</label>
+                        <select>
+                            <option>ISFAP – General Fund</option>
+                            <option>NSFAS</option>
+                            <option>Funder Specific</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field" style="margin-bottom:0;">
+                    <label>Notes</label>
+                    <textarea rows="2" placeholder="Optional notes or instructions for this batch…"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeSchedulerModal()">Cancel</button>
+            <button class="btn-modal-cancel" style="background:#f8fafc;color:var(--sidebar-color);border-color:var(--border-color);" onclick="closeSchedulerModal()">
+                <i class="bi bi-floppy"></i> Save as Draft
+            </button>
+            <button class="btn-modal-release" style="background:linear-gradient(135deg,var(--primary-color),var(--sidebar-color));" onclick="closeSchedulerModal()">
+                <i class="bi bi-calendar-check"></i> Schedule Batch
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- RELEASE CONFIRM MODAL -->
+<div class="modal-overlay" id="releaseModal">
+    <div class="modal-box" style="max-width:440px;">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1a7a31,#28a745);">
+            <h5><i class="bi bi-send-check"></i> Confirm Release</h5>
+            <button class="modal-close" onclick="closeReleaseModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.88rem;color:#555;margin:0 0 16px;">You are about to release the following payment batch. This action cannot be undone.</p>
+            <div id="releaseDetails"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeReleaseModal()">Cancel</button>
+            <button class="btn-modal-release" onclick="closeReleaseModal()">
+                <i class="bi bi-send-check"></i> Confirm &amp; Release
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Scheduler Modal ---
+    function openSchedulerModal() {
+        document.getElementById('schedulerModal').classList.add('active');
+    }
+    function closeSchedulerModal() {
+        document.getElementById('schedulerModal').classList.remove('active');
+    }
+
+    // --- Pocket Tab Selection ---
+    function selectPocket(el) {
+        document.querySelectorAll('#pocketTabs .pocket-tab').forEach(function(b) {
+            b.className = 'pocket-tab';
+        });
+        var pocket = el.dataset.pocket;
+        el.classList.add('active-' + pocket);
+
+        // Auto-fill reference prefix
+        var prefixes = { transport: 'TRN', meal: 'MEL', accommodation: 'ACC' };
+        var now = new Date();
+        var yr  = now.getFullYear();
+        var mo  = String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('batchRef').value = prefixes[pocket] + '-' + yr + '-' + mo + '-';
+    }
+
+    // --- Release Confirm Modal ---
+    function confirmRelease(ref, pocket, students, total, date) {
+        var html = [
+            row('Batch Reference', ref),
+            row('Pocket', pocket),
+            row('Students', students),
+            row('Total Value', total),
+            row('Release Date', date)
+        ].join('');
+        document.getElementById('releaseDetails').innerHTML = html;
+        document.getElementById('releaseModal').classList.add('active');
+    }
+
+    function row(label, value) {
+        return '<div class="confirm-detail"><span class="cd-label">' + label + '</span><span class="cd-value">' + value + '</span></div>';
+    }
+
+    function closeReleaseModal() {
+        document.getElementById('releaseModal').classList.remove('active');
+    }
+
+    // Close modals on overlay background click or Escape
+    document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) overlay.classList.remove('active');
+        });
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay').forEach(function(o) {
+                o.classList.remove('active');
+            });
+        }
+    });
+</script>
+</body>
+</html>

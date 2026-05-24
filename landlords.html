@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landlords – ISFAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #1093DB;
+            --sidebar-color: #094781;
+            --accent-color: #337C96;
+            --bg-color: #E5F5FF;
+            --border-color: #ACC8CB;
+            --text-color: #094781;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0; padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #094781 0%, #0d6ebd 60%, #1093DB 100%);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 4px 0 18px rgba(9,71,129,0.25);
+        }
+
+        .sidebar-brand {
+            padding: 20px 16px 12px;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, color 0.2s;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover { background: rgba(255,255,255,0.18); color: #fff; transform: translateX(4px); }
+
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+            font-weight: 600;
+            border-left: 3px solid #fff;
+            box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+        }
+
+        .sidebar details summary {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            list-style: none;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+        }
+
+        .sidebar details summary::-webkit-details-marker { display: none; }
+        .sidebar details summary:hover { background: rgba(255,255,255,0.18); color: #fff; }
+        .sidebar details[open] > summary { background: rgba(255,255,255,0.12); color: #fff; }
+
+        .sidebar details summary .chevron {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .sidebar details[open] summary .chevron { transform: rotate(90deg); }
+        .sidebar details .sub-nav { list-style: none; padding: 2px 0 4px; margin: 0; }
+
+        .sidebar details .sub-nav li a {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.87rem;
+            padding: 8px 16px 8px 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar details .sub-nav li a:hover,
+        .sidebar details .sub-nav li a.active { background: rgba(255,255,255,0.18); color: #fff; }
+
+        .sidebar details .sub-nav li a.active { border-left: 3px solid #fff; padding-left: 37px; }
+
+        /* ===== MAIN ===== */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #E5F5FF 0%, #f0f8ff 100%);
+        }
+
+        /* ===== Page Header ===== */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .page-header h2 {
+            margin: 0;
+            color: var(--sidebar-color);
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ===== Summary Strip ===== */
+        .summary-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            box-shadow: 0 3px 12px rgba(9,71,129,0.09);
+            border-left: 4px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            background: #dbeafe;
+            color: var(--sidebar-color);
+        }
+
+        .stat-info label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #888;
+            margin-bottom: 3px;
+        }
+
+        .stat-info .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+            line-height: 1;
+        }
+
+        .stat-info .stat-sub { font-size: 0.72rem; color: #aaa; margin-top: 2px; }
+
+        /* ===== Filter Bar ===== */
+        .filter-bar {
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(9,71,129,0.08);
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar .filter-field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 1; }
+
+        .filter-bar label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .filter-bar select,
+        .filter-bar input {
+            padding: 8px 11px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.87rem;
+            color: #333;
+            background: #fdfdfe;
+            transition: border-color 0.15s;
+        }
+
+        .filter-bar select:focus,
+        .filter-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16,147,219,0.11);
+        }
+
+        /* ===== View Toggle ===== */
+        .view-toggle {
+            display: flex;
+            gap: 4px;
+            background: #f1f5f9;
+            border-radius: 7px;
+            padding: 3px;
+        }
+
+        .view-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            background: transparent;
+            color: #888;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .view-btn.active { background: #fff; color: var(--sidebar-color); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+        /* ===== Grid Meta ===== */
+        .grid-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            font-size: 0.84rem;
+            color: #666;
+        }
+
+        /* ===== Landlord Card Grid ===== */
+        .landlord-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 18px;
+        }
+
+        .landlord-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 14px rgba(9,71,129,0.09);
+            overflow: hidden;
+            transition: transform 0.18s, box-shadow 0.18s;
+            border: 1px solid #e8f0f7;
+        }
+
+        .landlord-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(9,71,129,0.16);
+        }
+
+        .card-banner {
+            height: 7px;
+            background: linear-gradient(90deg, var(--sidebar-color), var(--primary-color));
+        }
+
+        .card-banner.inactive { background: linear-gradient(90deg, #adb5bd, #ced4da); }
+        .card-banner.pending  { background: linear-gradient(90deg, #e0a800, #ffc107); }
+
+        .card-body { padding: 18px 18px 14px; }
+
+        .card-avatar-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .landlord-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .landlord-name { font-weight: 700; font-size: 1rem; color: var(--sidebar-color); margin-bottom: 2px; }
+        .landlord-id   { font-size: 0.75rem; color: #999; }
+
+        .card-details { margin-bottom: 14px; }
+
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .detail-row i { color: var(--primary-color); font-size: 0.88rem; margin-top: 1px; flex-shrink: 0; }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0;
+            border-top: 1px solid #edf2f7;
+            border-bottom: 1px solid #edf2f7;
+            margin-bottom: 14px;
+        }
+
+        .card-stat {
+            padding: 10px 8px;
+            text-align: center;
+            border-right: 1px solid #edf2f7;
+        }
+
+        .card-stat:last-child { border-right: none; }
+
+        .card-stat .cs-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+            display: block;
+        }
+
+        .card-stat .cs-label {
+            font-size: 0.68rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Status pill */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.74rem;
+            font-weight: 700;
+        }
+
+        .sp-active   { background: #d4edda; color: #155724; }
+        .sp-inactive { background: #e2e3e5; color: #383d41; }
+        .sp-pending  { background: #fff3cd; color: #856404; }
+
+        /* Card action buttons */
+        .btn-card {
+            padding: 5px 13px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.18s;
+            text-decoration: none;
+        }
+
+        .btn-card-primary { background: #063154; color: #fff; }
+        .btn-card-outline { background: #fff; color: var(--sidebar-color); border: 1px solid var(--border-color); }
+        .btn-card:hover { opacity: 0.82; }
+
+        /* ===== Primary / Outline buttons ===== */
+        .btn-primary-action {
+            padding: 9px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color));
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 0.87rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 3px 12px rgba(9,71,129,0.28);
+            transition: opacity 0.18s;
+        }
+
+        .btn-primary-action:hover { opacity: 0.88; }
+
+        .btn-outline {
+            padding: 8px 18px;
+            background: #fff;
+            color: var(--sidebar-color);
+            border: 1.5px solid var(--border-color);
+            border-radius: 7px;
+            font-size: 0.87rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .btn-outline:hover { background: #f0f8ff; border-color: var(--primary-color); }
+
+        /* ===== List view ===== */
+        .landlord-list-view { display: none; }
+
+        .ll-table-wrapper {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 14px rgba(9,71,129,0.09);
+            overflow: hidden;
+        }
+
+        .ll-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .ll-table thead tr { background: var(--sidebar-color); }
+
+        .ll-table thead th {
+            padding: 11px 14px;
+            font-weight: 600;
+            text-align: left;
+            font-size: 0.74rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .ll-table tbody tr {
+            border-bottom: 1px solid #edf2f7;
+            transition: background 0.14s;
+        }
+
+        .ll-table tbody tr:nth-child(even) { background: #f8fcff; }
+        .ll-table tbody tr:hover { background: var(--bg-color); }
+        .ll-table td { padding: 11px 14px; color: var(--text-color); vertical-align: middle; }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <details>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="index.html">Profile</a></li>
+                <li><a href="#">Check-In</a></li>
+                <li><a href="#">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <!-- Landlords (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html" class="active">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="#">Process Payment</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="funding_selection.html">Allocations</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <a href="#" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="#" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-house-fill"></i> Landlords</h2>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <div class="view-toggle">
+                <button class="view-btn active" id="btnGridView" onclick="setView('grid')" title="Grid view"><i class="bi bi-grid-3x3-gap-fill"></i></button>
+                <button class="view-btn" id="btnListView" onclick="setView('list')" title="List view"><i class="bi bi-list-ul"></i></button>
+            </div>
+            <button class="btn-outline"><i class="bi bi-download"></i> Export</button>
+            <button class="btn-primary-action" onclick="document.getElementById('addLandlordModal').classList.add('active')">
+                <i class="bi bi-plus-circle"></i> Add Landlord
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Strip -->
+    <div class="summary-strip">
+        <div class="stat-card" style="border-color:var(--sidebar-color);">
+            <div class="stat-icon"><i class="bi bi-people"></i></div>
+            <div class="stat-info">
+                <label>Total Landlords</label>
+                <div class="stat-value">42</div>
+                <div class="stat-sub">38 active</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#28a745;">
+            <div class="stat-icon" style="background:#d4edda;color:#1a7a31;"><i class="bi bi-buildings"></i></div>
+            <div class="stat-info">
+                <label>Total Properties</label>
+                <div class="stat-value">118</div>
+                <div class="stat-sub">across 5 regions</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#fd7e14;">
+            <div class="stat-icon" style="background:#ffe8cc;color:#b85c00;"><i class="bi bi-door-closed"></i></div>
+            <div class="stat-info">
+                <label>Occupied Units</label>
+                <div class="stat-value">241</div>
+                <div class="stat-sub">of 280 total units</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#6f42c1;">
+            <div class="stat-icon" style="background:#ede7f6;color:#6f42c1;"><i class="bi bi-currency-exchange"></i></div>
+            <div class="stat-info">
+                <label>Monthly Payouts</label>
+                <div class="stat-value">R 1.24M</div>
+                <div class="stat-sub">last disbursement Apr 2026</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-field">
+            <label>Search</label>
+            <input type="text" placeholder="Name, ID or phone…" style="min-width:180px;">
+        </div>
+        <div class="filter-field">
+            <label>Region / Campus</label>
+            <select>
+                <option value="">All Regions</option>
+                <option>Main Campus Area</option>
+                <option>Regional East</option>
+                <option>Regional West</option>
+                <option>Online / Remote</option>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label>Status</label>
+            <select>
+                <option value="">All Statuses</option>
+                <option>Active</option>
+                <option>Inactive</option>
+                <option>Pending Verification</option>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label>Property Type</label>
+            <select>
+                <option value="">All Types</option>
+                <option>Apartment Block</option>
+                <option>Student House</option>
+                <option>Private Room</option>
+                <option>Commune</option>
+            </select>
+        </div>
+        <div class="filter-field" style="max-width:120px;">
+            <label>&nbsp;</label>
+            <button type="button" style="padding:8px 16px;background:#063154;color:#fff;font-weight:700;border:none;border-radius:6px;font-size:0.86rem;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </div>
+    </div>
+
+    <!-- Grid Meta -->
+    <div class="grid-meta">
+        <span>Showing <strong>12</strong> of <strong>42</strong> landlords</span>
+    </div>
+
+    <!-- ===== CARD GRID VIEW ===== -->
+    <div class="landlord-grid" id="gridView">
+
+        <!-- Card 1 -->
+        <div class="landlord-card">
+            <div class="card-banner"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Mthembu Properties</div>
+                        <div class="landlord-id">LLD-2021-0001</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Solomon Mthembu</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 071 234 5678</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> s.mthembu@propmail.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 14 Universitiet St, Main Campus Area</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat">
+                        <span class="cs-value">4</span>
+                        <span class="cs-label">Properties</span>
+                    </div>
+                    <div class="card-stat">
+                        <span class="cs-value">30</span>
+                        <span class="cs-label">Students</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="landlord-card">
+            <div class="card-banner"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#337C96,#1093DB);"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Nkosi Student Rentals</div>
+                        <div class="landlord-id">LLD-2021-0002</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Fatima Nkosi</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 083 456 7890</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> fatima.nkosi@rentals.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 7 Campus View Rd, Regional East</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">2</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">18</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="landlord-card">
+            <div class="card-banner pending"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#e0a800,#ffc107);color:#333;"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">VDM Accommodation</div>
+                        <div class="landlord-id">LLD-2023-0019</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Brenda van der Merwe</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 064 890 1234</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> b.vdmerwe@gmail.com</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 22 Baobab Ave, Main Campus Area</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">1</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">4</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-pending"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Pending</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="landlord-card">
+            <div class="card-banner"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#6f42c1,#a855f7);"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Dlamini Property Group</div>
+                        <div class="landlord-id">LLD-2022-0008</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Rajesh Dlamini</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 079 321 6540</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> rajesh.d@properties.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 3 Elm Close, Regional West</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">3</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">21</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="landlord-card">
+            <div class="card-banner inactive"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#adb5bd,#ced4da);color:#333;"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Mokoena Residences</div>
+                        <div class="landlord-id">LLD-2020-0003</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Lungisa Mokoena</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 082 111 2233</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> l.mokoena@webmail.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 55 Protea St, Main Campus Area</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">2</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">0</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-inactive"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Inactive</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="landlord-card">
+            <div class="card-banner"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#28a745,#20c997);"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Pretorius Housing</div>
+                        <div class="landlord-id">LLD-2022-0011</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Zanele Pretorius</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 076 654 3210</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> zanele.p@housenet.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 9 Jackaranda Rd, Regional East</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">5</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">35</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 7 -->
+        <div class="landlord-card">
+            <div class="card-banner"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#dc3545,#e83e8c);"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Okonkwo Rentals</div>
+                        <div class="landlord-id">LLD-2023-0021</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Adaeze Okonkwo</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 060 789 0123</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> adaeze.ok@rentals.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 31 Willow Lane, Main Campus Area</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">2</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">14</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 8 -->
+        <div class="landlord-card">
+            <div class="card-banner"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#fd7e14,#ffc107);color:#333;"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Joubert Properties</div>
+                        <div class="landlord-id">LLD-2021-0006</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Pieter Joubert</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 084 567 8901</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> pieter.j@joubert-prop.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 18 Oak Ave, Regional West</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">3</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">20</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 9 -->
+        <div class="landlord-card">
+            <div class="card-banner pending"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#0dcaf0,#1093DB);"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Khumalo Lettings</div>
+                        <div class="landlord-id">LLD-2024-0031</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Nomsa Khumalo</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 078 234 5670</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> nomsa.kh@mail.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 5 Sunbird Rd, Regional East</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">1</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">3</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-pending"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Pending</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 10 -->
+        <div class="landlord-card">
+            <div class="card-banner"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#20c997,#0d9488);"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Sithole Property Group</div>
+                        <div class="landlord-id">LLD-2022-0015</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Thandeka Sithole</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 073 456 7812</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> t.sithole@propgroup.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 42 Fern St, Main Campus Area</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">4</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">26</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 11 -->
+        <div class="landlord-card">
+            <div class="card-banner"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#495057,#6c757d);"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Botha Rent Co</div>
+                        <div class="landlord-id">LLD-2021-0009</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Michael Botha</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 082 678 9012</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> mike.botha@rentco.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 88 Pioneer Rd, Regional West</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">2</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">11</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 12 -->
+        <div class="landlord-card">
+            <div class="card-banner inactive"></div>
+            <div class="card-body">
+                <div class="card-avatar-row">
+                    <div class="landlord-avatar" style="background:linear-gradient(135deg,#adb5bd,#868e96);color:#fff;"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
+                    <div>
+                        <div class="landlord-name">Ferreira Properties</div>
+                        <div class="landlord-id">LLD-2020-0005</div>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Grace Ferreira</div>
+                    <div class="detail-row"><i class="bi bi-telephone-fill"></i> 065 543 2109</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> grace.f@ferreira-props.co.za</div>
+                    <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 17 Aloe Crescent, Main Campus Area</div>
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="cs-value">1</span><span class="cs-label">Properties</span></div>
+                    <div class="card-stat"><span class="cs-value">0</span><span class="cs-label">Students</span></div>
+                </div>
+                <div class="card-footer">
+                    <span class="status-pill sp-inactive"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Inactive</span>
+                    <div style="display:flex;gap:6px;">
+                        <a href="payment_history.html" class="btn-card btn-card-outline"><i class="bi bi-clock-history"></i> History</a>
+                        <button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /landlord-grid -->
+
+    <!-- ===== LIST VIEW ===== -->
+    <div class="landlord-list-view" id="listView">
+        <div class="ll-table-wrapper">
+            <table class="ll-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Landlord ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Region</th>
+                        <th>Properties</th>
+                        <th>Students</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>LLD-2021-0001</td><td><strong>Solomon Mthembu</strong></td><td>071 234 5678</td><td>s.mthembu@propmail.co.za</td><td>Main Campus Area</td><td>4</td><td>30</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>2</td><td>LLD-2021-0002</td><td><strong>Fatima Nkosi</strong></td><td>083 456 7890</td><td>fatima.nkosi@rentals.co.za</td><td>Regional East</td><td>2</td><td>18</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>3</td><td>LLD-2023-0019</td><td><strong>Brenda van der Merwe</strong></td><td>064 890 1234</td><td>b.vdmerwe@gmail.com</td><td>Main Campus Area</td><td>1</td><td>4</td><td><span class="status-pill sp-pending"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Pending</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>4</td><td>LLD-2022-0008</td><td><strong>Rajesh Dlamini</strong></td><td>079 321 6540</td><td>rajesh.d@properties.co.za</td><td>Regional West</td><td>3</td><td>21</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>5</td><td>LLD-2020-0003</td><td><strong>Lungisa Mokoena</strong></td><td>082 111 2233</td><td>l.mokoena@webmail.co.za</td><td>Main Campus Area</td><td>2</td><td>0</td><td><span class="status-pill sp-inactive"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Inactive</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>6</td><td>LLD-2022-0011</td><td><strong>Zanele Pretorius</strong></td><td>076 654 3210</td><td>zanele.p@housenet.co.za</td><td>Regional East</td><td>5</td><td>35</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>7</td><td>LLD-2023-0021</td><td><strong>Adaeze Okonkwo</strong></td><td>060 789 0123</td><td>adaeze.ok@rentals.co.za</td><td>Main Campus Area</td><td>2</td><td>14</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>8</td><td>LLD-2021-0006</td><td><strong>Pieter Joubert</strong></td><td>084 567 8901</td><td>pieter.j@joubert-prop.co.za</td><td>Regional West</td><td>3</td><td>20</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>9</td><td>LLD-2024-0031</td><td><strong>Nomsa Khumalo</strong></td><td>078 234 5670</td><td>nomsa.kh@mail.co.za</td><td>Regional East</td><td>1</td><td>3</td><td><span class="status-pill sp-pending"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Pending</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>10</td><td>LLD-2022-0015</td><td><strong>Thandeka Sithole</strong></td><td>073 456 7812</td><td>t.sithole@propgroup.co.za</td><td>Main Campus Area</td><td>4</td><td>26</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>11</td><td>LLD-2021-0009</td><td><strong>Michael Botha</strong></td><td>082 678 9012</td><td>mike.botha@rentco.co.za</td><td>Regional West</td><td>2</td><td>11</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>12</td><td>LLD-2020-0005</td><td><strong>Grace Ferreira</strong></td><td>065 543 2109</td><td>grace.f@ferreira-props.co.za</td><td>Main Campus Area</td><td>1</td><td>0</td><td><span class="status-pill sp-inactive"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Inactive</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-top:20px;">
+        <button style="padding:5px 11px;border:1px solid var(--border-color);border-radius:5px;background:#fff;color:var(--sidebar-color);font-size:0.82rem;font-weight:600;cursor:pointer;"><i class="bi bi-chevron-left"></i></button>
+        <button style="padding:5px 11px;border:1px solid var(--primary-color);border-radius:5px;background:var(--primary-color);color:#fff;font-size:0.82rem;font-weight:600;cursor:pointer;">1</button>
+        <button style="padding:5px 11px;border:1px solid var(--border-color);border-radius:5px;background:#fff;color:var(--sidebar-color);font-size:0.82rem;font-weight:600;cursor:pointer;">2</button>
+        <button style="padding:5px 11px;border:1px solid var(--border-color);border-radius:5px;background:#fff;color:var(--sidebar-color);font-size:0.82rem;font-weight:600;cursor:pointer;">3</button>
+        <button style="padding:5px 11px;border:1px solid var(--border-color);border-radius:5px;background:#fff;color:var(--sidebar-color);font-size:0.82rem;font-weight:600;cursor:pointer;"><i class="bi bi-chevron-right"></i></button>
+        <span style="font-size:0.8rem;color:#999;margin-left:8px;">Page 1 of 4</span>
+    </div>
+
+</div><!-- /main-content -->
+
+<!-- ===== ADD LANDLORD MODAL ===== -->
+<div style="display:none;position:fixed;inset:0;background:rgba(9,29,55,0.55);z-index:1000;align-items:center;justify-content:center;padding:16px;" id="addLandlordModal" class="modal-ov">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(9,71,129,0.22);width:100%;max-width:580px;animation:slideIn 0.22s ease;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:linear-gradient(135deg,var(--sidebar-color),var(--primary-color));color:#fff;border-radius:12px 12px 0 0;">
+            <h5 style="margin:0;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px;"><i class="bi bi-person-plus"></i> Add New Landlord</h5>
+            <button style="background:none;border:none;color:rgba(255,255,255,0.85);font-size:1.4rem;cursor:pointer;line-height:1;" onclick="document.getElementById('addLandlordModal').style.display='none';">&times;</button>
+        </div>
+        <div style="padding:22px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div><label style="display:block;font-size:0.82rem;font-weight:600;color:#555;margin-bottom:4px;">First Name <span style="color:#e74c3c">*</span></label><input type="text" placeholder="First name" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.88rem;box-sizing:border-box;"></div>
+                <div><label style="display:block;font-size:0.82rem;font-weight:600;color:#555;margin-bottom:4px;">Last Name <span style="color:#e74c3c">*</span></label><input type="text" placeholder="Last name" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.88rem;box-sizing:border-box;"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div><label style="display:block;font-size:0.82rem;font-weight:600;color:#555;margin-bottom:4px;">Phone <span style="color:#e74c3c">*</span></label><input type="tel" placeholder="0xx xxx xxxx" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.88rem;box-sizing:border-box;"></div>
+                <div><label style="display:block;font-size:0.82rem;font-weight:600;color:#555;margin-bottom:4px;">Email <span style="color:#e74c3c">*</span></label><input type="email" placeholder="email@domain.com" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.88rem;box-sizing:border-box;"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div><label style="display:block;font-size:0.82rem;font-weight:600;color:#555;margin-bottom:4px;">Region</label><select style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.88rem;box-sizing:border-box;background:#fdfdfe;"><option>Main Campus Area</option><option>Regional East</option><option>Regional West</option></select></div>
+                <div><label style="display:block;font-size:0.82rem;font-weight:600;color:#555;margin-bottom:4px;">Status</label><select style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.88rem;box-sizing:border-box;background:#fdfdfe;"><option>Active</option><option>Pending Verification</option><option>Inactive</option></select></div>
+            </div>
+            <div style="margin-bottom:0;"><label style="display:block;font-size:0.82rem;font-weight:600;color:#555;margin-bottom:4px;">Physical Address</label><input type="text" placeholder="Street address" style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.88rem;box-sizing:border-box;"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid #eee;">
+            <button style="padding:8px 20px;border:1px solid var(--border-color);border-radius:6px;background:#fff;color:#555;font-weight:600;font-size:0.87rem;cursor:pointer;" onclick="document.getElementById('addLandlordModal').style.display='none';">Cancel</button>
+            <button style="padding:8px 22px;border:none;border-radius:6px;background:linear-gradient(135deg,var(--primary-color),var(--sidebar-color));color:#fff;font-weight:700;font-size:0.87rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px;" onclick="document.getElementById('addLandlordModal').style.display='none';"><i class="bi bi-check-circle"></i> Save Landlord</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes slideIn { from { transform:translateY(-16px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+</style>
+
+<script>
+    // View toggle
+    function setView(v) {
+        var grid = document.getElementById('gridView');
+        var list = document.getElementById('listView');
+        var btnG = document.getElementById('btnGridView');
+        var btnL = document.getElementById('btnListView');
+        if (v === 'grid') {
+            grid.style.display = '';
+            list.style.display = 'none';
+            btnG.classList.add('active');
+            btnL.classList.remove('active');
+        } else {
+            grid.style.display = 'none';
+            list.style.display = '';
+            btnL.classList.add('active');
+            btnG.classList.remove('active');
+        }
+    }
+
+    // Modal: show as flex
+    document.getElementById('addLandlordModal').addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
+    });
+
+    document.querySelector('.btn-primary-action').addEventListener('click', function() {
+        var m = document.getElementById('addLandlordModal');
+        m.style.display = 'flex';
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') document.getElementById('addLandlordModal').style.display = 'none';
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Funding Selection – ISFAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #1093DB;
+            --sidebar-color: #094781;
+            --accent-color: #337C96;
+            --bg-color: #E5F5FF;
+            --border-color: #ACC8CB;
+            --text-color: #094781;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #094781 0%, #0d6ebd 60%, #1093DB 100%);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 4px 0 18px rgba(9, 71, 129, 0.25);
+        }
+
+        .sidebar-brand {
+            padding: 20px 16px 12px;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, color 0.2s;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.22);
+            color: #fff;
+            font-weight: 600;
+            border-left: 3px solid #fff;
+            box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.08);
+        }
+
+        .sidebar details summary {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            list-style: none;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+        }
+
+        .sidebar details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .sidebar details summary:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+        }
+
+        .sidebar details[open]>summary {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        .sidebar details summary .chevron {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .sidebar details[open] summary .chevron {
+            transform: rotate(90deg);
+        }
+
+        .sidebar details .sub-nav {
+            list-style: none;
+            padding: 2px 0 4px;
+            margin: 0;
+        }
+
+        .sidebar details .sub-nav li a {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.87rem;
+            padding: 8px 16px 8px 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar details .sub-nav li a:hover,
+        .sidebar details .sub-nav li a.active {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+        }
+
+        .sidebar details .sub-nav li a.active {
+            border-left: 3px solid #fff;
+            padding-left: 37px;
+        }
+
+        /* ===== MAIN ===== */
+        .main-content {
+            flex: 1;
+            padding: 30px 30px 100px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #E5F5FF 0%, #f0f8ff 100%);
+        }
+
+        /* ===== Page Header ===== */
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 16px;
+        }
+
+        .page-header h2 {
+            margin: 0 0 4px;
+            color: var(--sidebar-color);
+            font-weight: 700;
+            font-size: 1.45rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header .breadcrumb {
+            font-size: 0.8rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .page-header .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .page-header .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== Pool Context Banner ===== */
+        .pool-banner {
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 22px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 4px 18px rgba(9, 71, 129, 0.28);
+            flex-wrap: wrap;
+        }
+
+        .pool-banner-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .pool-banner-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .pool-banner-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .pool-banner-sub {
+            font-size: 0.8rem;
+            opacity: 0.75;
+            margin-top: 2px;
+        }
+
+        .pool-banner-stats {
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+
+        .pool-stat {
+            text-align: center;
+        }
+
+        .pool-stat-val {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .pool-stat-lbl {
+            font-size: 0.72rem;
+            opacity: 0.72;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pool-change-btn {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            color: #fff;
+            padding: 7px 16px;
+            border-radius: 7px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.18s;
+            white-space: nowrap;
+        }
+
+        .pool-change-btn:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        /* ===== Buttons ===== */
+        .btn-primary-action {
+            padding: 9px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color));
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 0.87rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 3px 12px rgba(9, 71, 129, 0.28);
+            transition: opacity 0.18s;
+            text-decoration: none;
+        }
+
+        .btn-primary-action:hover {
+            opacity: 0.88;
+        }
+
+        .btn-outline {
+            padding: 8px 18px;
+            background: #fff;
+            color: var(--sidebar-color);
+            border: 1.5px solid var(--border-color);
+            border-radius: 7px;
+            font-size: 0.87rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: background 0.15s, border-color 0.15s;
+            text-decoration: none;
+        }
+
+        .btn-outline:hover {
+            background: #f0f8ff;
+            border-color: var(--primary-color);
+        }
+
+        /* ===== Filter Bar ===== */
+        .filter-bar {
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 10px rgba(9, 71, 129, 0.08);
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 150px;
+            flex: 1;
+        }
+
+        .filter-bar label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .filter-bar select,
+        .filter-bar input {
+            padding: 8px 11px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.87rem;
+            color: #333;
+            background: #fdfdfe;
+        }
+
+        .filter-bar select:focus,
+        .filter-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16, 147, 219, 0.11);
+        }
+
+        /* ===== Table ===== */
+        .table-wrapper {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 14px rgba(9, 71, 129, 0.09);
+            overflow: hidden;
+        }
+
+        .sel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.87rem;
+        }
+
+        .sel-table thead tr {
+            background: linear-gradient(90deg, var(--sidebar-color), #1564a8);
+            color: #fff;
+        }
+
+        .sel-table thead th {
+            padding: 12px 14px;
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .sel-table thead th:first-child {
+            padding-left: 18px;
+            width: 42px;
+        }
+
+        .sel-table tbody tr {
+            border-bottom: 1px solid #edf3f9;
+            transition: background 0.15s;
+        }
+
+        .sel-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .sel-table tbody tr:nth-child(even) {
+            background: #f8fcff;
+        }
+
+        .sel-table tbody tr:hover {
+            background: #e8f4fd;
+        }
+
+        .sel-table tbody tr.row-selected {
+            background: #dbeafe !important;
+        }
+
+        .sel-table tbody tr.row-selected td {
+            color: var(--sidebar-color);
+        }
+
+        .sel-table td {
+            padding: 12px 14px;
+            vertical-align: middle;
+            color: #333;
+        }
+
+        .sel-table td:first-child {
+            padding-left: 18px;
+        }
+
+        /* checkbox styling */
+        .sel-table input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* status pill */
+        .sp {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sp-active {
+            background: #d4edda;
+            color: #1a7a31;
+        }
+
+        .sp-suspended {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .sp-graduated {
+            background: #e2d9f3;
+            color: #5a3e8f;
+        }
+
+        /* offered badge */
+        .offered-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* grid meta */
+        .grid-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.84rem;
+            color: #666;
+        }
+
+        /* ===== Sticky Action Bar ===== */
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 240px;
+            right: 0;
+            background: #fff;
+            border-top: 2px solid var(--primary-color);
+            box-shadow: 0 -4px 20px rgba(9, 71, 129, 0.15);
+            padding: 14px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            z-index: 100;
+            transition: opacity 0.2s;
+        }
+
+        .action-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .sel-count {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+        }
+
+        .sel-count span {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        .sel-budget {
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .sel-budget strong {
+            color: var(--sidebar-color);
+        }
+
+        .action-bar-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            max-width: 420px;
+        }
+
+        .sel-chip {
+            background: #dbeafe;
+            color: var(--sidebar-color);
+            border-radius: 20px;
+            padding: 3px 10px 3px 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sel-chip button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .btn-send-offer {
+            padding: 10px 26px;
+            background: linear-gradient(135deg, #28a745, #1a7a31);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 3px 14px rgba(28, 125, 65, 0.32);
+            transition: opacity 0.18s;
+            white-space: nowrap;
+        }
+
+        .btn-send-offer:hover {
+            opacity: 0.88;
+        }
+
+        .btn-send-offer:disabled {
+            background: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* ===== Modals ===== */
+        .modal-ov {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(9, 50, 100, 0.45);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-ov.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 620px;
+            box-shadow: 0 12px 48px rgba(9, 71, 129, 0.3);
+            overflow: hidden;
+        }
+
+        .modal-head {
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            padding: 16px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #fff;
+        }
+
+        .modal-head h5 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 22px;
+        }
+
+        .modal-foot {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 22px;
+            border-top: 1px solid #eee;
+        }
+
+        /* offer preview */
+        .offer-preview {
+            background: #f8fcff;
+            border: 1px solid #cde;
+            border-radius: 8px;
+            padding: 18px 20px;
+            font-size: 0.87rem;
+            line-height: 1.7;
+            color: #333;
+            margin-bottom: 18px;
+        }
+
+        .offer-preview .offer-logo {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--sidebar-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .offer-preview .offer-section {
+            margin-bottom: 10px;
+        }
+
+        .offer-preview .offer-label {
+            font-weight: 700;
+            color: var(--sidebar-color);
+        }
+
+        .summary-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .summary-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f0f8ff;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+
+        .summary-list li .s-name {
+            font-weight: 600;
+            color: var(--sidebar-color);
+        }
+
+        .summary-list li .s-id {
+            color: #888;
+            font-size: 0.78rem;
+        }
+
+        /* Pool selector modal */
+        .pool-option {
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            padding: 13px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .pool-option:hover {
+            border-color: var(--primary-color);
+            background: #f0f8ff;
+        }
+
+        .pool-option.selected {
+            border-color: var(--primary-color);
+            background: #dbeafe;
+        }
+
+        .pool-option-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .pool-option-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--sidebar-color);
+        }
+
+        .pool-option-meta {
+            font-size: 0.78rem;
+            color: #777;
+            margin-top: 2px;
+        }
+
+        .pool-option-budget {
+            margin-left: auto;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .pool-option-budget .pob-val {
+            font-weight: 700;
+            color: var(--sidebar-color);
+            font-size: 0.9rem;
+        }
+
+        .pool-option-budget .pob-lbl {
+            font-size: 0.74rem;
+            color: #aaa;
+        }
+
+        .pool-type-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .pool-type-tag.budget {
+            background: #dbeafe;
+            color: #094781;
+        }
+
+        .pool-type-tag.count {
+            background: #d4edda;
+            color: #1a7a31;
+        }
+
+        .pob-val-count {
+            font-weight: 700;
+            color: #1a7a31;
+            font-size: 0.9rem;
+        }
+
+        /* form elements in modal */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-control {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.88rem;
+            color: #333;
+            background: #fdfdfe;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16, 147, 219, 0.11);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        /* ===== Matric button ===== */
+        .btn-matric {
+            padding: 4px 11px;
+            background: #fff;
+            border: 1.5px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--sidebar-color);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .btn-matric:hover {
+            background: #e8f4fd;
+            border-color: var(--primary-color);
+        }
+
+        /* ===== Matric results modal ===== */
+        .matric-header-strip {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+        }
+
+        .matric-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .matric-stu-name {
+            font-weight: 700;
+            color: var(--sidebar-color);
+            font-size: 0.95rem;
+        }
+
+        .matric-stu-meta {
+            font-size: 0.78rem;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .matric-year-badge {
+            margin-left: auto;
+            background: var(--primary-color);
+            color: #fff;
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .matric-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.86rem;
+            margin-bottom: 16px;
+        }
+
+        .matric-table thead tr {
+            background: linear-gradient(90deg, var(--sidebar-color), #1564a8);
+            color: #fff;
+        }
+
+        .matric-table thead th {
+            padding: 9px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .matric-table tbody tr {
+            border-bottom: 1px solid #edf3f9;
+        }
+
+        .matric-table tbody tr:nth-child(even) {
+            background: #f8fcff;
+        }
+
+        .matric-table td {
+            padding: 9px 12px;
+            color: #333;
+        }
+
+        .matric-table td:first-child {
+            font-weight: 600;
+            color: var(--sidebar-color);
+        }
+
+        .lvl-pill {
+            display: inline-block;
+            min-width: 26px;
+            text-align: center;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .lvl-7 {
+            background: #d4edda;
+            color: #1a7a31;
+        }
+
+        .lvl-6 {
+            background: #c3e6cb;
+            color: #155724;
+        }
+
+        .lvl-5 {
+            background: #dbeafe;
+            color: #094781;
+        }
+
+        .lvl-4 {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .lvl-3 {
+            background: #ffe8cc;
+            color: #b85c00;
+        }
+
+        .lvl-2 {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .lvl-1 {
+            background: #f5c2c7;
+            color: #58151c;
+        }
+
+        .matric-summary-bar {
+            display: flex;
+            gap: 18px;
+            background: #f8fcff;
+            border-radius: 8px;
+            border: 1px solid #dbeafe;
+            padding: 12px 16px;
+            flex-wrap: wrap;
+        }
+
+        .matric-sum-item {
+            text-align: center;
+        }
+
+        .matric-sum-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+        }
+
+        .matric-sum-lbl {
+            font-size: 0.72rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .matric-pass {
+            color: #1a7a31;
+            font-weight: 700;
+        }
+
+        .matric-fail {
+            color: #c0392b;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <nav class="sidebar">
+        <a href="#" class="sidebar-brand">
+            <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+        </a>
+        <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+            <a href="#" class="nav-link" style="margin-bottom:4px;">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+
+            <details>
+                <summary>
+                    <i class="bi bi-people-fill"></i> Students
+                    <i class="bi bi-chevron-right chevron"></i>
+                </summary>
+                <ul class="sub-nav">
+                    <li><a href="student_list.html">List</a></li>
+                    <li><a href="index.html">Profile</a></li>
+                    <li><a href="#">Check-In</a></li>
+                    <li><a href="#">Watchlist</a></li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>
+                    <i class="bi bi-person-badge-fill"></i> Programme Managers
+                    <i class="bi bi-chevron-right chevron"></i>
+                </summary>
+                <ul class="sub-nav">
+                    <li><a href="#">List</a></li>
+                    <li><a href="#">Assignments</a></li>
+                    <li><a href="#">Performance</a></li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>
+                    <i class="bi bi-house-fill"></i> Landlords
+                    <i class="bi bi-chevron-right chevron"></i>
+                </summary>
+                <ul class="sub-nav">
+                    <li><a href="landlords.html">List</a></li>
+                    <li><a href="#">Properties</a></li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>
+                    <i class="bi bi-check2-square"></i> Tasks
+                    <i class="bi bi-chevron-right chevron"></i>
+                </summary>
+                <ul class="sub-nav">
+                    <li><a href="#">My Tasks</a></li>
+                    <li><a href="#">All Tasks</a></li>
+                    <li><a href="#">Create Task</a></li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>
+                    <i class="bi bi-chat-dots-fill"></i> Communications
+                    <i class="bi bi-chevron-right chevron"></i>
+                </summary>
+                <ul class="sub-nav">
+                    <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                    <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                    <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>
+                    <i class="bi bi-credit-card-fill"></i> Payments
+                    <i class="bi bi-chevron-right chevron"></i>
+                </summary>
+                <ul class="sub-nav">
+                    <li><a href="payments.html">Overview</a></li>
+                    <li><a href="#">Process Payment</a></li>
+                    <li><a href="payment_history.html">Payment History</a></li>
+                    <li><a href="#">Reconciliation</a></li>
+                </ul>
+            </details>
+
+            <!-- Funder Management -->
+            <details>
+                <summary>
+                    <i class="bi bi-bank2"></i> Funder Management
+                    <i class="bi bi-chevron-right chevron"></i>
+                </summary>
+                <ul class="sub-nav">
+                    <li><a href="funders.html">Funders</a></li>
+                    <li><a href="#">Agreements</a></li>
+                    <li><a href="#">Reports</a></li>
+                </ul>
+            </details>
+
+            <!-- Funding Selection (ACTIVE) -->
+            <details open>
+                <summary>
+                    <i class="bi bi-person-check-fill"></i> Funding Selection
+                    <i class="bi bi-chevron-right chevron"></i>
+                </summary>
+                <ul class="sub-nav">
+                    <li><a href="funding_selection.html" class="active">Student Selection</a></li>
+                    <li><a href="shortlist.html">Shortlisted Students</a></li>
+                </ul>
+            </details>
+
+            <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+            <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+            <a href="#" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+
+        </div>
+        <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+            <a href="#" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+        </div>
+    </nav>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <div class="breadcrumb" style="margin-bottom:6px;">
+                    <a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                    <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+                    <span>Funding Selection</span>
+                </div>
+                <h2><i class="bi bi-person-check-fill"></i> Student Funding Selection</h2>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <button class="btn-outline" onclick="openModal('poolSelectorModal')">
+                    <i class="bi bi-layers"></i> Change Pool
+                </button>
+                <button class="btn-outline">
+                    <i class="bi bi-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <!-- Pool Context Banner -->
+        <div class="pool-banner">
+            <div class="pool-banner-info">
+                <div class="pool-banner-icon"><i class="bi bi-layers-fill"></i></div>
+                <div>
+                    <div class="pool-banner-name">Engineering Bursary Pool</div>
+                    <div class="pool-banner-sub">Sanlam Foundation &nbsp;&bull;&nbsp; FND-2021-0003 &nbsp;&bull;&nbsp;
+                        Financial Year 2025 / 2026</div>
+                </div>
+            </div>
+            <div class="pool-banner-stats">
+                <div class="pool-stat">
+                    <div class="pool-stat-val">R 10M</div>
+                    <div class="pool-stat-lbl">Total Budget</div>
+                </div>
+                <div class="pool-stat">
+                    <div class="pool-stat-val">R 6.4M</div>
+                    <div class="pool-stat-lbl">Remaining</div>
+                </div>
+                <div class="pool-stat">
+                    <div class="pool-stat-val">186</div>
+                    <div class="pool-stat-lbl">Currently Funded</div>
+                </div>
+                <div class="pool-stat">
+                    <div class="pool-stat-val" id="selectedCount">0</div>
+                    <div class="pool-stat-lbl">Selected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-field">
+                <label>University</label>
+                <select>
+                    <option value="">All Universities</option>
+                    <option>University Of Johannesburg</option>
+                    <option>University Of Pretoria</option>
+                    <option>University Of Cape Town</option>
+                    <option>University Of KwaZulu-Natal</option>
+                    <option>University Of the Witwatersrand</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label>Faculty</label>
+                <select>
+                    <option value="">All Faculties</option>
+                    <option>Science &amp; Engineering</option>
+                    <option>Health Sciences</option>
+                    <option>Business &amp; Economics</option>
+                    <option>Law</option>
+                    <option>Education</option>
+                    <option>Arts &amp; Humanities</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label>Qualification</label>
+                <select>
+                    <option value="">All Qualifications</option>
+                    <option>Bachelor Of Medicine & Surgery</option>
+                    <option>Bachelor Of Science(Electrical Engineering)</option>
+                    <option>Bachelor Of Accounting</option>
+                    <option>Bachelor Of Science(Chemical Engineering)</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label>Total Average</label>
+                <select>
+                    <option value="">&gt; 90%</option>
+                    <option>&gt; 80%</option>
+                    <option>&gt; 70%</option>
+                    <option>&gt; 60%</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label>Subjects</label>
+                <select>
+                    <option value="">All Subjects</option>
+                    <option>Mathematics</option>
+                    <option>Accounting</option>
+                    <option>Physical Science</option>
+                    <option>Life Sciences</option>
+                    <option>Economics</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label>Search Student</label>
+                <select>
+                    <option value="">Search by name or ID</option>
+                </select>
+            </div>
+            <div class="filter-field" style="max-width:120px;">
+                <label>&nbsp;</label>
+                <button type="button"
+                    style="padding:8px 16px;background:#063154;color:#fff;font-weight:700;border:none;border-radius:6px;font-size:0.86rem;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid Meta -->
+        <div class="grid-meta">
+            <span>Showing <strong>12</strong> eligible students &mdash; select to include in funding offer</span>
+            <span style="font-size:0.78rem;color:#aaa;">
+                <i class="bi bi-info-circle"></i> Students already offered or funded are excluded
+            </span>
+        </div>
+
+        <!-- Student Selection Table -->
+        <div class="table-wrapper">
+            <table class="sel-table" id="selTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" title="Select all"></th>
+                        <th>#</th>
+                        <th>Student</th>
+                        <th>Student No.</th>
+                        <th>University</th>
+                        <th>Faculty</th>
+                        <th>Qualification</th>
+                        <th>Level Of Study</th>
+                        <th>Matric Results</th>
+                        <th>Offer Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-id="STU-2024-0156" data-name="Fatima Mahlangu">
+                        <td><input type="checkbox" class="row-check"></td>
+                        <td>1</td>
+                        <td><strong>Fatima Mahlangu</strong></td>
+                        <td style="color:#888;font-size:0.82rem;">STU-2024-0156</td>
+                        <td>University Of Johannesburg</td>
+                        <td>Faculty Of Accounting & Economics</td>
+                        <td>Bachelor Of Accounting</td>
+                        <td>First Year</td>
+                        <td><button class="btn-matric" onclick="viewMatric('STU-2024-0156')"><i
+                                    class="bi bi-journal-text"></i> View</button></td>
+                        <td><span style="font-size:0.8rem;color:#aaa;">— Not offered</span></td>
+                    </tr>
+                    <tr data-id="STU-2025-0011" data-name="Siphamandla Dube">
+                        <td><input type="checkbox" class="row-check"></td>
+                        <td>2</td>
+                        <td><strong>Siphamandla Dube</strong></td>
+                        <td style="color:#888;font-size:0.82rem;">STU-2025-0011</td>
+                        <td>University Of Johannesburg</td>
+                        <td>Faculty Of Science</td>
+                        <td>Bachelor Of Science(Chemical Engineering)</td>
+                        <td>First Year</td>
+                        <td><button class="btn-matric" onclick="viewMatric('STU-2025-0011')"><i
+                                    class="bi bi-journal-text"></i> View</button></td>
+                        <td><span style="font-size:0.8rem;color:#aaa;">— Not offered</span></td>
+                    </tr>
+                    <tr data-id="STU-2025-0028" data-name="Nomsa Vilakazi">
+                        <td><input type="checkbox" class="row-check"></td>
+                        <td>3</td>
+                        <td><strong>Nomsa Vilakazi</strong></td>
+                        <td style="color:#888;font-size:0.82rem;">STU-2025-0028</td>
+                        <td>University Of Pretoria</td>
+                        <td>Faculty Of Science</td>
+                        <td>Bachelor of Science(Computer Science)</td>
+                        <td>First Year</td>
+                        <td><button class="btn-matric" onclick="viewMatric('STU-2025-0028')"><i
+                                    class="bi bi-journal-text"></i> View</button></td>
+                        <td><span style="font-size:0.8rem;color:#aaa;">— Not offered</span></td>
+                    </tr>
+                    <tr data-id="STU-2025-0054" data-name="Lwazi Khumalo">
+                        <td><input type="checkbox" class="row-check"></td>
+                        <td>4</td>
+                        <td><strong>Lwazi Khumalo</strong></td>
+                        <td style="color:#888;font-size:0.82rem;">STU-2025-0054</td>
+                        <td>University Of Stellenbosch</td>
+                        <td>Faculty Of Science</td>
+                        <td>Bachelor Of Science(Mechanical Engineering)</td>
+                        <td>First Year</td>
+                        <td><button class="btn-matric" onclick="viewMatric('STU-2025-0054')"><i
+                                    class="bi bi-journal-text"></i> View</button></td>
+                        <td><span style="font-size:0.8rem;color:#aaa;">— Not offered</span></td>
+                    </tr>
+                    <tr data-id="STU-2025-0054" data-name="Lwazi Khumalo">
+                        <td><input type="checkbox" class="row-check"></td>
+                        <td>4</td>
+                        <td><strong>Sizwe Mabuza</strong></td>
+                        <td style="color:#888;font-size:0.82rem;">STU-2025-0054</td>
+                        <td>University Of Stellenbosch</td>
+                        <td>Faculty Of Science</td>
+                        <td>Bachelor Of Science(Mechanical Engineering)</td>
+                        <td>First Year</td>
+                        <td><button class="btn-matric" onclick="viewMatric('STU-2025-0054')"><i
+                                    class="bi bi-journal-text"></i> View</button></td>
+                        <td><span style="font-size:0.8rem;color:#aaa;">— Not offered</span></td>
+                    </tr>
+                    <tr data-id="STU-2025-0055" data-name="Lerato Moloi">
+                        <td><input type="checkbox" class="row-check"></td>
+                        <td>4</td>
+                        <td><strong>Lerato Moloi</strong></td>
+                        <td style="color:#888;font-size:0.82rem;">STU-2025-0055</td>
+                        <td>University Of Stellenbosch</td>
+                        <td>Faculty Of Science</td>
+                        <td>Bachelor Of Science(Mechanical Engineering)</td>
+                        <td>First Year</td>
+                        <td><button class="btn-matric" onclick="viewMatric('STU-2025-0055')"><i
+                                    class="bi bi-journal-text"></i> View</button></td>
+                        <td><span style="font-size:0.8rem;color:#aaa;">— Not offered</span></td>
+                    </tr>
+                    <tr data-id="STU-2025-0055" data-name="Thabo Motaung">
+                        <td><input type="checkbox" class="row-check"></td>
+                        <td>4</td>
+                        <td><strong>Thabo Motaung</strong></td>
+                        <td style="color:#888;font-size:0.82rem;">STU-2025-0056</td>
+                        <td>University Of Stellenbosch</td>
+                        <td>Faculty Of Engineering</td>
+                        <td>Bachelor Of Science(Electrical Engineering)</td>
+                        <td>First Year</td>
+                        <td><button class="btn-matric" onclick="viewMatric('STU-2025-0056')"><i
+                                    class="bi bi-journal-text"></i> View</button></td>
+                        <td><span style="font-size:0.8rem;color:#aaa;">— Not offered</span></td>
+                    </tr>
+                    <tr data-id="STU-2025-0056" data-name="Thabo Motaung">
+                        <td><input type="checkbox" class="row-check"></td>
+                        <td>4</td>
+                        <td><strong>Sello Mabulane</strong></td>
+                        <td style="color:#888;font-size:0.82rem;">STU-2025-0057</td>
+                        <td>University Of Stellenbosch</td>
+                        <td>Faculty Of Health Sciences</td>
+                        <td>Bachelor Of Medicine and Surgery(MBChB)</td>
+                        <td>First Year</td>
+                        <td><button class="btn-matric" onclick="viewMatric('STU-2025-0057')"><i
+                                    class="bi bi-journal-text"></i> View</button></td>
+                        <td><span style="font-size:0.8rem;color:#aaa;">— Not offered</span></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div style="text-align:right;padding:8px 2px 0;font-size:0.85rem;color:#999;">Page 1 of 8</div>
+
+    </div><!-- end main-content -->
+
+    <!-- ===== Sticky Action Bar ===== -->
+    <div class="action-bar" id="actionBar">
+        <div class="action-bar-left">
+            <div class="sel-count"><span id="selCountNum">0</span> students selected</div>
+            <div class="action-bar-chips" id="selChips"></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-outline" id="clearSelBtn" onclick="clearAll()">
+                <i class="bi bi-x-circle"></i> Clear
+            </button>
+            <button class="btn-send-offer" id="sendOfferBtn" onclick="openOfferModal()" disabled>
+                <i class="bi bi-send-fill"></i> Shortlist selected students
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== Matric Results Modal ===== -->
+    <div class="modal-ov" id="matricModal">
+        <div class="modal-box" style="max-width:660px;">
+            <div class="modal-head">
+                <h5><i class="bi bi-journal-text"></i> Matric Results</h5>
+                <button class="modal-close" onclick="closeModal('matricModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="matric-header-strip">
+                    <div class="matric-avatar" id="matricAvatar"></div>
+                    <div>
+                        <div class="matric-stu-name" id="matricName"></div>
+                        <div class="matric-stu-meta" id="matricMeta"></div>
+                    </div>
+                    <div class="matric-year-badge" id="matricYear"></div>
+                </div>
+                <table class="matric-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th style="text-align:center;">Mark</th>
+                            <th style="text-align:center;">Level</th>
+                            <th>Achievement</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matricTableBody"></tbody>
+                </table>
+                <div class="matric-summary-bar" id="matricSummary"></div>
+            </div>
+            <div class="modal-foot">
+                <button class="btn-outline" onclick="closeModal('matricModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Send Offer Modal ===== -->
+    <div class="modal-ov" id="offerModal">
+        <div class="modal-box" style="max-width:640px;">
+            <div class="modal-head">
+                <h5><i class="bi bi-send-fill"></i> Send Funding Offer</h5>
+                <button class="modal-close" onclick="closeModal('offerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Selected Students Summary -->
+                <div style="margin-bottom:16px;">
+                    <div
+                        style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;margin-bottom:8px;">
+                        Selected Students (<span id="offerStudentCount">0</span>)
+                    </div>
+                    <ul class="summary-list" id="offerStudentList"></ul>
+                </div>
+
+                <!-- Pool Summary -->
+                <div
+                    style="background:#f0f8ff;border-radius:8px;padding:12px 16px;margin-bottom:18px;display:flex;gap:24px;font-size:0.84rem;">
+                    <div><span style="color:#888;">Pool:</span> <strong>Engineering Bursary Pool</strong></div>
+                    <div><span style="color:#888;">Funder:</span> <strong>Sanlam Foundation</strong></div>
+                    <div><span style="color:#888;">Year:</span> <strong>2025 / 2026</strong></div>
+                </div>
+
+                <!-- Offer Message -->
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label class="form-label">Offer Delivery Method</label>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:0.87rem;cursor:pointer;">
+                            <input type="checkbox" checked style="accent-color:var(--primary-color);"> Email
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:0.87rem;cursor:pointer;">
+                            <input type="checkbox" style="accent-color:var(--primary-color);"> SMS
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:0.87rem;cursor:pointer;">
+                            <input type="checkbox" style="accent-color:var(--primary-color);"> In-App Notification
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label class="form-label">Response Deadline</label>
+                    <input type="date" class="form-control" style="max-width:200px;" value="2026-06-03">
+                </div>
+
+                <!-- Offer Letter Preview -->
+                <div
+                    style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;margin-bottom:8px;">
+                    Offer Letter Preview
+                </div>
+                <div class="offer-preview">
+                    <div class="offer-logo"><i class="bi bi-shield-fill-check"></i> ISFAP</div>
+                    <div class="offer-section">
+                        <p>Dear <strong>[Student Name]</strong>,</p>
+                        <p>We are pleased to inform you that you have been selected to receive funding through the
+                            <strong>Engineering Bursary Pool</strong>, administered by <strong>Sanlam
+                                Foundation</strong> for the <strong>2025/2026</strong> academic year.</p>
+                    </div>
+                    <div class="offer-section">
+                        <p><span class="offer-label">Next Steps:</span> Please log in to the ISFAP Student Portal and
+                            accept or decline this offer by <strong>3 June 2026</strong>. Failure to respond by the
+                            deadline may result in the offer being withdrawn.</p>
+                    </div>
+                    <p style="font-size:0.83rem;color:#888;">This is an automated offer notification. For queries
+                        contact your Programme Manager.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Additional Note (optional)</label>
+                    <textarea class="form-control" placeholder="Add a personal note to the offer email…"></textarea>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button class="btn-outline" onclick="closeModal('offerModal')">Cancel</button>
+                <button class="btn-primary-action" onclick="sendOffers()">
+                    <i class="bi bi-send-fill"></i> Confirm &amp; Send Offers
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Pool Selector Modal ===== -->
+    <div class="modal-ov" id="poolSelectorModal">
+        <div class="modal-box" style="max-width:560px;">
+            <div class="modal-head">
+                <h5><i class="bi bi-layers"></i> Select Funding Pool</h5>
+                <button class="modal-close" onclick="closeModal('poolSelectorModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom:14px;">
+                    <input type="text" class="form-control" placeholder="Search pools…">
+                </div>
+
+                <div class="pool-option selected" onclick="selectPool(this)">
+                    <div class="pool-option-icon" style="background:#dbeafe;color:#094781;"><i
+                            class="bi bi-mortarboard-fill"></i></div>
+                    <div>
+                        <div class="pool-option-name">Engineering Bursary Pool</div>
+                        <div class="pool-option-meta">Sanlam Foundation &bull; 2025/2026 &bull; 186 funded</div>
+                        <span class="pool-type-tag budget"><i class="bi bi-cash-stack"></i> Budget</span>
+                    </div>
+                    <div class="pool-option-budget">
+                        <div class="pob-val">R 6.4M</div>
+                        <div class="pob-lbl">remaining</div>
+                    </div>
+                </div>
+
+                <div class="pool-option" onclick="selectPool(this)">
+                    <div class="pool-option-icon" style="background:#d4edda;color:#1a7a31;"><i
+                            class="bi bi-calculator-fill"></i></div>
+                    <div>
+                        <div class="pool-option-name">Actuarial Sciences Pool</div>
+                        <div class="pool-option-meta">Sanlam Foundation &bull; 2025/2026 &bull; 28 funded</div>
+                        <span class="pool-type-tag count"><i class="bi bi-people-fill"></i> Student Count</span>
+                    </div>
+                    <div class="pool-option-budget">
+                        <div class="pob-val-count">22</div>
+                        <div class="pob-lbl">slots left</div>
+                    </div>
+                </div>
+
+                <div class="pool-option" onclick="selectPool(this)">
+                    <div class="pool-option-icon" style="background:#ffe8cc;color:#b85c00;"><i class="bi bi-hammer"></i>
+                    </div>
+                    <div>
+                        <div class="pool-option-name">Mining Engineering Pool</div>
+                        <div class="pool-option-meta">Anglo American Zimele &bull; 2025/2026 &bull; 89 funded</div>
+                        <span class="pool-type-tag budget"><i class="bi bi-cash-stack"></i> Budget</span>
+                    </div>
+                    <div class="pool-option-budget">
+                        <div class="pob-val">R 3.2M</div>
+                        <div class="pob-lbl">remaining</div>
+                    </div>
+                </div>
+
+                <div class="pool-option" onclick="selectPool(this)">
+                    <div class="pool-option-icon" style="background:#ede7f6;color:#6f42c1;"><i
+                            class="bi bi-tree-fill"></i></div>
+                    <div>
+                        <div class="pool-option-name">Environmental Sciences Pool</div>
+                        <div class="pool-option-meta">Anglo American Zimele &bull; 2025/2026 &bull; 54 funded</div>
+                        <span class="pool-type-tag count"><i class="bi bi-people-fill"></i> Student Count</span>
+                    </div>
+                    <div class="pool-option-budget">
+                        <div class="pob-val-count">16</div>
+                        <div class="pob-lbl">slots left</div>
+                    </div>
+                </div>
+
+                <div class="pool-option" onclick="selectPool(this)">
+                    <div class="pool-option-icon" style="background:#dbeafe;color:#094781;"><i class="bi bi-tools"></i>
+                    </div>
+                    <div>
+                        <div class="pool-option-name">Skills Development Pool 2025</div>
+                        <div class="pool-option-meta">National Skills Fund &bull; 2025/2026 &bull; 112 funded</div>
+                        <span class="pool-type-tag budget"><i class="bi bi-cash-stack"></i> Budget</span>
+                    </div>
+                    <div class="pool-option-budget">
+                        <div class="pob-val">R 4.5M</div>
+                        <div class="pob-lbl">remaining</div>
+                    </div>
+                </div>
+
+                <div class="pool-option" onclick="selectPool(this)">
+                    <div class="pool-option-icon" style="background:#d4edda;color:#1a7a31;"><i
+                            class="bi bi-droplet-fill"></i></div>
+                    <div>
+                        <div class="pool-option-name">Chemical Engineering Pool</div>
+                        <div class="pool-option-meta">Sasol Bursary Programme &bull; 2025/2026 &bull; 78 funded</div>
+                        <span class="pool-type-tag budget"><i class="bi bi-cash-stack"></i> Budget</span>
+                    </div>
+                    <div class="pool-option-budget">
+                        <div class="pob-val">R 5.1M</div>
+                        <div class="pob-lbl">remaining</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button class="btn-outline" onclick="closeModal('poolSelectorModal')">Cancel</button>
+                <button class="btn-primary-action" onclick="closeModal('poolSelectorModal')">
+                    <i class="bi bi-check-circle"></i> Apply Selection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const selectedStudents = new Map(); // id → name
+
+        // ===== Modal helpers =====
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+        document.querySelectorAll('.modal-ov').forEach(function (m) {
+            m.addEventListener('click', function (e) {
+                if (e.target === m) closeModal(m.id);
+            });
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-ov.active').forEach(function (m) {
+                    closeModal(m.id);
+                });
+            }
+        });
+
+        // ===== Row checkbox logic =====
+        document.querySelectorAll('.row-check').forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                var row = this.closest('tr');
+                var id = row.dataset.id;
+                var name = row.dataset.name;
+                if (this.checked) {
+                    selectedStudents.set(id, name);
+                    row.classList.add('row-selected');
+                } else {
+                    selectedStudents.delete(id);
+                    row.classList.remove('row-selected');
+                }
+                syncUI();
+            });
+        });
+
+        // ===== Select All =====
+        document.getElementById('selectAll').addEventListener('change', function () {
+            document.querySelectorAll('.row-check').forEach(function (cb) {
+                cb.checked = this.checked;
+                var row = cb.closest('tr');
+                var id = row.dataset.id;
+                var name = row.dataset.name;
+                if (this.checked) {
+                    selectedStudents.set(id, name);
+                    row.classList.add('row-selected');
+                } else {
+                    selectedStudents.delete(id);
+                    row.classList.remove('row-selected');
+                }
+            }.bind(this));
+            syncUI();
+        });
+
+        // ===== Sync action bar & banner count =====
+        function syncUI() {
+            var count = selectedStudents.size;
+
+            document.getElementById('selCountNum').textContent = count;
+            document.getElementById('selectedCount').textContent = count;
+            document.getElementById('sendOfferBtn').disabled = count === 0;
+
+            // chips
+            var chips = document.getElementById('selChips');
+            chips.innerHTML = '';
+            var shown = 0;
+            selectedStudents.forEach(function (name, id) {
+                if (shown < 4) {
+                    var chip = document.createElement('span');
+                    chip.className = 'sel-chip';
+                    chip.innerHTML = name +
+                        '<button onclick="removeStudent(\'' + id + '\')" title="Remove">&#x2715;</button>';
+                    chips.appendChild(chip);
+                    shown++;
+                }
+            });
+            if (count > 4) {
+                var more = document.createElement('span');
+                more.className = 'sel-chip';
+                more.style.background = '#e2e8f0';
+                more.style.color = '#555';
+                more.textContent = '+' + (count - 4) + ' more';
+                chips.appendChild(more);
+            }
+
+            // selectAll indeterminate state
+            var allCbs = document.querySelectorAll('.row-check');
+            var allChecked = count === allCbs.length;
+            var selectAllCb = document.getElementById('selectAll');
+            selectAllCb.indeterminate = count > 0 && !allChecked;
+            selectAllCb.checked = allChecked;
+        }
+
+        function removeStudent(id) {
+            selectedStudents.delete(id);
+            var row = document.querySelector('tr[data-id="' + id + '"]');
+            if (row) {
+                row.classList.remove('row-selected');
+                var cb = row.querySelector('.row-check');
+                if (cb) cb.checked = false;
+            }
+            syncUI();
+        }
+
+        function clearAll() {
+            selectedStudents.clear();
+            document.querySelectorAll('.row-check').forEach(function (cb) { cb.checked = false; });
+            document.querySelectorAll('.row-selected').forEach(function (r) { r.classList.remove('row-selected'); });
+            syncUI();
+        }
+
+        // ===== Open offer modal =====
+        function openOfferModal() {
+            var count = selectedStudents.size;
+            document.getElementById('offerStudentCount').textContent = count;
+
+            var list = document.getElementById('offerStudentList');
+            list.innerHTML = '';
+            selectedStudents.forEach(function (name, id) {
+                var li = document.createElement('li');
+                li.innerHTML = '<span class="s-name">' + name + '</span><span class="s-id">' + id + '</span>';
+                list.appendChild(li);
+            });
+
+            openModal('offerModal');
+        }
+
+        // ===== Send offers =====
+        function sendOffers() {
+            closeModal('offerModal');
+
+            // Mark selected rows as "Offer Pending"
+            selectedStudents.forEach(function (name, id) {
+                var row = document.querySelector('tr[data-id="' + id + '"]');
+                if (row) {
+                    var offerCell = row.querySelector('td:last-child');
+                    offerCell.innerHTML = '<span class="offered-badge"><i class="bi bi-clock"></i> Offer Pending</span>';
+                }
+            });
+
+            clearAll();
+
+            // Toast notification
+            showToast('Offers sent successfully to ' + (selectedStudents.size || 'selected') + ' students.');
+        }
+
+        function showToast(msg) {
+            var t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:80px;right:30px;background:#1a7a31;color:#fff;padding:12px 22px;border-radius:8px;font-size:0.9rem;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,0.2);z-index:9999;display:flex;align-items:center;gap:10px;';
+            t.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + msg;
+            document.body.appendChild(t);
+            setTimeout(function () { t.remove(); }, 3500);
+        }
+
+        // ===== Matric results data =====
+        var matricData = {
+            'STU-2024-0001': {
+                name: 'Tumelo Motaung', id: 'STU-2024-0001', year: 2023, subjects: [
+                    { name: 'English Home Language', mark: 82, level: 7, achievement: 'Outstanding' },
+                    { name: 'Sesotho First Add. Language', mark: 74, level: 6, achievement: 'Meritorious' },
+                    { name: 'Mathematics', mark: 88, level: 7, achievement: 'Outstanding' },
+                    { name: 'Physical Sciences', mark: 85, level: 7, achievement: 'Outstanding' },
+                    { name: 'Life Sciences', mark: 71, level: 6, achievement: 'Meritorious' },
+                    { name: 'Life Orientation', mark: 78, level: 6, achievement: 'Meritorious' },
+                    { name: 'Accounting', mark: 66, level: 5, achievement: 'Substantial' }
+                ]
+            },
+            'STU-2024-0002': {
+                name: 'Priya Naidoo', id: 'STU-2024-0002', year: 2022, subjects: [
+                    { name: 'English Home Language', mark: 79, level: 6, achievement: 'Meritorious' },
+                    { name: 'Afrikaans First Add. Language', mark: 65, level: 5, achievement: 'Substantial' },
+                    { name: 'Mathematics', mark: 91, level: 7, achievement: 'Outstanding' },
+                    { name: 'Life Sciences', mark: 94, level: 7, achievement: 'Outstanding' },
+                    { name: 'Physical Sciences', mark: 87, level: 7, achievement: 'Outstanding' },
+                    { name: 'Life Orientation', mark: 82, level: 7, achievement: 'Outstanding' },
+                    { name: 'Geography', mark: 70, level: 6, achievement: 'Meritorious' }
+                ]
+            },
+            'STU-2024-0047': {
+                name: 'Ayesha Baloyi', id: 'STU-2024-0047', year: 2021, subjects: [
+                    { name: 'English Home Language', mark: 76, level: 6, achievement: 'Meritorious' },
+                    { name: 'IsiZulu First Add. Language', mark: 68, level: 5, achievement: 'Substantial' },
+                    { name: 'Mathematics', mark: 62, level: 5, achievement: 'Substantial' },
+                    { name: 'History', mark: 80, level: 7, achievement: 'Outstanding' },
+                    { name: 'Geography', mark: 73, level: 6, achievement: 'Meritorious' },
+                    { name: 'Life Orientation', mark: 85, level: 7, achievement: 'Outstanding' },
+                    { name: 'Consumer Studies', mark: 71, level: 6, achievement: 'Meritorious' }
+                ]
+            },
+            'STU-2024-0083': {
+                name: 'Nhlanhla Pretorius', id: 'STU-2024-0083', year: 2019, subjects: [
+                    { name: 'English Home Language', mark: 84, level: 7, achievement: 'Outstanding' },
+                    { name: 'Afrikaans Home Language', mark: 80, level: 7, achievement: 'Outstanding' },
+                    { name: 'Mathematics', mark: 96, level: 7, achievement: 'Outstanding' },
+                    { name: 'Physical Sciences', mark: 93, level: 7, achievement: 'Outstanding' },
+                    { name: 'Computer Applications Tech.', mark: 88, level: 7, achievement: 'Outstanding' },
+                    { name: 'Life Orientation', mark: 79, level: 6, achievement: 'Meritorious' },
+                    { name: 'Engineering Graphics & Design', mark: 91, level: 7, achievement: 'Outstanding' }
+                ]
+            },
+            'STU-2024-0156': {
+                name: 'Fatima Mahlangu', id: 'STU-2024-0156', year: 2023, subjects: [
+                    { name: 'English Home Language', mark: 71, level: 6, achievement: 'Meritorious' },
+                    { name: 'Afrikaans First Add. Language', mark: 58, level: 4, achievement: 'Adequate' },
+                    { name: 'Mathematical Literacy', mark: 74, level: 6, achievement: 'Meritorious' },
+                    { name: 'Accounting', mark: 82, level: 7, achievement: 'Outstanding' },
+                    { name: 'Business Studies', mark: 78, level: 6, achievement: 'Meritorious' },
+                    { name: 'Economics', mark: 69, level: 5, achievement: 'Substantial' },
+                    { name: 'Life Orientation', mark: 76, level: 6, achievement: 'Meritorious' }
+                ]
+            },
+            'STU-2025-0011': {
+                name: 'Siphamandla Dube', id: 'STU-2025-0011', year: 2024, subjects: [
+                    { name: 'IsiZulu Home Language', mark: 78, level: 6, achievement: 'Meritorious' },
+                    { name: 'English First Add. Language', mark: 72, level: 6, achievement: 'Meritorious' },
+                    { name: 'Mathematics', mark: 80, level: 7, achievement: 'Outstanding' },
+                    { name: 'Physical Sciences', mark: 77, level: 6, achievement: 'Meritorious' },
+                    { name: 'Technical Mathematics', mark: 83, level: 7, achievement: 'Outstanding' },
+                    { name: 'Life Orientation', mark: 68, level: 5, achievement: 'Substantial' },
+                    { name: 'Technical Sciences', mark: 75, level: 6, achievement: 'Meritorious' }
+                ]
+            },
+            'STU-2025-0028': {
+                name: 'Nomsa Vilakazi', id: 'STU-2025-0028', year: 2024, subjects: [
+                    { name: 'IsiZulu Home Language', mark: 83, level: 7, achievement: 'Outstanding' },
+                    { name: 'English First Add. Language', mark: 69, level: 5, achievement: 'Substantial' },
+                    { name: 'Mathematics', mark: 75, level: 6, achievement: 'Meritorious' },
+                    { name: 'Physical Sciences', mark: 70, level: 6, achievement: 'Meritorious' },
+                    { name: 'Life Sciences', mark: 78, level: 6, achievement: 'Meritorious' },
+                    { name: 'Life Orientation', mark: 72, level: 6, achievement: 'Meritorious' },
+                    { name: 'Geography', mark: 65, level: 5, achievement: 'Substantial' }
+                ]
+            },
+            'STU-2024-0199': {
+                name: 'Relebogile Mokoena', id: 'STU-2024-0199', year: 2022, subjects: [
+                    { name: 'Setswana Home Language', mark: 77, level: 6, achievement: 'Meritorious' },
+                    { name: 'English First Add. Language', mark: 63, level: 5, achievement: 'Substantial' },
+                    { name: 'Mathematical Literacy', mark: 68, level: 5, achievement: 'Substantial' },
+                    { name: 'Business Studies', mark: 74, level: 6, achievement: 'Meritorious' },
+                    { name: 'Economics', mark: 71, level: 6, achievement: 'Meritorious' },
+                    { name: 'Tourism', mark: 80, level: 7, achievement: 'Outstanding' },
+                    { name: 'Life Orientation', mark: 69, level: 5, achievement: 'Substantial' }
+                ]
+            },
+            'STU-2023-0310': {
+                name: 'Thandeka Zwane', id: 'STU-2023-0310', year: 2020, subjects: [
+                    { name: 'IsiZulu Home Language', mark: 74, level: 6, achievement: 'Meritorious' },
+                    { name: 'English First Add. Language', mark: 67, level: 5, achievement: 'Substantial' },
+                    { name: 'Mathematics', mark: 58, level: 4, achievement: 'Adequate' },
+                    { name: 'Life Sciences', mark: 83, level: 7, achievement: 'Outstanding' },
+                    { name: 'Physical Sciences', mark: 61, level: 5, achievement: 'Substantial' },
+                    { name: 'Life Orientation', mark: 75, level: 6, achievement: 'Meritorious' },
+                    { name: 'Consumer Studies', mark: 70, level: 6, achievement: 'Meritorious' }
+                ]
+            },
+            'STU-2025-0054': {
+                name: 'Lwazi Khumalo', id: 'STU-2025-0054', year: 2024, subjects: [
+                    { name: 'IsiZulu Home Language', mark: 70, level: 6, achievement: 'Meritorious' },
+                    { name: 'English First Add. Language', mark: 74, level: 6, achievement: 'Meritorious' },
+                    { name: 'Mathematics', mark: 86, level: 7, achievement: 'Outstanding' },
+                    { name: 'Physical Sciences', mark: 82, level: 7, achievement: 'Outstanding' },
+                    { name: 'Engineering Graphics & Design', mark: 88, level: 7, achievement: 'Outstanding' },
+                    { name: 'Life Orientation', mark: 71, level: 6, achievement: 'Meritorious' },
+                    { name: 'Technical Mathematics', mark: 79, level: 6, achievement: 'Meritorious' }
+                ]
+            },
+            'STU-2024-0267': {
+                name: 'Amahle Dlamini', id: 'STU-2024-0267', year: 2021, subjects: [
+                    { name: 'English Home Language', mark: 85, level: 7, achievement: 'Outstanding' },
+                    { name: 'IsiXhosa First Add. Language', mark: 76, level: 6, achievement: 'Meritorious' },
+                    { name: 'Mathematical Literacy', mark: 64, level: 5, achievement: 'Substantial' },
+                    { name: 'History', mark: 88, level: 7, achievement: 'Outstanding' },
+                    { name: 'Life Sciences', mark: 72, level: 6, achievement: 'Meritorious' },
+                    { name: 'Life Orientation', mark: 80, level: 7, achievement: 'Outstanding' },
+                    { name: 'Business Studies', mark: 69, level: 5, achievement: 'Substantial' }
+                ]
+            },
+            'STU-2023-0488': {
+                name: 'Karabo Sithole', id: 'STU-2023-0488', year: 2020, subjects: [
+                    { name: 'English Home Language', mark: 80, level: 7, achievement: 'Outstanding' },
+                    { name: 'Sesotho First Add. Language', mark: 72, level: 6, achievement: 'Meritorious' },
+                    { name: 'Mathematical Literacy', mark: 61, level: 5, achievement: 'Substantial' },
+                    { name: 'History', mark: 84, level: 7, achievement: 'Outstanding' },
+                    { name: 'Dramatic Arts', mark: 90, level: 7, achievement: 'Outstanding' },
+                    { name: 'Life Orientation', mark: 77, level: 6, achievement: 'Meritorious' },
+                    { name: 'Visual Arts', mark: 86, level: 7, achievement: 'Outstanding' }
+                ]
+            }
+        };
+
+        function viewMatric(id) {
+            var d = matricData[id];
+            if (!d) return;
+
+            // Header
+            var initials = d.name.split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+            document.getElementById('matricAvatar').textContent = initials;
+            document.getElementById('matricName').textContent = d.name;
+            document.getElementById('matricMeta').textContent = d.id + ' • NSC Examination';
+            document.getElementById('matricYear').textContent = 'Class of ' + d.year;
+
+            // Rows
+            var tbody = document.getElementById('matricTableBody');
+            tbody.innerHTML = '';
+            var total = 0;
+            d.subjects.forEach(function (s) {
+                total += s.mark;
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + s.name + '</td>' +
+                    '<td style="text-align:center;font-weight:700;">' + s.mark + '%</td>' +
+                    '<td style="text-align:center;"><span class="lvl-pill lvl-' + s.level + '">' + s.level + '</span></td>' +
+                    '<td>' + s.achievement + ' Achievement</td>';
+                tbody.appendChild(tr);
+            });
+
+            // Summary
+            var avg = Math.round(total / d.subjects.length);
+            var passed = d.subjects.filter(function (s) { return s.mark >= 40; }).length;
+            var distinctions = d.subjects.filter(function (s) { return s.mark >= 80; }).length;
+            var passedAll = passed === d.subjects.length;
+            document.getElementById('matricSummary').innerHTML =
+                '<div class="matric-sum-item"><div class="matric-sum-val">' + avg + '%</div><div class="matric-sum-lbl">Average Mark</div></div>' +
+                '<div class="matric-sum-item"><div class="matric-sum-val">' + distinctions + '</div><div class="matric-sum-lbl">Distinctions</div></div>' +
+                '<div class="matric-sum-item"><div class="matric-sum-val">' + passed + ' / ' + d.subjects.length + '</div><div class="matric-sum-lbl">Subjects Passed</div></div>' +
+                '<div class="matric-sum-item" style="margin-left:auto;"><div class="matric-sum-val ' + (passedAll ? 'matric-pass' : 'matric-fail') + '">' +
+                (passedAll ? '<i class="bi bi-patch-check-fill"></i> Passed' : '<i class="bi bi-exclamation-triangle-fill"></i> Conditional') +
+                '</div><div class="matric-sum-lbl">NSC Result</div></div>';
+
+            openModal('matricModal');
+        }
+
+        // ===== Pool selector =====
+        function selectPool(el) {
+            document.querySelectorAll('.pool-option').forEach(function (o) { o.classList.remove('selected'); });
+            el.classList.add('selected');
+        }
+    </script>
+</body>
+
+</html>

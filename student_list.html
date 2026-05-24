@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #1093DB;
+            --sidebar-color: #094781;
+            --accent-color: #337C96;
+            --bg-color: #E5F5FF;
+            --border-color: #ACC8CB;
+            --text-color: #094781;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #094781 0%, #0d6ebd 60%, #1093DB 100%);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 4px 0 18px rgba(9,71,129,0.25);
+        }
+
+        .sidebar-brand {
+            padding: 20px 16px 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+            font-weight: 600;
+            border-left: 3px solid #fff;
+            box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+        }
+
+        .sidebar .nav-section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.45);
+            padding: 16px 16px 4px;
+        }
+
+        .sidebar details summary {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            list-style: none;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+        }
+
+        .sidebar details summary::-webkit-details-marker { display: none; }
+
+        .sidebar details summary:hover {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+        }
+
+        .sidebar details[open] > summary {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+        }
+
+        .sidebar details summary .chevron {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .sidebar details[open] summary .chevron {
+            transform: rotate(90deg);
+        }
+
+        .sidebar details .sub-nav {
+            list-style: none;
+            padding: 2px 0 4px 0;
+            margin: 0;
+        }
+
+        .sidebar details .sub-nav li a {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.87rem;
+            padding: 8px 16px 8px 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar details .sub-nav li a:hover,
+        .sidebar details .sub-nav li a.active {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+        }
+
+        .sidebar details .sub-nav li a.active {
+            border-left: 3px solid #fff;
+            padding-left: 37px;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #E5F5FF 0%, #f0f8ff 100%);
+        }
+
+        .container {
+            max-width: 100%;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(9,71,129,0.13);
+            border-top: 4px solid var(--primary-color);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--sidebar-color);
+            padding-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        /* --- Student Table --- */
+        .table-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0 6px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .student-table-wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 520px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 8px;
+            box-shadow: 0 2px 8px rgba(9,71,129,0.07);
+        }
+
+        .student-table {
+            width: 100%;
+            min-width: 1400px;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+
+        .student-table thead tr {
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            color: #fff;
+        }
+
+        .student-table thead th {
+            padding: 13px 14px;
+            font-weight: 600;
+            text-align: left;
+            font-size: 0.78rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: var(--sidebar-color);
+            color: #fff;
+        }
+
+        .student-table tbody tr {
+            border-bottom: 1px solid #edf2f7;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+
+        .student-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .student-table tbody tr:nth-child(even) {
+            background: #f8fcff;
+        }
+
+        .student-table tbody tr:hover {
+            background: var(--bg-color);
+        }
+
+        .student-table td {
+            padding: 10px 14px;
+            color: var(--text-color);
+            vertical-align: middle;
+        }
+
+        .student-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.78rem;
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-active    { background: #d4edda; color: #155724; }
+        .badge-inactive  { background: #e2e3e5; color: #383d41; }
+        .badge-suspended { background: #fff3cd; color: #856404; }
+        .badge-graduated { background: #cce5ff; color: #004085; }
+        .badge-withdrawn { background: #f8d7da; color: #721c24; }
+
+        .btn-view {
+            padding: 5px 13px;
+            background: #063154;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-view:hover {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        /* --- Form Grid Formatting --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fafafa;
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .profile-picture-section {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .picture-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .picture-container {
+            width: 150px;
+            height: 150px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .picture-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .picture-placeholder {
+            color: #999;
+            font-size: 12px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        /* --- Input group --- */
+        .input-group { display: flex; }
+
+        /* --- Filter section controls match form-group styling --- */
+        .filter-section select,
+        .filter-section input[type="text"] {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fafafa;
+            font-size: 0.95rem;
+            width: 100%;
+            color: var(--text-color);
+        }
+
+        .filter-section select:focus,
+        .filter-section input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: none;
+        }
+
+        .filter-section label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .filter-section .input-group-text {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px 0 0 4px;
+            background-color: #fafafa;
+            border-right: none;
+        }
+
+        .filter-section .input-group input {
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* --- Send Communication Button --- */
+        .btn-send-comm {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 18px;
+            background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color));
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.87rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(9,71,129,0.3);
+            transition: opacity 0.2s, box-shadow 0.2s;
+            letter-spacing: 0.02em;
+        }
+        .btn-send-comm:hover { opacity: 0.88; box-shadow: 0 5px 16px rgba(9,71,129,0.4); }
+
+        /* --- Comm Modal Overlay --- */
+        .comm-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(9,29,55,0.55);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .comm-modal-overlay.active { display: flex; }
+        .comm-modal {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(9,71,129,0.22);
+            width: 100%;
+            max-width: 620px;
+            overflow: hidden;
+            animation: modalIn 0.22s ease;
+        }
+        @keyframes modalIn {
+            from { transform: translateY(-18px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        .comm-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px 14px;
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            color: #fff;
+        }
+        .comm-modal-header h5 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        .comm-modal-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.85);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 4px;
+            transition: color 0.15s;
+        }
+        .comm-modal-close:hover { color: #fff; }
+        /* Tabs */
+        .comm-tabs {
+            display: flex;
+            border-bottom: 2px solid #e9ecef;
+            background: #f8fafc;
+            padding: 0 24px;
+        }
+        .comm-tab-btn {
+            padding: 12px 22px;
+            border: none;
+            background: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .comm-tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .comm-tab-panel { display: none; padding: 22px 24px 24px; }
+        .comm-tab-panel.active { display: block; }
+        /* Form fields inside modal */
+        .comm-form label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+        .comm-form input,
+        .comm-form textarea,
+        .comm-form select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.88rem;
+            color: #333;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            background: #fdfdfe;
+            box-sizing: border-box;
+        }
+        .comm-form input:focus,
+        .comm-form textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16,147,219,0.12);
+        }
+        .comm-form .form-row { margin-bottom: 14px; }
+        .comm-form .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .comm-form textarea { resize: vertical; min-height: 110px; }
+        .comm-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .btn-comm-cancel {
+            padding: 8px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #fff;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.87rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-comm-cancel:hover { background: #f1f5f9; }
+        .btn-comm-send {
+            padding: 8px 22px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color));
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.87rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 3px 10px rgba(9,71,129,0.25);
+            transition: opacity 0.2s;
+        }
+        .btn-comm-send:hover { opacity: 0.88; }
+        .sms-char-count { font-size: 0.78rem; color: #888; text-align: right; margin-top: 4px; }
+
+    </style>
+    
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <!-- Students -->
+        <details open>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html" class="active">List</a></li>
+                <li><a href="index.html">Profile</a></li>
+                <li><a href="#">Check-In</a></li>
+                <li><a href="#">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <!-- Programme Managers -->
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <!-- Landlords -->
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <!-- Tasks -->
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <!-- Communications -->
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="javascript:void(0)" onclick="openCommModal('email')"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="javascript:void(0)" onclick="openCommModal('sms')"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <!-- Payments -->
+        <details>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="#">Process Payment</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <!-- Funder Management -->
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="funding_selection.html">Allocations</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link">
+            <i class="bi bi-bar-chart-line"></i> Reports
+        </a>
+        <a href="#" class="nav-link">
+            <i class="bi bi-gear"></i> Settings
+        </a>
+
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="#" class="nav-link">
+            <i class="bi bi-box-arrow-left"></i> Log Out
+        </a>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-content">
+<div class="container">
+    <h2>Student Profile Information</h2>
+
+    <!-- Student Selector -->
+    <div class="filter-section mb-4" style="background:transparent;border-radius:12px;padding:20px;margin-bottom:24px!important;border:2px solid transparent;background-image:linear-gradient(#fff,#fff),linear-gradient(135deg,var(--primary-color),var(--accent-color),var(--sidebar-color));background-origin:border-box;background-clip:padding-box,border-box;box-shadow:0 4px 18px rgba(9,71,129,0.12);">
+        <div class="grid grid-cols-12 gap-3 items-end">
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterUniversity">University</label>
+                <select id="filterUniversity">
+                    <option value="">All Universities</option>
+                    <option value="1">Main Campus</option>
+                    <option value="2">Regional Campus - East</option>
+                    <option value="3">Regional Campus - West</option>
+                    <option value="4">Online Campus</option>
+                    <option value="5">Extension Center</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterFaculty">Faculty</label>
+                <select id="filterFaculty">
+                    <option value="">All Faculties</option>
+                    <option value="1">Science &amp; Engineering</option>
+                    <option value="2">Business &amp; Economics</option>
+                    <option value="3">Health Sciences</option>
+                    <option value="4">Arts &amp; Humanities</option>
+                    <option value="5">Law</option>
+                    <option value="6">Education</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterQualification">Qualification</label>
+                <select id="filterQualification">
+                    <option value="">All Qualifications</option>
+                    <option value="1">Bachelor's Degree</option>
+                    <option value="2">Master's Degree</option>
+                    <option value="3">Diploma</option>
+                    <option value="4">Certificate</option>
+                    <option value="5">PhD</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterAcademicStatus">Academic Status</label>
+                <select id="filterAcademicStatus">
+                    <option value="">All Statuses</option>
+                    <option value="1">Active</option>
+                    <option value="2">Inactive</option>
+                    <option value="3">Suspended</option>
+                    <option value="4">Graduated</option>
+                    <option value="5">Withdrawn</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterFunder">Funder</label>
+                <select id="filterFunder">
+                    <option value="">All Funders</option>
+                    <option value="1">NSFAS</option>
+                    <option value="2">ISFAP</option>
+                    <option value="3">Ikusasa Student Financial Aid Programme</option>
+                    <option value="4">Private Bursary</option>
+                    <option value="5">Other</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterLevelOfStudy">Level of Study</label>
+                <select id="filterLevelOfStudy">
+                    <option value="">All Levels</option>
+                    <option value="1">Undergraduate</option>
+                    <option value="2">Postgraduate</option>
+                    <option value="3">Diploma</option>
+                    <option value="4">Certificate</option>
+                    <option value="5">Doctoral</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterCheckInStatus">Check-In Status</label>
+                <select id="filterCheckInStatus">
+                    <option value="">All Statuses</option>
+                    <option value="1">Not Started</option>
+                    <option value="2">In Progress</option>
+                    <option value="3">Completed</option>
+                    <option value="4">Pending</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterProgrammeManager">Programme Manager</label>
+                <select id="filterProgrammeManager">
+                    <option value="">All Managers</option>
+                    <option value="1">Dr. Nkosi</option>
+                    <option value="2">Prof. Pillay</option>
+                    <option value="3">Ms. Botha</option>
+                    <option value="4">Mr. Dube</option>
+                    <option value="5">Dr. Mahlangu</option>
+                    <option value="6">Prof. Okonkwo</option>
+                    <option value="7">Dr. Joubert</option>
+                    <option value="8">Ms. Khumalo</option>
+                    <option value="9">Mr. Ferreira</option>
+                    <option value="10">Prof. Sithole</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterIntakeYear">Intake Year</label>
+                <select id="filterIntakeYear">
+                    <option value="">All Years</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="filterContractType">Contract Type</label>
+                <select id="filterContractType">
+                    <option value="">All Types</option>
+                    <option value="1">ISFAP Funding</option>
+                    <option value="2">Funder Specific</option>
+                    <option value="3">Once-Off</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <label for="studentSearch">Search Student</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search" style="color:#999;"></i></span>
+                    <input type="text" id="studentSearch" placeholder="Search by name or student number�">
+                </div>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                <button type="button" class="w-full" style="background:#063154;color:#fff;font-weight:700;padding:9px 20px;letter-spacing:0.02em;border:none;box-shadow:0 4px 14px rgba(9,71,129,0.4);transition:all 0.2s ease;">
+                    <i class="bi bi-search"></i> Load Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student List Table -->
+    <div class="table-meta">
+        <span>Showing <strong>10</strong> of <strong>248</strong> students</span>
+    </div>
+    <div class="student-table-wrapper">
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Student No.</th>
+                    <th>University</th>
+                    <th>Faculty</th>
+                    <th>Qualification</th>
+                    <th>Year of Study</th>
+                    <th>Academic Status</th>
+                    <th>Intake Year</th>
+                    <th>Contract Type</th>
+                    <th>Funder</th>
+                    <th>Funding Pool</th>
+                    <th>Programme Manager</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><strong>Tumelo Motaung</strong></td>
+                    <td>STU-2024-0001</td>
+                    <td>Main Campus</td>
+                    <td>Science &amp; Engineering</td>
+                    <td>Bachelor's Degree</td>
+                    <td>2nd Year</td>
+                    <td>Active</td>
+                    <td>2024</td>
+                    <td>ISFAP Funding</td>
+                    <td>Sanlam Foundation</td>
+                    <td>Engineering Bursary Pool</td>
+                    <td>Dr. Nkosi</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td><strong>Priya Naidoo</strong></td>
+                    <td>STU-2024-0002</td>
+                    <td>Regional Campus - East</td>
+                    <td>Health Sciences</td>
+                    <td>Master's Degree</td>
+                    <td>Postgraduate</td>
+                    <td>Active</td>
+                    <td>2024</td>
+                    <td>ISFAP Funding</td>
+                    <td>National Skills Fund</td>
+                    <td>Skills Development Pool 2025</td>
+                    <td>Prof. Pillay</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td><strong>Lerato van Wyk</strong></td>
+                    <td>STU-2023-0118</td>
+                    <td>Main Campus</td>
+                    <td>Business &amp; Economics</td>
+                    <td>Diploma</td>
+                    <td>3rd Year</td>
+                    <td>Suspended</td>
+                    <td>2023</td>
+                    <td>Funder Specific</td>
+                    <td>Anglo American Zimele</td>
+                    <td>Environmental Sciences Pool</td>
+                    <td>Ms. Botha</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td><strong>James Dlamini</strong></td>
+                    <td>STU-2022-0305</td>
+                    <td>Online Campus</td>
+                    <td>Law</td>
+                    <td>Bachelor's Degree</td>
+                    <td>4th Year</td>
+                    <td>Graduated</td>
+                    <td>2022</td>
+                    <td>Once-Off</td>
+                    <td>Dept. of Higher Education</td>
+                    <td>Student Housing Subsidy 2024</td>
+                    <td>Mr. Dube</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td><strong>Ayesha Baloyi</strong></td>
+                    <td>STU-2024-0047</td>
+                    <td>Regional Campus - West</td>
+                    <td>Education</td>
+                    <td>Postgraduate Diploma</td>
+                    <td>Postgraduate</td>
+                    <td>Active</td>
+                    <td>2024</td>
+                    <td>ISFAP Funding</td>
+                    <td>Sasol Bursary Programme</td>
+                    <td>BSc Sciences Pool</td>
+                    <td>Dr. Mahlangu</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td><strong>Kelebogile Osei</strong></td>
+                    <td>STU-2023-0209</td>
+                    <td>Main Campus</td>
+                    <td>Arts &amp; Humanities</td>
+                    <td>Master's Degree</td>
+                    <td>2nd Year</td>
+                    <td>Suspended</td>
+                    <td>2023</td>
+                    <td>Funder Specific</td>
+                    <td>Anglo American Zimele</td>
+                    <td>Mining Engineering Pool</td>
+                    <td>Prof. Okonkwo</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td><strong>Nhlanhla Pretorius</strong></td>
+                    <td>STU-2024-0083</td>
+                    <td>Main Campus</td>
+                    <td>Science &amp; Engineering</td>
+                    <td>PhD</td>
+                    <td>Postgraduate</td>
+                    <td>Active</td>
+                    <td>2024</td>
+                    <td>ISFAP Funding</td>
+                    <td>National Skills Fund</td>
+                    <td>Trade & Artisan Pool 2025</td>
+                    <td>Dr. Joubert</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td><strong>Sipho Radebe</strong></td>
+                    <td>STU-2023-0441</td>
+                    <td>Extension Center</td>
+                    <td>Health Sciences</td>
+                    <td>Certificate</td>
+                    <td>1st Year</td>
+                    <td>Suspended</td>
+                    <td>2023</td>
+                    <td>Once-Off</td>
+                    <td>Dept. of Higher Education</td>
+                    <td>Transport Subsidy Pool 2024</td>
+                    <td>Ms. Khumalo</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td><strong>Fatima Mahlangu</strong></td>
+                    <td>STU-2024-0156</td>
+                    <td>Regional Campus - East</td>
+                    <td>Business &amp; Economics</td>
+                    <td>Bachelor's Degree</td>
+                    <td>1st Year</td>
+                    <td>Active</td>
+                    <td>2024</td>
+                    <td>Funder Specific</td>
+                    <td>Sanlam Foundation</td>
+                    <td>Actuarial Sciences Pool</td>
+                    <td>Mr. Ferreira</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td><strong>Zanele Ntuli</strong></td>
+                    <td>STU-2022-0577</td>
+                    <td>Online Campus</td>
+                    <td>Law</td>
+                    <td>Master's Degree</td>
+                    <td>Postgraduate</td>
+                    <td>Graduated</td>
+                    <td>2022</td>
+                    <td>Once-Off</td>
+                    <td>Dept. of Higher Education</td>
+                    <td>Student Housing Subsidy 2024</td>
+                    <td>Prof. Sithole</td>
+                    <td><a href="index.html" class="btn-view"><i class="bi bi-eye"></i> View</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="text-align:right;padding:8px 2px 0;font-size:0.85rem;color:#999;">Page 1 of 25</div>
+</div>
+
+<!-- Send Communication Modal -->
+<div class="comm-modal-overlay" id="commModalOverlay">
+    <div class="comm-modal" role="dialog" aria-modal="true" aria-labelledby="commModalTitle">
+        <div class="comm-modal-header">
+            <h5 id="commModalTitle"><i class="bi bi-send"></i> Send Communication</h5>
+            <button class="comm-modal-close" id="commModalClose" aria-label="Close">&times;</button>
+        </div>
+        <!-- Tab Switcher -->
+        <div class="comm-tabs">
+            <button class="comm-tab-btn active" data-tab="email"><i class="bi bi-envelope"></i> Email</button>
+            <button class="comm-tab-btn" data-tab="sms"><i class="bi bi-chat-text"></i> SMS</button>
+        </div>
+        <!-- Email Tab -->
+        <div class="comm-tab-panel active" id="panel-email">
+            <form class="comm-form" onsubmit="return false;">
+                <div class="form-row-2">
+                    <div>
+                        <label for="emailTo">To <span style="color:#e74c3c">*</span></label>
+                        <input type="email" id="emailTo" placeholder="recipient@example.com">
+                    </div>
+                    <div>
+                        <label for="emailCc">CC</label>
+                        <input type="email" id="emailCc" placeholder="cc@example.com">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label for="emailTemplate">Template</label>
+                    <select id="emailTemplate">
+                        <option value="">-- Select a template (optional) --</option>
+                        <option>Welcome Letter</option>
+                        <option>Funding Confirmation</option>
+                        <option>Outstanding Documents Request</option>
+                        <option>Payment Notification</option>
+                        <option>Suspension Notice</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="emailSubject">Subject <span style="color:#e74c3c">*</span></label>
+                    <input type="text" id="emailSubject" placeholder="Enter email subject">
+                </div>
+                <div class="form-row">
+                    <label for="emailBody">Message <span style="color:#e74c3c">*</span></label>
+                    <textarea id="emailBody" placeholder="Type your message here�"></textarea>
+                </div>
+                <div class="comm-modal-footer">
+                    <button type="button" class="btn-comm-cancel" id="emailCancelBtn">Cancel</button>
+                    <button type="submit" class="btn-comm-send"><i class="bi bi-send"></i> Send Email</button>
+                </div>
+            </form>
+        </div>
+        <!-- SMS Tab -->
+        <div class="comm-tab-panel" id="panel-sms">
+            <form class="comm-form" onsubmit="return false;">
+                <div class="form-row-2">
+                    <div>
+                        <label for="smsTo">Mobile Number <span style="color:#e74c3c">*</span></label>
+                        <input type="tel" id="smsTo" placeholder="+27 8x xxx xxxx">
+                    </div>
+                    <div>
+                        <label for="smsTemplate">Template</label>
+                        <select id="smsTemplate">
+                            <option value="">-- Select a template (optional) --</option>
+                            <option>Payment Reminder</option>
+                            <option>Document Reminder</option>
+                            <option>Registration Confirmation</option>
+                            <option>Suspension Notice</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label for="smsBody">Message <span style="color:#e74c3c">*</span></label>
+                    <textarea id="smsBody" maxlength="160" placeholder="Type your SMS message� (max 160 characters)"></textarea>
+                    <div class="sms-char-count"><span id="smsCharCount">0</span> / 160 characters</div>
+                </div>
+                <div class="comm-modal-footer">
+                    <button type="button" class="btn-comm-cancel" id="smsCancelBtn">Cancel</button>
+                    <button type="submit" class="btn-comm-send"><i class="bi bi-chat-text"></i> Send SMS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+<script>
+    document.querySelectorAll('.student-table tbody tr').forEach(function(row) {
+        row.addEventListener('click', function(e) {
+            if (!e.target.closest('a')) {
+                window.location.href = 'index.html';
+            }
+        });
+    });
+
+    // --- Communication Modal ---
+    var overlay = document.getElementById('commModalOverlay');
+
+    function openCommModal(tab) {
+        overlay.classList.add('active');
+        if (tab) {
+            document.querySelectorAll('.comm-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.comm-tab-panel').forEach(function(p) { p.classList.remove('active'); });
+            var btn = document.querySelector('.comm-tab-btn[data-tab="' + tab + '"]');
+            if (btn) btn.classList.add('active');
+            var panel = document.getElementById('panel-' + tab);
+            if (panel) panel.classList.add('active');
+        }
+    }
+    function closeCommModal() { overlay.classList.remove('active'); }
+
+    document.getElementById('commModalClose').addEventListener('click', closeCommModal);
+    document.getElementById('emailCancelBtn').addEventListener('click', closeCommModal);
+    document.getElementById('smsCancelBtn').addEventListener('click', closeCommModal);
+
+    // Close on overlay background click
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeCommModal();
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeCommModal();
+    });
+
+    // Tab switching
+    document.querySelectorAll('.comm-tab-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.comm-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.comm-tab-panel').forEach(function(p) { p.classList.remove('active'); });
+            btn.classList.add('active');
+            document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // SMS character counter
+    document.getElementById('smsBody').addEventListener('input', function() {
+        document.getElementById('smsCharCount').textContent = this.value.length;
+    });
+</script>
+</html>

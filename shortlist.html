@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shortlisted Students – ISFAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #1093DB;
+            --sidebar-color: #094781;
+            --accent-color: #337C96;
+            --bg-color: #E5F5FF;
+            --border-color: #ACC8CB;
+            --text-color: #094781;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #094781 0%, #0d6ebd 60%, #1093DB 100%);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 4px 0 18px rgba(9, 71, 129, 0.25);
+        }
+
+        .sidebar-brand {
+            padding: 20px 16px 12px;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, color 0.2s;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.22);
+            color: #fff;
+            font-weight: 600;
+            border-left: 3px solid #fff;
+            box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.08);
+        }
+
+        .sidebar details summary {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            list-style: none;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+        }
+
+        .sidebar details summary::-webkit-details-marker { display: none; }
+        .sidebar details summary:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+        .sidebar details[open] > summary { background: rgba(255, 255, 255, 0.12); color: #fff; }
+
+        .sidebar details summary .chevron {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .sidebar details[open] summary .chevron { transform: rotate(90deg); }
+
+        .sidebar details .sub-nav { list-style: none; padding: 2px 0 4px; margin: 0; }
+
+        .sidebar details .sub-nav li a {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.87rem;
+            padding: 8px 16px 8px 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar details .sub-nav li a:hover,
+        .sidebar details .sub-nav li a.active {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+        }
+
+        .sidebar details .sub-nav li a.active {
+            border-left: 3px solid #fff;
+            padding-left: 37px;
+        }
+
+        /* ===== MAIN ===== */
+        .main-content {
+            flex: 1;
+            padding: 30px 30px 100px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #E5F5FF 0%, #f0f8ff 100%);
+        }
+
+        /* ===== Page Header ===== */
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 16px;
+        }
+
+        .page-header h2 {
+            margin: 0 0 4px;
+            color: var(--sidebar-color);
+            font-weight: 700;
+            font-size: 1.45rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header .breadcrumb {
+            font-size: 0.8rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .page-header .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .page-header .breadcrumb a:hover { text-decoration: underline; }
+
+        /* ===== Pool Context Banner ===== */
+        .pool-banner {
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 22px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 4px 18px rgba(9, 71, 129, 0.28);
+            flex-wrap: wrap;
+        }
+
+        .pool-banner-info { display: flex; align-items: center; gap: 14px; }
+
+        .pool-banner-icon {
+            width: 48px; height: 48px;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; flex-shrink: 0;
+        }
+
+        .pool-banner-name { font-size: 1.05rem; font-weight: 700; }
+        .pool-banner-sub  { font-size: 0.8rem; opacity: 0.75; margin-top: 2px; }
+        .pool-banner-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+        .pool-stat { text-align: center; }
+        .pool-stat-val { font-size: 1.2rem; font-weight: 700; }
+        .pool-stat-lbl { font-size: 0.72rem; opacity: 0.72; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* ===== Buttons ===== */
+        .btn-primary-action {
+            padding: 9px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color));
+            color: #fff; border: none; border-radius: 7px;
+            font-size: 0.87rem; font-weight: 700; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 7px;
+            box-shadow: 0 3px 12px rgba(9, 71, 129, 0.28);
+            transition: opacity 0.18s; text-decoration: none;
+        }
+        .btn-primary-action:hover { opacity: 0.88; }
+
+        .btn-outline {
+            padding: 9px 18px;
+            background: #fff;
+            color: var(--sidebar-color);
+            border: 1.5px solid var(--border-color);
+            border-radius: 7px;
+            font-size: 0.87rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: background 0.18s, border-color 0.18s;
+        }
+        .btn-outline:hover { background: #eaf5ff; border-color: var(--primary-color); }
+
+        .btn-send-offer {
+            padding: 10px 26px;
+            background: linear-gradient(135deg, #28a745, #1a7a31);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 3px 14px rgba(28, 125, 65, 0.32);
+            transition: opacity 0.18s;
+            white-space: nowrap;
+        }
+        .btn-send-offer:hover { opacity: 0.88; }
+        .btn-send-offer:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+
+        /* ===== Stat Cards ===== */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 10px rgba(9, 71, 129, 0.08);
+            border: 1px solid rgba(172, 200, 203, 0.4);
+        }
+
+        .stat-card-icon {
+            width: 40px; height: 40px;
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; flex-shrink: 0;
+        }
+
+        .stat-card-val { font-size: 1.5rem; font-weight: 700; color: var(--sidebar-color); line-height: 1; }
+        .stat-card-lbl { font-size: 0.75rem; color: #888; margin-top: 2px; }
+
+        /* ===== Filters ===== */
+        .filter-bar {
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px rgba(9, 71, 129, 0.07);
+            border: 1px solid rgba(172, 200, 203, 0.35);
+        }
+
+        .filter-bar input[type="text"],
+        .filter-bar select {
+            padding: 7px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 7px;
+            font-size: 0.87rem;
+            color: var(--text-color);
+            background: #f7fbff;
+            outline: none;
+            transition: border-color 0.18s;
+        }
+
+        .filter-bar input[type="text"] { min-width: 220px; }
+        .filter-bar input[type="text"]:focus,
+        .filter-bar select:focus { border-color: var(--primary-color); }
+
+        .filter-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #888;
+            white-space: nowrap;
+        }
+
+        /* ===== Table ===== */
+        .table-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(9, 71, 129, 0.09);
+            overflow: hidden;
+            border: 1px solid rgba(172, 200, 203, 0.35);
+        }
+
+        .sl-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+
+        .sl-table thead tr {
+            background: linear-gradient(90deg, var(--sidebar-color), #1564a8);
+            color: #fff;
+        }
+
+        .sl-table thead th {
+            padding: 12px 14px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        .sl-table thead th:first-child { padding-left: 16px; }
+
+        .sl-table tbody tr {
+            border-bottom: 1px solid #eef3f8;
+            transition: background 0.15s;
+        }
+
+        .sl-table tbody tr:hover { background: #f3f9ff; }
+        .sl-table tbody tr.row-selected { background: #dbeeff; }
+
+        .sl-table tbody td { padding: 11px 14px; vertical-align: middle; color: #2d3a4a; }
+        .sl-table tbody td:first-child { padding-left: 16px; }
+
+        /* ===== Offer Status Badges ===== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge-not-sent  { background: #f0f0f0; color: #666; }
+        .badge-pending   { background: #fff3cd; color: #856404; }
+        .badge-accepted  { background: #d1fae5; color: #065f46; }
+        .badge-declined  { background: #fee2e2; color: #991b1b; }
+        .badge-expired   { background: #ede9fe; color: #5b21b6; }
+        .badge-revoked   { background: #fce7f3; color: #9d174d; }
+
+        .btn-revoke {
+            padding: 5px 12px;
+            background: #fff;
+            color: #9d174d;
+            border: 1.5px solid #f9a8d4;
+            border-radius: 7px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.18s, border-color 0.18s;
+        }
+        .btn-revoke:hover { background: #fce7f3; border-color: #9d174d; }
+
+        /* ===== Modals ===== */
+        .modal-ov {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(9, 50, 100, 0.45);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-ov.active { display: flex; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 640px;
+            box-shadow: 0 12px 48px rgba(9, 71, 129, 0.3);
+            overflow: hidden;
+        }
+
+        .modal-head {
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            padding: 16px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #fff;
+        }
+
+        .modal-head h5 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body { padding: 22px; }
+
+        .modal-foot {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 22px;
+            border-top: 1px solid #eee;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 7px;
+            font-size: 0.87rem;
+            color: var(--text-color);
+            background: #f7fbff;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.18s;
+        }
+
+        .form-control:focus { border-color: var(--primary-color); }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+
+        /* offer preview */
+        .offer-preview {
+            background: #f8fcff;
+            border: 1px solid #cde;
+            border-radius: 8px;
+            padding: 18px 20px;
+            font-size: 0.87rem;
+            line-height: 1.7;
+            color: #333;
+            margin-bottom: 18px;
+        }
+
+        .offer-preview .offer-logo {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--sidebar-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .offer-preview .offer-label { font-weight: 700; color: var(--sidebar-color); }
+
+        .summary-list { list-style: none; padding: 0; margin: 0; }
+        .summary-list li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #f0f4f8;
+        }
+        .summary-list li:last-child { border-bottom: none; }
+        .summary-list li .s-name { font-weight: 600; color: var(--sidebar-color); }
+        .summary-list li .s-meta { color: #888; font-size: 0.8rem; }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <details>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="index.html">Profile</a></li>
+                <li><a href="#">Check-In</a></li>
+                <li><a href="#">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="#">Process Payment</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <!-- Funder Management -->
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <!-- Funding Selection (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-person-check-fill"></i> Funding Selection
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funding_selection.html">Student Selection</a></li>
+                <li><a href="shortlist.html" class="active">Shortlisted Students</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <a href="#" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="#" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <div class="breadcrumb" style="margin-bottom:6px;">
+                <a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+                <a href="funding_selection.html">Funding Selection</a>
+                <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+                <span>Shortlisted Students</span>
+            </div>
+            <h2><i class="bi bi-list-check"></i> Shortlisted Students</h2>
+            <p style="margin:4px 0 0;color:#888;font-size:0.87rem;">Students shortlisted from the selection process. Send funding offers from this view.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-outline" onclick="openModal('poolSelectorModal')">
+                <i class="bi bi-layers"></i> Change Pool
+            </button>
+            <button class="btn-outline">
+                <i class="bi bi-download"></i> Export
+            </button>
+            <a href="funding_selection.html" class="btn-outline">
+                <i class="bi bi-plus-circle"></i> Add Students
+            </a>
+        </div>
+    </div>
+
+    <!-- Pool Context Banner -->
+    <div class="pool-banner">
+        <div class="pool-banner-info">
+            <div class="pool-banner-icon"><i class="bi bi-layers-fill"></i></div>
+            <div>
+                <div class="pool-banner-name">Engineering Bursary Pool</div>
+                <div class="pool-banner-sub">Sanlam Foundation &nbsp;&bull;&nbsp; FND-2021-0003 &nbsp;&bull;&nbsp; Financial Year 2025 / 2026</div>
+            </div>
+        </div>
+        <div class="pool-banner-stats">
+            <div class="pool-stat">
+                <div class="pool-stat-val">24</div>
+                <div class="pool-stat-lbl">Shortlisted</div>
+            </div>
+            <div class="pool-stat">
+                <div class="pool-stat-val">11</div>
+                <div class="pool-stat-lbl">Offers Sent</div>
+            </div>
+            <div class="pool-stat">
+                <div class="pool-stat-val">7</div>
+                <div class="pool-stat-lbl">Accepted</div>
+            </div>
+            <div class="pool-stat">
+                <div class="pool-stat-val">R 6.4M</div>
+                <div class="pool-stat-lbl">Budget Remaining</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-cards">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#dbeafe;color:#094781;"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <div class="stat-card-val">24</div>
+                <div class="stat-card-lbl">Total Shortlisted</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#fff3cd;color:#856404;"><i class="bi bi-hourglass-split"></i></div>
+            <div>
+                <div class="stat-card-val">13</div>
+                <div class="stat-card-lbl">Offer Not Sent</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#cfe2ff;color:#0a58ca;"><i class="bi bi-send-fill"></i></div>
+            <div>
+                <div class="stat-card-val">4</div>
+                <div class="stat-card-lbl">Awaiting Response</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#d1fae5;color:#065f46;"><i class="bi bi-check-circle-fill"></i></div>
+            <div>
+                <div class="stat-card-val">7</div>
+                <div class="stat-card-lbl">Accepted</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#fee2e2;color:#991b1b;"><i class="bi bi-x-circle-fill"></i></div>
+            <div>
+                <div class="stat-card-val">0</div>
+                <div class="stat-card-lbl">Declined</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <span class="filter-label">Filter:</span>
+        <input type="text" id="searchInput" placeholder="&#xF52A; Search by name or student ID…" oninput="applyFilters()">
+        <select id="statusFilter" onchange="applyFilters()">
+            <option value="">All Statuses</option>
+            <option value="not-sent">Offer Not Sent</option>
+            <option value="pending">Awaiting Response</option>
+            <option value="accepted">Accepted</option>
+            <option value="declined">Declined</option>
+            <option value="expired">Expired</option>
+        </select>
+        <select id="institutionFilter" onchange="applyFilters()">
+            <option value="">All Institutions</option>
+            <option>University of Cape Town</option>
+            <option>University of the Witwatersrand</option>
+            <option>University Of Stellenbosch</option>
+            <option>University of Pretoria</option>
+        </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <table class="sl-table" id="shortlistTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Student ID</th>
+                    <th>Institution</th>
+                    <th>Qualification</th>
+                    <th>Year</th>
+                    <th>Shortlisted On</th>
+                    <th>Offer Status</th>
+                    <th>Response Deadline</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="shortlistBody">
+
+                <!-- Row 1 – Accepted -->
+                <tr data-status="accepted" data-name="Amahle Dlamini" data-id="STU-2025-0031">                    <td>1</td>
+                    <td><strong>Amahle Dlamini</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0031</td>
+                    <td>University of Cape Town</td>
+                    <td>BSc Electrical Engineering</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">14 May 2026</td>
+                    <td><span class="badge badge-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0031','Amahle Dlamini')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 2 – Accepted -->
+                <tr data-status="accepted" data-name="Sipho Ndlovu" data-id="STU-2025-0032">                    <td>2</td>
+                    <td><strong>Sipho Ndlovu</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0032</td>
+                    <td>University of the Witwatersrand</td>
+                    <td>BSc Civil Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">14 May 2026</td>
+                    <td><span class="badge badge-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0032','Sipho Ndlovu')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 3 – Accepted -->
+                <tr data-status="accepted" data-name="Lerato Mokoena" data-id="STU-2025-0033">                    <td>3</td>
+                    <td><strong>Lerato Mokoena</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0033</td>
+                    <td>University Of Stellenbosch</td>
+                    <td>BEng Mechanical Engineering</td>
+                    <td>3rd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">14 May 2026</td>
+                    <td><span class="badge badge-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0033','Lerato Mokoena')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 4 – Accepted -->
+                <tr data-status="accepted" data-name="Zanele Khumalo" data-id="STU-2025-0034">                    <td>4</td>
+                    <td><strong>Zanele Khumalo</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0034</td>
+                    <td>University of Pretoria</td>
+                    <td>BSc Computer Science</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">15 May 2026</td>
+                    <td><span class="badge badge-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0034','Zanele Khumalo')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 5 – Accepted -->
+                <tr data-status="accepted" data-name="Olwethu Ntuli" data-id="STU-2025-0035">                    <td>5</td>
+                    <td><strong>Olwethu Ntuli</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0035</td>
+                    <td>University of Cape Town</td>
+                    <td>BEng Chemical Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">15 May 2026</td>
+                    <td><span class="badge badge-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0035','Olwethu Ntuli')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 6 – Accepted -->
+                <tr data-status="accepted" data-name="Tshepo Mahlangu" data-id="STU-2025-0036">                    <td>6</td>
+                    <td><strong>Tshepo Mahlangu</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0036</td>
+                    <td>University of the Witwatersrand</td>
+                    <td>BSc Industrial Engineering</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">15 May 2026</td>
+                    <td><span class="badge badge-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0036','Tshepo Mahlangu')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 7 – Accepted -->
+                <tr data-status="accepted" data-name="Nompumelelo Zulu" data-id="STU-2025-0037">                    <td>7</td>
+                    <td><strong>Nompumelelo Zulu</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0037</td>
+                    <td>University Of Stellenbosch</td>
+                    <td>BEng Electronic Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">15 May 2026</td>
+                    <td><span class="badge badge-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0037','Nompumelelo Zulu')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 8 – Pending -->
+                <tr data-status="pending" data-name="Kabelo Sithole" data-id="STU-2025-0038">                    <td>8</td>
+                    <td><strong>Kabelo Sithole</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0038</td>
+                    <td>University of Pretoria</td>
+                    <td>BSc Mining Engineering</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">16 May 2026</td>
+                    <td><span class="badge badge-pending"><i class="bi bi-hourglass-split"></i> Awaiting Response</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0038','Kabelo Sithole')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 9 – Pending -->
+                <tr data-status="pending" data-name="Ayanda Mthembu" data-id="STU-2025-0039">                    <td>9</td>
+                    <td><strong>Ayanda Mthembu</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0039</td>
+                    <td>University of Cape Town</td>
+                    <td>BSc Electrical Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">16 May 2026</td>
+                    <td><span class="badge badge-pending"><i class="bi bi-hourglass-split"></i> Awaiting Response</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0039','Ayanda Mthembu')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 10 – Pending -->
+                <tr data-status="pending" data-name="Nokuthula Miya" data-id="STU-2025-0040">                    <td>10</td>
+                    <td><strong>Nokuthula Miya</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0040</td>
+                    <td>University of the Witwatersrand</td>
+                    <td>BEng Civil Engineering</td>
+                    <td>3rd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">17 May 2026</td>
+                    <td><span class="badge badge-pending"><i class="bi bi-hourglass-split"></i> Awaiting Response</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0040','Nokuthula Miya')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Row 11 – Pending -->
+                <tr data-status="pending" data-name="Bongani Hadebe" data-id="STU-2025-0041">                    <td>11</td>
+                    <td><strong>Bongani Hadebe</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0041</td>
+                    <td>University Of Stellenbosch</td>
+                    <td>BSc Computer Engineering</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">17 May 2026</td>
+                    <td><span class="badge badge-pending"><i class="bi bi-hourglass-split"></i> Awaiting Response</span></td>
+                    <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0041','Bongani Hadebe')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <!-- Rows 12–24 – Offer Not Sent -->
+                <tr data-status="not-sent" data-name="Lungelo Dube" data-id="STU-2025-0042">                    <td>12</td>
+                    <td><strong>Lungelo Dube</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0042</td>
+                    <td>University of Pretoria</td>
+                    <td>BSc Electrical Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">19 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0042','Lungelo Dube')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Sifiso Majola" data-id="STU-2025-0043">                    <td>13</td>
+                    <td><strong>Sifiso Majola</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0043</td>
+                    <td>University of Cape Town</td>
+                    <td>BEng Mechatronic Engineering</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">19 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0043','Sifiso Majola')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Naledi Mokoena" data-id="STU-2025-0044">                    <td>14</td>
+                    <td><strong>Naledi Mokoena</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0044</td>
+                    <td>University of the Witwatersrand</td>
+                    <td>BSc Mining Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">20 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0044','Naledi Mokoena')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Mthokozisi Cele" data-id="STU-2025-0045">                    <td>15</td>
+                    <td><strong>Mthokozisi Cele</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0045</td>
+                    <td>University Of Stellenbosch</td>
+                    <td>BEng Structural Engineering</td>
+                    <td>3rd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">20 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0045','Mthokozisi Cele')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Precious Molefe" data-id="STU-2025-0046">                    <td>16</td>
+                    <td><strong>Precious Molefe</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0046</td>
+                    <td>University of Pretoria</td>
+                    <td>BSc Electrical Engineering</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">20 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0046','Precious Molefe')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Mandla Shabalala" data-id="STU-2025-0047">                    <td>17</td>
+                    <td><strong>Mandla Shabalala</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0047</td>
+                    <td>University of Cape Town</td>
+                    <td>BEng Chemical Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">21 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0047','Mandla Shabalala')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Thandeka Vilakazi" data-id="STU-2025-0048">                    <td>18</td>
+                    <td><strong>Thandeka Vilakazi</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0048</td>
+                    <td>University of the Witwatersrand</td>
+                    <td>BSc Industrial Engineering</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">21 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0048','Thandeka Vilakazi')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Sibusiso Mnguni" data-id="STU-2025-0049">                    <td>19</td>
+                    <td><strong>Sibusiso Mnguni</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0049</td>
+                    <td>University Of Stellenbosch</td>
+                    <td>BEng Mechanical Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">21 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0049','Sibusiso Mnguni')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Dikeledi Nkosi" data-id="STU-2025-0050">                    <td>20</td>
+                    <td><strong>Dikeledi Nkosi</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0050</td>
+                    <td>University of Pretoria</td>
+                    <td>BSc Computer Science</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">22 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0050','Dikeledi Nkosi')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Nhlanhla Mthembu" data-id="STU-2025-0051">                    <td>21</td>
+                    <td><strong>Nhlanhla Mthembu</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0051</td>
+                    <td>University of Cape Town</td>
+                    <td>BEng Electrical Engineering</td>
+                    <td>3rd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">22 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0051','Nhlanhla Mthembu')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Zodwa Ngcobo" data-id="STU-2025-0052">                    <td>22</td>
+                    <td><strong>Zodwa Ngcobo</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0052</td>
+                    <td>University of the Witwatersrand</td>
+                    <td>BSc Mining Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">22 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0052','Zodwa Ngcobo')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Thabo Motaung" data-id="STU-2025-0053">                    <td>23</td>
+                    <td><strong>Thabo Motaung</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0053</td>
+                    <td>University Of Stellenbosch</td>
+                    <td>BEng Electronic Engineering</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">22 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0053','Thabo Motaung')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+                <tr data-status="not-sent" data-name="Sello Mabulane" data-id="STU-2025-0054">                    <td>24</td>
+                    <td><strong>Sello Mabulane</strong></td>
+                    <td style="color:#888;font-size:0.82rem;">STU-2025-0054</td>
+                    <td>University of Pretoria</td>
+                    <td>BSc Civil Engineering</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">22 May 2026</td>
+                    <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
+                    <td style="color:#aaa;font-size:0.82rem;">—</td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0054','Sello Mabulane')"><i class="bi bi-eye"></i> View</button></td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    <div style="text-align:right;padding:8px 2px 0;font-size:0.85rem;color:#999;">Showing 24 of 24 shortlisted students</div>
+
+</div><!-- end main-content -->
+
+<!-- ===== Student View Modal ===== -->
+<div class="modal-ov" id="viewModal">
+    <div class="modal-box" style="max-width:560px;">
+        <div class="modal-head">
+            <h5><i class="bi bi-person-lines-fill"></i> <span id="viewName"></span></h5>
+            <button class="modal-close" onclick="closeModal('viewModal')">&times;</button>
+        </div>
+        <div class="modal-body" style="max-height:80vh;overflow-y:auto;">
+
+            <!-- Info grid -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+                <div>
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Student ID</div>
+                    <div style="font-size:0.9rem;color:#333;margin-top:3px;" id="viewId"></div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Offer Status</div>
+                    <div style="margin-top:3px;" id="viewStatus"></div>
+                </div>
+                <div style="grid-column:1/-1;">
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Institution</div>
+                    <div style="font-size:0.9rem;color:#333;margin-top:3px;" id="viewInstitution"></div>
+                </div>
+                <div style="grid-column:1/-1;">
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Qualification</div>
+                    <div style="font-size:0.9rem;color:#333;margin-top:3px;" id="viewQualification"></div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Year of Study</div>
+                    <div style="font-size:0.9rem;color:#333;margin-top:3px;" id="viewYear"></div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;">Shortlisted On</div>
+                    <div style="font-size:0.9rem;color:#333;margin-top:3px;" id="viewShortlistedOn"></div>
+                </div>
+            </div>
+
+            <!-- Offer context -->
+            <div style="background:#f0f8ff;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:0.84rem;display:flex;gap:20px;flex-wrap:wrap;">
+                <div><span style="color:#888;">Pool:</span> <strong>Engineering Bursary Pool</strong></div>
+                <div><span style="color:#888;">Funder:</span> <strong>Sanlam Foundation</strong></div>
+                <div id="viewDeadlineWrap" style="display:none;"><span style="color:#888;">Response Deadline:</span> <strong id="viewDeadline"></strong></div>
+            </div>
+
+            <!-- Revoke form – shown after Revoke button is clicked -->
+            <div id="revokeSection" style="display:none;border-top:2px solid #fce7f3;padding-top:16px;">
+                <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9d174d;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                    <i class="bi bi-slash-circle-fill"></i> Revoke Offer
+                </div>
+                <p style="margin:0 0 14px;font-size:0.87rem;color:#555;">Revoking will notify the student that the offer has been withdrawn. This action cannot be undone.</p>
+
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label class="form-label" style="color:#9d174d;">Reason <span style="color:#e11d48;">*</span></label>
+                    <select class="form-control" id="revokeReason" onchange="toggleOtherReason(this)">
+                        <option value="">&mdash; Select a reason &mdash;</option>
+                        <option>Budget withdrawn by funder</option>
+                        <option>Student no longer meets eligibility criteria</option>
+                        <option>Duplicate offer issued in error</option>
+                        <option>Pool capacity reduced</option>
+                        <option>Student enrolled at ineligible institution</option>
+                        <option value="Other">Other (specify below)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="otherReasonGroup" style="margin-bottom:12px;display:none;">
+                    <label class="form-label" style="color:#9d174d;">Specify Reason <span style="color:#e11d48;">*</span></label>
+                    <textarea class="form-control" id="revokeOtherReason" placeholder="Describe the reason for revoking…"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Comments (optional)</label>
+                    <textarea class="form-control" id="revokeComments" placeholder="Any additional notes for the record…"></textarea>
+                </div>
+
+                <div style="margin-top:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:7px;padding:10px 14px;font-size:0.82rem;color:#92400e;display:flex;align-items:flex-start;gap:8px;">
+                    <i class="bi bi-exclamation-triangle-fill" style="flex-shrink:0;margin-top:1px;"></i>
+                    <span>The student will be notified by email. The offer slot will be returned to the pool.</span>
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-foot">
+            <button class="btn-outline" onclick="closeModal('viewModal')">Close</button>
+            <button id="revokeOfferBtn" class="btn-revoke" style="display:none;" onclick="showRevokeForm()">
+                <i class="bi bi-slash-circle"></i> Revoke Offer
+            </button>
+            <button id="confirmRevokeBtn" class="btn-primary-action" style="display:none;background:linear-gradient(135deg,#831843,#9d174d);" onclick="confirmRevoke()">
+                <i class="bi bi-slash-circle-fill"></i> Confirm Revocation
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Pool Selector Modal ===== -->
+<div class="modal-ov" id="poolSelectorModal">
+    <div class="modal-box" style="max-width:520px;">
+        <div class="modal-head">
+            <h5><i class="bi bi-layers"></i> Select Funding Pool</h5>
+            <button class="modal-close" onclick="closeModal('poolSelectorModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom:14px;">
+                <input type="text" class="form-control" placeholder="Search pools…">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="border:2px solid var(--primary-color);border-radius:10px;padding:14px 16px;cursor:pointer;background:#f0f8ff;display:flex;align-items:center;gap:12px;">
+                    <div style="width:36px;height:36px;background:#dbeafe;color:#094781;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;"><i class="bi bi-mortarboard-fill"></i></div>
+                    <div>
+                        <div style="font-weight:700;font-size:0.9rem;color:var(--sidebar-color);">Engineering Bursary Pool</div>
+                        <div style="font-size:0.8rem;color:#888;">Sanlam Foundation &bull; 2025/2026</div>
+                    </div>
+                    <div style="margin-left:auto;text-align:right;">
+                        <div style="font-weight:700;color:var(--sidebar-color);">R 6.4M</div>
+                        <div style="font-size:0.75rem;color:#888;">remaining</div>
+                    </div>
+                </div>
+                <div style="border:1.5px solid var(--border-color);border-radius:10px;padding:14px 16px;cursor:pointer;background:#fff;display:flex;align-items:center;gap:12px;" onmouseenter="this.style.borderColor='var(--primary-color)'" onmouseleave="this.style.borderColor='var(--border-color)'">
+                    <div style="width:36px;height:36px;background:#d4edda;color:#1a7a31;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;"><i class="bi bi-calculator-fill"></i></div>
+                    <div>
+                        <div style="font-weight:700;font-size:0.9rem;color:var(--sidebar-color);">Actuarial Sciences Pool</div>
+                        <div style="font-size:0.8rem;color:#888;">Sanlam Foundation &bull; 2025/2026</div>
+                    </div>
+                    <div style="margin-left:auto;text-align:right;">
+                        <div style="font-weight:700;color:var(--sidebar-color);">22</div>
+                        <div style="font-size:0.75rem;color:#888;">slots left</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-outline" onclick="closeModal('poolSelectorModal')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let viewTargetRow = null;
+
+    function applyFilters() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value;
+        const inst   = document.getElementById('institutionFilter').value;
+        // After checkbox removal: cells 0=#, 1=name, 2=id, 3=institution, ...
+        document.querySelectorAll('#shortlistBody tr').forEach(tr => {
+            const name     = (tr.dataset.name || '').toLowerCase();
+            const id       = (tr.dataset.id   || '').toLowerCase();
+            const trStatus = tr.dataset.status || '';
+            const institution = tr.cells[3] ? tr.cells[3].textContent : '';
+            const matchSearch = !search || name.includes(search) || id.includes(search);
+            const matchStatus = !status || trStatus === status;
+            const matchInst   = !inst   || institution === inst;
+            tr.style.display = (matchSearch && matchStatus && matchInst) ? '' : 'none';
+        });
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    function viewStudent(id, name) {
+        const tr = document.querySelector('#shortlistBody tr[data-id="' + id + '"]');
+        if (!tr) return;
+        viewTargetRow = tr;
+
+        // cells after checkbox removal: 0=#, 1=name, 2=id, 3=inst, 4=qual, 5=year, 6=date, 7=badge, 8=deadline, 9=actions
+        const cells    = [...tr.cells];
+        const status   = tr.dataset.status;
+        const badgeEl  = cells[7]?.querySelector('.badge');
+        const deadline = cells[8]?.textContent.trim() || '';
+
+        document.getElementById('viewName').textContent          = name;
+        document.getElementById('viewId').textContent            = id;
+        document.getElementById('viewInstitution').textContent   = cells[3]?.textContent.trim() || '';
+        document.getElementById('viewQualification').textContent = cells[4]?.textContent.trim() || '';
+        document.getElementById('viewYear').textContent          = cells[5]?.textContent.trim() || '';
+        document.getElementById('viewShortlistedOn').textContent = cells[6]?.textContent.trim() || '';
+        document.getElementById('viewStatus').innerHTML          = badgeEl ? badgeEl.outerHTML : '';
+        document.getElementById('viewDeadline').textContent      = deadline;
+        document.getElementById('viewDeadlineWrap').style.display = (deadline && deadline !== '\u2014') ? '' : 'none';
+
+        // Reset revoke form
+        document.getElementById('revokeSection').style.display     = 'none';
+        document.getElementById('revokeReason').value              = '';
+        document.getElementById('revokeComments').value            = '';
+        document.getElementById('revokeOtherReason').value         = '';
+        document.getElementById('otherReasonGroup').style.display  = 'none';
+        document.getElementById('revokeReason').style.borderColor      = '';
+        document.getElementById('revokeOtherReason').style.borderColor = '';
+
+        document.getElementById('revokeOfferBtn').style.display   = status === 'pending' ? 'inline-flex' : 'none';
+        document.getElementById('confirmRevokeBtn').style.display = 'none';
+
+        document.getElementById('viewModal').classList.add('active');
+    }
+
+    function showRevokeForm() {
+        document.getElementById('revokeSection').style.display     = 'block';
+        document.getElementById('revokeOfferBtn').style.display    = 'none';
+        document.getElementById('confirmRevokeBtn').style.display  = 'inline-flex';
+    }
+
+    function toggleOtherReason(sel) {
+        document.getElementById('otherReasonGroup').style.display =
+            sel.value === 'Other' ? 'block' : 'none';
+    }
+
+    function confirmRevoke() {
+        const reason     = document.getElementById('revokeReason').value;
+        const otherReason = document.getElementById('revokeOtherReason').value.trim();
+        document.getElementById('revokeReason').style.borderColor      = '';
+        document.getElementById('revokeOtherReason').style.borderColor = '';
+
+        if (!reason) {
+            document.getElementById('revokeReason').style.borderColor = '#e11d48';
+            return;
+        }
+        if (reason === 'Other' && !otherReason) {
+            document.getElementById('revokeOtherReason').style.borderColor = '#e11d48';
+            return;
+        }
+
+        if (viewTargetRow) {
+            // Update badge in the table row
+            const badge = viewTargetRow.querySelector('.badge');
+            if (badge) {
+                badge.className = 'badge badge-revoked';
+                badge.innerHTML = '<i class="bi bi-slash-circle-fill"></i> Revoked';
+            }
+            viewTargetRow.dataset.status = 'revoked';
+        }
+
+        closeModal('viewModal');
+        viewTargetRow = null;
+        showToast('Offer revoked. The student has been notified.', 'error');
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        const colors = { success: '#065f46', info: '#094781', error: '#991b1b' };
+        toast.style.cssText = `
+            position:fixed; bottom:80px; right:24px; z-index:9999;
+            background:${colors[type] || colors.info};
+            color:#fff; padding:12px 20px; border-radius:10px;
+            font-size:0.88rem; font-weight:600;
+            box-shadow:0 4px 18px rgba(0,0,0,0.25);
+            display:flex; align-items:center; gap:8px;
+            animation: fadeIn 0.25s ease;
+        `;
+        toast.innerHTML = `<i class="bi bi-check-circle-fill"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-ov').forEach(ov => {
+        ov.addEventListener('click', e => {
+            if (e.target === ov) ov.classList.remove('active');
+        });
+    });
+</script>
+
+</body>
+</html>

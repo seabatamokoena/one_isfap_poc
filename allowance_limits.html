@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allowance Limit Configuration – ISFAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #1093DB;
+            --sidebar-color: #094781;
+            --accent-color: #337C96;
+            --bg-color: #E5F5FF;
+            --border-color: #ACC8CB;
+            --text-color: #094781;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; min-height: 100vh; }
+
+        /* ===== Sidebar ===== */
+        .sidebar { width: 240px; min-height: 100vh; background: linear-gradient(180deg, #094781 0%, #0d6ebd 60%, #1093DB 100%); display: flex; flex-direction: column; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; box-shadow: 4px 0 18px rgba(9,71,129,0.25); }
+        .sidebar-brand { padding: 20px 16px 12px; font-weight: 700; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.15); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.75); font-size: 0.92rem; font-weight: 500; padding: 10px 16px; border-radius: 6px; display: flex; align-items: center; gap: 10px; transition: background 0.2s, color 0.2s; text-decoration: none; }
+        .sidebar .nav-link:hover { background: rgba(255,255,255,0.18); color: #fff; transform: translateX(4px); }
+        .sidebar .nav-link.active { background: rgba(255,255,255,0.22); color: #fff; font-weight: 600; border-left: 3px solid #fff; }
+        .sidebar details summary { color: rgba(255,255,255,0.75); font-size: 0.92rem; font-weight: 500; padding: 10px 16px; border-radius: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; list-style: none; transition: background 0.2s, color 0.2s; user-select: none; }
+        .sidebar details summary::-webkit-details-marker { display: none; }
+        .sidebar details summary:hover { background: rgba(255,255,255,0.18); color: #fff; }
+        .sidebar details[open] > summary { background: rgba(255,255,255,0.12); color: #fff; }
+        .sidebar details summary .chevron { margin-left: auto; font-size: 0.75rem; transition: transform 0.2s; }
+        .sidebar details[open] summary .chevron { transform: rotate(90deg); }
+        .sidebar details .sub-nav { list-style: none; padding: 2px 0 4px; margin: 0; }
+        .sidebar details .sub-nav li a { color: rgba(255,255,255,0.65); font-size: 0.87rem; padding: 8px 16px 8px 40px; border-radius: 6px; display: flex; align-items: center; gap: 8px; text-decoration: none; transition: background 0.2s, color 0.2s; }
+        .sidebar details .sub-nav li a:hover, .sidebar details .sub-nav li a.active { background: rgba(255,255,255,0.18); color: #fff; }
+        .sidebar details .sub-nav li a.active { border-left: 3px solid #fff; padding-left: 37px; }
+
+        /* ===== Main ===== */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; background: linear-gradient(135deg, #E5F5FF 0%, #f0f8ff 100%); }
+        .breadcrumb { font-size: 0.82rem; color: #888; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: var(--primary-color); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+        .page-header h2 { margin: 0; color: var(--sidebar-color); font-weight: 700; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+
+        /* ===== Summary Strip ===== */
+        .summary-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+        .stat-card { background: #fff; border-radius: 10px; padding: 16px 18px; box-shadow: 0 3px 12px rgba(9,71,129,0.09); border-left: 4px solid var(--primary-color); display: flex; align-items: center; gap: 14px; }
+        .stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; background: #dbeafe; color: var(--sidebar-color); }
+        .stat-info label { display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 3px; }
+        .stat-info .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--sidebar-color); line-height: 1; }
+        .stat-info .stat-sub { font-size: 0.72rem; color: #aaa; margin-top: 2px; }
+
+        /* ===== Financial Year Bar ===== */
+        .fy-bar { display: flex; align-items: center; justify-content: center; gap: 0; background: #fff; border-radius: 10px; padding: 10px 18px; margin-bottom: 18px; box-shadow: 0 2px 10px rgba(9,71,129,0.08); border: 1px solid var(--border-color); }
+        .fy-bar-label { font-size: 0.78rem; font-weight: 700; color: #888; margin-right: 16px; text-transform: uppercase; letter-spacing: 0.07em; }
+        .fy-btn { padding: 7px 18px; border: 1.5px solid var(--border-color); background: #f8fcff; color: #666; font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: background 0.15s, color 0.15s; }
+        .fy-btn:first-of-type { border-radius: 7px 0 0 7px; }
+        .fy-btn:last-of-type { border-radius: 0 7px 7px 0; }
+        .fy-btn + .fy-btn { border-left: none; }
+        .fy-btn.fy-active { background: var(--sidebar-color); color: #fff; border-color: var(--sidebar-color); }
+        .fy-btn:not(.fy-active):hover { background: #e8f4fd; color: var(--sidebar-color); }
+        .fy-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; display: inline-block; margin-right: 5px; }
+
+        /* ===== Filter Bar ===== */
+        .filter-bar { background: #fff; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; box-shadow: 0 2px 10px rgba(9,71,129,0.08); display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+        .filter-field { display: flex; flex-direction: column; gap: 4px; min-width: 140px; flex: 1; }
+        .filter-field label { font-size: 0.78rem; font-weight: 600; color: #666; }
+        .filter-field select, .filter-field input { padding: 8px 11px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.87rem; color: #333; background: #fdfdfe; transition: border-color 0.15s; }
+        .filter-field select:focus, .filter-field input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(16,147,219,0.11); }
+
+        /* ===== Table ===== */
+        .table-wrap { background: #fff; border-radius: 12px; box-shadow: 0 3px 14px rgba(9,71,129,0.09); overflow: hidden; border: 1px solid #e8f0f7; }
+        .config-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+        .config-table thead tr { background: var(--sidebar-color); }
+        .config-table thead th { padding: 12px 14px; font-weight: 600; text-align: left; font-size: 0.73rem; letter-spacing: 0.07em; text-transform: uppercase; color: #fff; white-space: nowrap; }
+        .config-table thead th:last-child { text-align: center; }
+
+        /* Group header row */
+        .config-table tr.group-hdr td { padding: 11px 14px; font-weight: 700; font-size: 0.87rem; cursor: pointer; user-select: none; border-bottom: 1px solid #d4e6f7; }
+        .config-table tr.group-hdr:hover td { filter: brightness(0.96); }
+
+        /* Data rows */
+        .config-table tbody tr.data-row { border-bottom: 1px solid #edf2f7; transition: background 0.14s; }
+        .config-table tbody tr.data-row:last-of-type { border-bottom: none; }
+        .config-table tbody tr.data-row:hover { background: #f4f9ff; }
+        .config-table tbody tr.data-row td { padding: 10px 14px; color: #444; vertical-align: middle; }
+
+        /* Collapsed state */
+        .config-table tr.data-row.hidden { display: none; }
+
+        /* ===== Allowance type tags ===== */
+        .at-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+        .at-transport    { background: #dbeafe; color: #1e40af; }
+        .at-meal         { background: #d1fae5; color: #065f46; }
+        .at-accommodation { background: #ffedd5; color: #9a3412; }
+        .at-bursary      { background: #ede9fe; color: #5b21b6; }
+        .at-material     { background: #e0f2fe; color: #0c4a6e; }
+
+        /* Campus / level pills */
+        .scope-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 12px; font-size: 0.74rem; font-weight: 600; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; white-space: nowrap; }
+
+        /* Status pill */
+        .sp-active   { background: #d4edda; color: #155724; }
+        .sp-inactive { background: #e2e3e5; color: #383d41; }
+        .sp-pending  { background: #fff3cd; color: #856404; }
+        .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 12px; font-size: 0.74rem; font-weight: 700; }
+
+        /* Limit value */
+        .limit-val { font-weight: 700; color: var(--sidebar-color); font-size: 0.92rem; }
+        .limit-na  { color: #bbb; font-style: italic; font-size: 0.82rem; }
+
+        /* Chevron for group toggle */
+        .grp-chevron { transition: transform 0.2s; display: inline-block; font-size: 0.8rem; margin-right: 6px; }
+        .grp-chevron.open { transform: rotate(90deg); }
+
+        /* ===== Buttons ===== */
+        .btn-primary-action { padding: 9px 20px; background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color)); color: #fff; border: none; border-radius: 7px; font-size: 0.87rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 3px 12px rgba(9,71,129,0.28); transition: opacity 0.18s; text-decoration: none; }
+        .btn-primary-action:hover { opacity: 0.88; }
+        .btn-outline { padding: 8px 18px; background: #fff; color: var(--sidebar-color); border: 1.5px solid var(--border-color); border-radius: 7px; font-size: 0.87rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: background 0.15s, border-color 0.15s; text-decoration: none; }
+        .btn-outline:hover { background: #f0f8ff; border-color: var(--primary-color); }
+        .btn-icon { padding: 5px 10px; border: 1px solid var(--border-color); border-radius: 5px; background: #fff; color: var(--sidebar-color); font-size: 0.8rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: background 0.14s; white-space: nowrap; }
+        .btn-icon:hover { background: #f0f8ff; border-color: var(--primary-color); }
+        .btn-icon.danger { color: #dc3545; }
+        .btn-icon.danger:hover { background: #fff5f5; border-color: #dc3545; }
+
+        /* ===== Modal ===== */
+        .modal-ov { display: none; position: fixed; inset: 0; background: rgba(9,29,55,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 16px; }
+        .modal-ov.active { display: flex; }
+        .modal-box { background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(9,71,129,0.22); width: 100%; max-width: 560px; animation: slideIn 0.22s ease; max-height: 92vh; display: flex; flex-direction: column; }
+        .modal-box.wide { max-width: 720px; }
+        @keyframes slideIn { from { transform: translateY(-14px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color)); color: #fff; border-radius: 12px 12px 0 0; flex-shrink: 0; }
+        .modal-head h5 { margin: 0; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .modal-close { background: none; border: none; color: rgba(255,255,255,0.85); font-size: 1.4rem; cursor: pointer; line-height: 1; }
+        .modal-close:hover { color: #fff; }
+        .modal-body { padding: 22px; overflow-y: auto; }
+        .modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px; border-top: 1px solid #eee; flex-shrink: 0; }
+
+        /* Form inside modal */
+        .mfg { display: grid; gap: 14px; margin-bottom: 16px; }
+        .mfg-2 { grid-template-columns: 1fr 1fr; }
+        .mfg-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .form-field label { display: block; font-size: 0.8rem; font-weight: 600; color: #555; margin-bottom: 5px; }
+        .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.87rem; color: #333; background: #fdfdfe; box-sizing: border-box; transition: border-color 0.15s; }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(16,147,219,0.12); }
+        .form-field input:disabled, .form-field select:disabled { background: #f3f4f6; color: #888; cursor: not-allowed; }
+        .field-hint { font-size: 0.74rem; color: #999; margin-top: 3px; }
+        .req { color: #e74c3c; }
+        .section-divider { font-size: 0.78rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid #f0f0f0; padding-bottom: 6px; margin: 4px 0 12px; }
+
+        /* History table inside modal */
+        .hist-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+        .hist-table thead tr { background: #f1f5f9; }
+        .hist-table thead th { padding: 9px 12px; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #666; text-align: left; }
+        .hist-table tbody tr { border-bottom: 1px solid #f0f4f8; }
+        .hist-table tbody tr:last-child { border-bottom: none; }
+        .hist-table td { padding: 9px 12px; color: #444; vertical-align: top; }
+        .change-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.78rem; font-weight: 700; }
+        .change-up { color: #28a745; }
+        .change-dn { color: #dc3545; }
+
+        /* ===== Info banner ===== */
+        .info-banner { background: #e8f4fd; border: 1px solid #bee3f8; border-radius: 7px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.83rem; color: #0c5282; display: flex; align-items: center; gap: 9px; }
+
+        /* ===== Table meta row ===== */
+        .table-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 0.84rem; color: #666; }
+
+        /* ===== Toast ===== */
+        .toast-msg { position: fixed; bottom: 28px; right: 28px; background: #1a7a31; color: #fff; padding: 13px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 9px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); opacity: 0; transform: translateY(10px); transition: opacity 0.3s, transform 0.3s; z-index: 9999; }
+        .toast-msg.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <details>
+            <summary><i class="bi bi-people-fill"></i> Students <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="index.html">Profile</a></li>
+                <li><a href="#">Check-In</a></li>
+                <li><a href="#">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-person-badge-fill"></i> Programme Managers <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-house-fill"></i> Landlords <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-check2-square"></i> Tasks <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-chat-dots-fill"></i> Communications <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-credit-card-fill"></i> Payments <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><i class="bi bi-bank2"></i> Funder Management <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="funding_selection.html">Allocations</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+
+        <!-- Settings (ACTIVE) -->
+        <details open>
+            <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="allowance_limits.html" class="active">Allowance Limits</a></li>
+                <li><a href="#">Academic Calendar</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Audit Log</a></li>
+            </ul>
+        </details>
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="#" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <i class="bi bi-gear"></i>
+        <span>Settings</span>
+        <i class="bi bi-chevron-right" style="font-size:0.7rem;color:#ccc;"></i>
+        <span>Allowance Limit Configuration</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-sliders2"></i> Allowance Limit Configuration</h2>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-outline" onclick="showToast('Exporting to Excel…')">
+                <i class="bi bi-file-earmark-excel"></i> Export
+            </button>
+            <button class="btn-outline" onclick="showToast('Import template downloaded')">
+                <i class="bi bi-upload"></i> Import
+            </button>
+            <button class="btn-primary-action" onclick="openModal('addModal')">
+                <i class="bi bi-plus-circle"></i> Add Rule
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Strip -->
+    <div class="summary-strip">
+        <div class="stat-card" style="border-color:var(--sidebar-color);">
+            <div class="stat-icon"><i class="bi bi-layers"></i></div>
+            <div class="stat-info">
+                <label>Allowance Types</label>
+                <div class="stat-value">5</div>
+                <div class="stat-sub">all active types</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#28a745;">
+            <div class="stat-icon" style="background:#d4edda;color:#1a7a31;"><i class="bi bi-check2-all"></i></div>
+            <div class="stat-info">
+                <label>Active Rules</label>
+                <div class="stat-value">17</div>
+                <div class="stat-sub">across 5 allowance types</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#e0a800;">
+            <div class="stat-icon" style="background:#fff3cd;color:#856404;"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-info">
+                <label>Pending Review</label>
+                <div class="stat-value">1</div>
+                <div class="stat-sub">awaiting approval</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#337C96;">
+            <div class="stat-icon" style="background:#e0f2fe;color:#0c4a6e;"><i class="bi bi-clock-history"></i></div>
+            <div class="stat-info">
+                <label>Last Updated</label>
+                <div class="stat-value" style="font-size:1rem;">15 May 2026</div>
+                <div class="stat-sub">by Admin User</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Year Switcher -->
+    <div class="fy-bar">
+        <span class="fy-bar-label"><i class="bi bi-calendar3"></i> Financial Year</span>
+        <button class="fy-btn" onclick="switchFY(this)">FY 2024/25</button>
+        <button class="fy-btn fy-active" onclick="switchFY(this)"><span class="fy-dot"></span>FY 2025/26</button>
+        <button class="fy-btn" onclick="switchFY(this)">FY 2026/27</button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-field">
+            <label>Allowance Type</label>
+            <select>
+                <option value="">All Types</option>
+                <option>Transport</option>
+                <option>Meal</option>
+                <option>Accommodation</option>
+                <option>Bursary</option>
+                <option>Study Material</option>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label>Level of Study</label>
+            <select>
+                <option value="">All Levels</option>
+                <option>First Year</option>
+                <option>2nd Year</option>
+                <option>3rd Year</option>
+                <option>4th Year</option>
+                <option>Postgraduate</option>
+                <option>All Levels</option>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label>Campus / Region</label>
+            <select>
+                <option value="">All Campuses</option>
+                <option>Main Campus</option>
+                <option>Regional Campus</option>
+                <option>Online Campus</option>
+                <option>Extension Centre</option>
+                <option>All Campuses</option>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label>Status</label>
+            <select>
+                <option value="">All Statuses</option>
+                <option>Active</option>
+                <option>Pending Review</option>
+                <option>Inactive</option>
+            </select>
+        </div>
+        <div class="filter-field" style="max-width:120px;">
+            <label>&nbsp;</label>
+            <button type="button" style="padding:8px 16px;background:#063154;color:#fff;font-weight:700;border:none;border-radius:6px;font-size:0.86rem;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+                <i class="bi bi-search"></i> Filter
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Meta -->
+    <div class="table-meta">
+        <span>Showing <strong>18</strong> limit rules across <strong>5</strong> allowance types &mdash; FY 2025/26</span>
+        <label style="display:flex;align-items:center;gap:7px;font-size:0.82rem;cursor:pointer;color:#555;">
+            <input type="checkbox" id="chkExpandAll" checked onchange="toggleAllGroups(this.checked)" style="accent-color:var(--primary-color);width:14px;height:14px;">
+            Expand all groups
+        </label>
+    </div>
+
+    <!-- ===== Main Config Table ===== -->
+    <div class="table-wrap">
+        <table class="config-table" id="configTable">
+            <thead>
+                <tr>
+                    <th style="width:36px;"></th>
+                    <th>Allowance Type</th>
+                    <th>Applies To (Level)</th>
+                    <th>Campus / Region</th>
+                    <th style="text-align:right;">Monthly Limit</th>
+                    <th style="text-align:right;">Annual Cap</th>
+                    <th>Effective Date</th>
+                    <th>Status</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <!-- ========== GROUP: Transport ========== -->
+                <tr class="group-hdr" data-group="transport" onclick="toggleGroup('transport')" style="background:#eff6ff;">
+                    <td colspan="9">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <i class="bi bi-chevron-right grp-chevron open" id="chev-transport"></i>
+                                <span style="font-size:1.05rem;color:#1e40af;">&#128652;</span>
+                                <span style="color:#1e3a8a;">Transport Allowance</span>
+                                <span style="font-size:0.77rem;font-weight:500;color:#6b7280;margin-left:4px;">3 rules</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:20px;font-size:0.79rem;color:#6b7280;font-weight:600;">
+                                <span><i class="bi bi-check-circle-fill" style="color:#28a745;margin-right:3px;"></i>3 Active</span>
+                                <span>Max monthly: <strong style="color:#1e3a8a;">R 1,500</strong></span>
+                                <span>Max annual: <strong style="color:#1e3a8a;">R 9,000</strong></span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="transport">
+                    <td><span style="color:#bbb;font-size:0.8rem;">T1</span></td>
+                    <td><span class="at-tag at-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-building"></i> Main Campus</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 1,500</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 9,000</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('T1','Transport','All Levels','Main Campus','1500','9000','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Transport – Main Campus')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="transport">
+                    <td><span style="color:#bbb;font-size:0.8rem;">T2</span></td>
+                    <td><span class="at-tag at-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-geo-alt"></i> Regional Campus</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 1,200</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 7,200</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('T2','Transport','All Levels','Regional Campus','1200','7200','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Transport – Regional Campus')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="transport">
+                    <td><span style="color:#bbb;font-size:0.8rem;">T3</span></td>
+                    <td><span class="at-tag at-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-signpost-2"></i> Extension Centre</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 800</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 4,800</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('T3','Transport','All Levels','Extension Centre','800','4800','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Transport – Extension Centre')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- ========== GROUP: Meal ========== -->
+                <tr class="group-hdr" data-group="meal" onclick="toggleGroup('meal')" style="background:#f0fdf4;">
+                    <td colspan="9">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <i class="bi bi-chevron-right grp-chevron open" id="chev-meal"></i>
+                                <span style="font-size:1.05rem;color:#065f46;">&#127373;</span>
+                                <span style="color:#064e3b;">Meal Allowance</span>
+                                <span style="font-size:0.77rem;font-weight:500;color:#6b7280;margin-left:4px;">4 rules</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:20px;font-size:0.79rem;color:#6b7280;font-weight:600;">
+                                <span><i class="bi bi-check-circle-fill" style="color:#28a745;margin-right:3px;"></i>4 Active</span>
+                                <span>Max monthly: <strong style="color:#064e3b;">R 1,800</strong></span>
+                                <span>Max annual: <strong style="color:#064e3b;">R 10,800</strong></span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="meal">
+                    <td><span style="color:#bbb;font-size:0.8rem;">M1</span></td>
+                    <td><span class="at-tag at-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-building"></i> Main Campus</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 1,800</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 10,800</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('M1','Meal','All Levels','Main Campus','1800','10800','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Meal – Main Campus')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="meal">
+                    <td><span style="color:#bbb;font-size:0.8rem;">M2</span></td>
+                    <td><span class="at-tag at-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-geo-alt"></i> Regional Campus</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 1,600</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 9,600</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('M2','Meal','All Levels','Regional Campus','1600','9600','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Meal – Regional Campus')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="meal">
+                    <td><span style="color:#bbb;font-size:0.8rem;">M3</span></td>
+                    <td><span class="at-tag at-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-wifi"></i> Online Campus</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 1,200</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 7,200</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('M3','Meal','All Levels','Online Campus','1200','7200','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Meal – Online Campus')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="meal">
+                    <td><span style="color:#bbb;font-size:0.8rem;">M4</span></td>
+                    <td><span class="at-tag at-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-signpost-2"></i> Extension Centre</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 1,400</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 8,400</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('M4','Meal','All Levels','Extension Centre','1400','8400','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Meal – Extension Centre')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- ========== GROUP: Accommodation ========== -->
+                <tr class="group-hdr" data-group="accommodation" onclick="toggleGroup('accommodation')" style="background:#fff7ed;">
+                    <td colspan="9">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <i class="bi bi-chevron-right grp-chevron open" id="chev-accommodation"></i>
+                                <span style="font-size:1.05rem;color:#9a3412;">&#127968;</span>
+                                <span style="color:#7c2d12;">Accommodation</span>
+                                <span style="font-size:0.77rem;font-weight:500;color:#6b7280;margin-left:4px;">4 rules</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:20px;font-size:0.79rem;color:#6b7280;font-weight:600;">
+                                <span><i class="bi bi-check-circle-fill" style="color:#28a745;margin-right:3px;"></i>4 Active</span>
+                                <span>Max monthly: <strong style="color:#7c2d12;">R 4,500</strong></span>
+                                <span>Max annual: <strong style="color:#7c2d12;">R 27,000</strong></span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="accommodation">
+                    <td><span style="color:#bbb;font-size:0.8rem;">A1</span></td>
+                    <td><span class="at-tag at-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-building"></i> Main Campus</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 4,500</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 27,000</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('A1','Accommodation','All Levels','Main Campus','4500','27000','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Accommodation – Main Campus')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="accommodation">
+                    <td><span style="color:#bbb;font-size:0.8rem;">A2</span></td>
+                    <td><span class="at-tag at-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-geo-alt"></i> Regional – East</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 3,800</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 22,800</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('A2','Accommodation','All Levels','Regional – East','3800','22800','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Accommodation – Regional East')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="accommodation">
+                    <td><span style="color:#bbb;font-size:0.8rem;">A3</span></td>
+                    <td><span class="at-tag at-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-geo-alt"></i> Regional – West</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 3,800</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 22,800</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('A3','Accommodation','All Levels','Regional – West','3800','22800','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Accommodation – Regional West')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="accommodation">
+                    <td><span style="color:#bbb;font-size:0.8rem;">A4</span></td>
+                    <td><span class="at-tag at-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> All Levels</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-signpost-2"></i> Extension Centre</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 3,200</span><span style="color:#bbb;font-size:0.76rem;">/mo</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 19,200</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('A4','Accommodation','All Levels','Extension Centre','3200','19200','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Accommodation – Extension Centre')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- ========== GROUP: Bursary ========== -->
+                <tr class="group-hdr" data-group="bursary" onclick="toggleGroup('bursary')" style="background:#faf5ff;">
+                    <td colspan="9">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <i class="bi bi-chevron-right grp-chevron open" id="chev-bursary"></i>
+                                <span style="font-size:1.05rem;color:#5b21b6;">&#127891;</span>
+                                <span style="color:#4c1d95;">Bursary</span>
+                                <span style="font-size:0.77rem;font-weight:500;color:#6b7280;margin-left:4px;">5 rules</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:20px;font-size:0.79rem;color:#6b7280;font-weight:600;">
+                                <span><i class="bi bi-check-circle-fill" style="color:#28a745;margin-right:3px;"></i>5 Active</span>
+                                <span>Annual only (no monthly limit)</span>
+                                <span>Max annual: <strong style="color:#4c1d95;">R 60,000</strong></span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="bursary">
+                    <td><span style="color:#bbb;font-size:0.8rem;">B1</span></td>
+                    <td><span class="at-tag at-bursary"><i class="bi bi-mortarboard-fill"></i> Bursary</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-1-circle"></i> First Year</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-globe"></i> All Campuses</span></td>
+                    <td style="text-align:right;"><span class="limit-na">N/A</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 35,000</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Mar 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('B1','Bursary','First Year','All Campuses','','35000','2025-03-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Bursary – First Year')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="bursary">
+                    <td><span style="color:#bbb;font-size:0.8rem;">B2</span></td>
+                    <td><span class="at-tag at-bursary"><i class="bi bi-mortarboard-fill"></i> Bursary</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-2-circle"></i> 2nd Year</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-globe"></i> All Campuses</span></td>
+                    <td style="text-align:right;"><span class="limit-na">N/A</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 40,000</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Mar 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('B2','Bursary','2nd Year','All Campuses','','40000','2025-03-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Bursary – 2nd Year')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="bursary">
+                    <td><span style="color:#bbb;font-size:0.8rem;">B3</span></td>
+                    <td><span class="at-tag at-bursary"><i class="bi bi-mortarboard-fill"></i> Bursary</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-3-circle"></i> 3rd Year</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-globe"></i> All Campuses</span></td>
+                    <td style="text-align:right;"><span class="limit-na">N/A</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 45,000</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Mar 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('B3','Bursary','3rd Year','All Campuses','','45000','2025-03-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Bursary – 3rd Year')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="bursary">
+                    <td><span style="color:#bbb;font-size:0.8rem;">B4</span></td>
+                    <td><span class="at-tag at-bursary"><i class="bi bi-mortarboard-fill"></i> Bursary</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-4-circle"></i> 4th Year</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-globe"></i> All Campuses</span></td>
+                    <td style="text-align:right;"><span class="limit-na">N/A</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 50,000</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Mar 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('B4','Bursary','4th Year','All Campuses','','50000','2025-03-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Bursary – 4th Year')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="bursary">
+                    <td><span style="color:#bbb;font-size:0.8rem;">B5</span></td>
+                    <td><span class="at-tag at-bursary"><i class="bi bi-mortarboard-fill"></i> Bursary</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-award"></i> Postgraduate</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-globe"></i> All Campuses</span></td>
+                    <td style="text-align:right;"><span class="limit-na">N/A</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 60,000</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Mar 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('B5','Bursary','Postgraduate','All Campuses','','60000','2025-03-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Bursary – Postgraduate')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- ========== GROUP: Study Material ========== -->
+                <tr class="group-hdr" data-group="material" onclick="toggleGroup('material')" style="background:#f0f9ff;">
+                    <td colspan="9">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <i class="bi bi-chevron-right grp-chevron open" id="chev-material"></i>
+                                <span style="font-size:1.05rem;color:#0c4a6e;">&#128218;</span>
+                                <span style="color:#0c4a6e;">Study Material</span>
+                                <span style="font-size:0.77rem;font-weight:500;color:#6b7280;margin-left:4px;">2 rules</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:20px;font-size:0.79rem;color:#6b7280;font-weight:600;">
+                                <span><i class="bi bi-check-circle-fill" style="color:#28a745;margin-right:3px;"></i>1 Active</span>
+                                <span><i class="bi bi-exclamation-circle-fill" style="color:#e0a800;margin-right:3px;"></i>1 Pending</span>
+                                <span>Once-off per semester</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="material">
+                    <td><span style="color:#bbb;font-size:0.8rem;">S1</span></td>
+                    <td><span class="at-tag at-material"><i class="bi bi-book-fill"></i> Study Material</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-mortarboard"></i> Undergraduate</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-globe"></i> All Campuses</span></td>
+                    <td style="text-align:right;"><span class="limit-na">Once-off</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 1,600</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Jan 2025</td>
+                    <td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('S1','Study Material','Undergraduate','All Campuses','','1600','2025-01-01','active')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Study Material – Undergraduate')"><i class="bi bi-clock-history"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="data-row" data-group="material" style="background:#fffef8;">
+                    <td><span style="color:#bbb;font-size:0.8rem;">S2</span></td>
+                    <td><span class="at-tag at-material"><i class="bi bi-book-fill"></i> Study Material</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-award"></i> Postgraduate</span></td>
+                    <td><span class="scope-pill"><i class="bi bi-globe"></i> All Campuses</span></td>
+                    <td style="text-align:right;"><span class="limit-na">Once-off</span></td>
+                    <td style="text-align:right;"><span class="limit-val">R 2,400</span><span style="color:#bbb;font-size:0.76rem;">/yr</span></td>
+                    <td style="color:#666;">01 Mar 2026</td>
+                    <td><span class="status-pill sp-pending"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Pending</span></td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:5px;justify-content:center;">
+                            <button class="btn-icon" onclick="openEdit('S2','Study Material','Postgraduate','All Campuses','','2400','2026-03-01','pending')"><i class="bi bi-pencil"></i> Edit</button>
+                            <button class="btn-icon" onclick="openHistory('Study Material – Postgraduate')"><i class="bi bi-clock-history"></i></button>
+                            <button class="btn-icon" style="background:#d4edda;border-color:#28a745;color:#155724;" onclick="approveRule('S2')"><i class="bi bi-check-lg"></i> Approve</button>
+                        </div>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+</div><!-- /main-content -->
+
+
+<!-- ========== EDIT LIMIT MODAL ========== -->
+<div class="modal-ov" id="editModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h5><i class="bi bi-pencil-square"></i> Edit Limit Rule</h5>
+            <button class="modal-close" onclick="closeModal('editModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="info-banner">
+                <i class="bi bi-info-circle-fill" style="flex-shrink:0;"></i>
+                <span>Changes to active limits will require approval before taking effect. A change reason is required.</span>
+            </div>
+
+            <div class="section-divider">Rule Scope</div>
+            <div class="mfg mfg-2">
+                <div class="form-field">
+                    <label>Allowance Type</label>
+                    <select id="e_type" disabled>
+                        <option>Transport</option><option>Meal</option><option>Accommodation</option><option>Bursary</option><option>Study Material</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Financial Year</label>
+                    <select id="e_fy">
+                        <option>FY 2024/25</option><option selected>FY 2025/26</option><option>FY 2026/27</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Applies To (Level of Study)</label>
+                    <select id="e_level">
+                        <option>All Levels</option><option>First Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option><option>Postgraduate</option><option>Undergraduate</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Campus / Region</label>
+                    <select id="e_campus">
+                        <option>All Campuses</option><option>Main Campus</option><option>Regional Campus</option><option>Regional – East</option><option>Regional – West</option><option>Online Campus</option><option>Extension Centre</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section-divider">Limit Values</div>
+            <div class="mfg mfg-2">
+                <div class="form-field">
+                    <label>Monthly Limit (R)</label>
+                    <input type="number" id="e_monthly" min="0" step="50" placeholder="Leave blank if N/A">
+                    <div class="field-hint">Leave blank for annual-only allowances (e.g. Bursary)</div>
+                </div>
+                <div class="form-field">
+                    <label>Annual Cap (R) <span class="req">*</span></label>
+                    <input type="number" id="e_annual" min="0" step="100">
+                </div>
+            </div>
+
+            <div class="section-divider">Effectivity &amp; Status</div>
+            <div class="mfg mfg-2">
+                <div class="form-field">
+                    <label>Effective Date <span class="req">*</span></label>
+                    <input type="date" id="e_date">
+                </div>
+                <div class="form-field">
+                    <label>Status</label>
+                    <select id="e_status">
+                        <option value="active">Active</option>
+                        <option value="pending">Pending Review</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label>Change Reason <span class="req">*</span></label>
+                <textarea id="e_reason" rows="2" placeholder="Briefly describe why this limit is being changed…"></textarea>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-outline" onclick="closeModal('editModal')">Cancel</button>
+            <button class="btn-primary-action" onclick="saveEdit()"><i class="bi bi-floppy"></i> Save Changes</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========== ADD RULE MODAL ========== -->
+<div class="modal-ov" id="addModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h5><i class="bi bi-plus-circle-fill"></i> Add Limit Rule</h5>
+            <button class="modal-close" onclick="closeModal('addModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="section-divider">Rule Scope</div>
+            <div class="mfg mfg-2">
+                <div class="form-field">
+                    <label>Allowance Type <span class="req">*</span></label>
+                    <select>
+                        <option value="">Select type…</option>
+                        <option>Transport</option><option>Meal</option><option>Accommodation</option><option>Bursary</option><option>Study Material</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Financial Year <span class="req">*</span></label>
+                    <select>
+                        <option>FY 2024/25</option><option selected>FY 2025/26</option><option>FY 2026/27</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Applies To (Level of Study) <span class="req">*</span></label>
+                    <select>
+                        <option value="">Select level…</option>
+                        <option>All Levels</option><option>First Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option><option>Postgraduate</option><option>Undergraduate</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Campus / Region <span class="req">*</span></label>
+                    <select>
+                        <option value="">Select campus…</option>
+                        <option>All Campuses</option><option>Main Campus</option><option>Regional Campus</option><option>Regional – East</option><option>Regional – West</option><option>Online Campus</option><option>Extension Centre</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section-divider">Limit Values</div>
+            <div class="mfg mfg-2">
+                <div class="form-field">
+                    <label>Monthly Limit (R)</label>
+                    <input type="number" min="0" step="50" placeholder="Leave blank if N/A">
+                    <div class="field-hint">Leave blank for annual-only allowances</div>
+                </div>
+                <div class="form-field">
+                    <label>Annual Cap (R) <span class="req">*</span></label>
+                    <input type="number" min="0" step="100">
+                </div>
+            </div>
+
+            <div class="section-divider">Effectivity &amp; Status</div>
+            <div class="mfg mfg-2">
+                <div class="form-field">
+                    <label>Effective Date <span class="req">*</span></label>
+                    <input type="date" value="2026-01-01">
+                </div>
+                <div class="form-field">
+                    <label>Initial Status</label>
+                    <select>
+                        <option value="active">Active</option>
+                        <option value="pending">Pending Review</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label>Notes</label>
+                <textarea rows="2" placeholder="Optional notes about this new rule…"></textarea>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-outline" onclick="closeModal('addModal')">Cancel</button>
+            <button class="btn-primary-action" onclick="saveAdd()"><i class="bi bi-plus-circle"></i> Add Rule</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========== HISTORY MODAL ========== -->
+<div class="modal-ov" id="histModal">
+    <div class="modal-box wide">
+        <div class="modal-head">
+            <h5><i class="bi bi-clock-history"></i> Change History – <span id="histTitle"></span></h5>
+            <button class="modal-close" onclick="closeModal('histModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <table class="hist-table">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Changed By</th>
+                        <th>Field</th>
+                        <th>Previous Value</th>
+                        <th>New Value</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody id="histBody"></tbody>
+            </table>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-outline" onclick="closeModal('histModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-msg" id="toast"></div>
+
+<script>
+    // ===== Group toggle =====
+    var groupState = { transport: true, meal: true, accommodation: true, bursary: true, material: true };
+
+    function toggleGroup(group) {
+        groupState[group] = !groupState[group];
+        var rows = document.querySelectorAll('tr.data-row[data-group="' + group + '"]');
+        rows.forEach(function(r) { r.classList.toggle('hidden', !groupState[group]); });
+        var chev = document.getElementById('chev-' + group);
+        if (chev) chev.classList.toggle('open', groupState[group]);
+        syncExpandAllCheckbox();
+    }
+
+    function toggleAllGroups(expand) {
+        ['transport','meal','accommodation','bursary','material'].forEach(function(g) {
+            if (groupState[g] !== expand) toggleGroup(g);
+        });
+    }
+
+    function syncExpandAllCheckbox() {
+        var allOpen = Object.values(groupState).every(function(v) { return v; });
+        var allClosed = Object.values(groupState).every(function(v) { return !v; });
+        var chk = document.getElementById('chkExpandAll');
+        chk.checked       = allOpen;
+        chk.indeterminate = !allOpen && !allClosed;
+    }
+
+    // ===== Financial Year switcher =====
+    function switchFY(btn) {
+        document.querySelectorAll('.fy-btn').forEach(function(b) { b.classList.remove('fy-active'); });
+        btn.classList.add('fy-active');
+        showToast('Showing rules for ' + btn.textContent.trim());
+    }
+
+    // ===== Edit Modal =====
+    function openEdit(id, type, level, campus, monthly, annual, date, status) {
+        var s = document.getElementById;
+        s('e_type').value    = type;
+        s('e_level').value   = level;
+        s('e_campus').value  = campus;
+        s('e_monthly').value = monthly;
+        s('e_annual').value  = annual;
+        s('e_date').value    = date;
+        s('e_status').value  = status;
+        document.getElementById('e_reason').value = '';
+        openModal('editModal');
+    }
+
+    function saveEdit() {
+        var reason = document.getElementById('e_reason').value.trim();
+        if (!reason) { alert('Please enter a change reason before saving.'); return; }
+        closeModal('editModal');
+        showToast('Limit rule updated — pending approval');
+    }
+
+    // ===== Add Modal =====
+    function saveAdd() {
+        closeModal('addModal');
+        showToast('New limit rule added — pending review');
+    }
+
+    // ===== History Modal =====
+    var historyData = {
+        'Transport – Main Campus': [
+            { date: '15 May 2026 09:14', by: 'Admin (Thandiwe M.)', field: 'Monthly Limit', prev: 'R 1,200', next: 'R 1,500', reason: 'CPI adjustment for FY 2025/26' },
+            { date: '02 Jan 2025 08:00', by: 'System Import', field: 'Annual Cap', prev: 'R 7,200', next: 'R 9,000', reason: 'FY 2025/26 baseline import' },
+            { date: '01 Jan 2024 08:00', by: 'Admin (B. Ndlovu)', field: 'Monthly Limit', prev: 'R 1,000', next: 'R 1,200', reason: 'Fuel levy increase Q1 2024' },
+        ],
+        'Bursary – Postgraduate': [
+            { date: '01 Mar 2025 11:30', by: 'Admin (Thandiwe M.)', field: 'Annual Cap', prev: 'R 55,000', next: 'R 60,000', reason: 'DHET guideline increase' },
+        ],
+        'Study Material – Postgraduate': [
+            { date: '01 Mar 2026 10:00', by: 'Admin (Thandiwe M.)', field: 'Status', prev: 'Inactive', next: 'Pending Review', reason: 'New rule submitted for PG students' },
+        ],
+    };
+
+    function openHistory(label) {
+        document.getElementById('histTitle').textContent = label;
+        var rows = historyData[label] || [{ date: '02 Jan 2025 08:00', by: 'System Import', field: 'Annual Cap', prev: '—', next: 'Set on import', reason: 'FY baseline import' }];
+        document.getElementById('histBody').innerHTML = rows.map(function(r) {
+            var isUp  = r.next && r.prev && r.next > r.prev;
+            var isDn  = r.next && r.prev && r.next < r.prev;
+            var arrow = isUp  ? '<span class="change-badge change-up"><i class="bi bi-arrow-up-circle-fill"></i> ' + r.next + '</span>'
+                      : isDn  ? '<span class="change-badge change-dn"><i class="bi bi-arrow-down-circle-fill"></i> ' + r.next + '</span>'
+                      :          '<span style="color:#555;">' + r.next + '</span>';
+            return '<tr>' +
+                '<td style="white-space:nowrap;color:#666;">' + r.date + '</td>' +
+                '<td>' + r.by + '</td>' +
+                '<td><strong>' + r.field + '</strong></td>' +
+                '<td style="color:#dc3545;text-decoration:line-through;">' + r.prev + '</td>' +
+                '<td>' + arrow + '</td>' +
+                '<td style="color:#555;">' + r.reason + '</td>' +
+                '</tr>';
+        }).join('');
+        openModal('histModal');
+    }
+
+    // ===== Approve pending rule =====
+    function approveRule(id) {
+        showToast('Rule ' + id + ' approved and set to Active');
+    }
+
+    // ===== Modal helpers =====
+    function openModal(id)  { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    document.querySelectorAll('.modal-ov').forEach(function(ov) {
+        ov.addEventListener('click', function(e) { if (e.target === ov) closeModal(ov.id); });
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') document.querySelectorAll('.modal-ov.active').forEach(function(m) { closeModal(m.id); });
+    });
+
+    // ===== Toast =====
+    function showToast(msg) {
+        var t = document.getElementById('toast');
+        t.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + msg;
+        t.classList.add('show');
+        setTimeout(function() { t.classList.remove('show'); }, 3200);
+    }
+</script>
+</body>
+</html>

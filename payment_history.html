@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History – ISFAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #1093DB;
+            --sidebar-color: #094781;
+            --accent-color: #337C96;
+            --bg-color: #E5F5FF;
+            --border-color: #ACC8CB;
+            --text-color: #094781;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0; padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #094781 0%, #0d6ebd 60%, #1093DB 100%);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 4px 0 18px rgba(9,71,129,0.25);
+        }
+
+        .sidebar-brand {
+            padding: 20px 16px 12px;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, color 0.2s;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover { background: rgba(255,255,255,0.18); color: #fff; transform: translateX(4px); }
+
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+            font-weight: 600;
+            border-left: 3px solid #fff;
+            box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+        }
+
+        .sidebar details summary {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            list-style: none;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+        }
+
+        .sidebar details summary::-webkit-details-marker { display: none; }
+        .sidebar details summary:hover { background: rgba(255,255,255,0.18); color: #fff; }
+        .sidebar details[open] > summary { background: rgba(255,255,255,0.12); color: #fff; }
+
+        .sidebar details summary .chevron {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .sidebar details[open] summary .chevron { transform: rotate(90deg); }
+
+        .sidebar details .sub-nav { list-style: none; padding: 2px 0 4px; margin: 0; }
+
+        .sidebar details .sub-nav li a {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.87rem;
+            padding: 8px 16px 8px 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar details .sub-nav li a:hover,
+        .sidebar details .sub-nav li a.active { background: rgba(255,255,255,0.18); color: #fff; }
+
+        .sidebar details .sub-nav li a.active { border-left: 3px solid #fff; padding-left: 37px; }
+
+        /* ===== MAIN ===== */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #E5F5FF 0%, #f0f8ff 100%);
+        }
+
+        /* ===== Page Header ===== */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .page-header h2 {
+            margin: 0;
+            color: var(--sidebar-color);
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ===== Summary Strip ===== */
+        .summary-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px 18px;
+            box-shadow: 0 3px 12px rgba(9,71,129,0.09);
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-card.total    { border-color: var(--sidebar-color); }
+        .stat-card.transport{ border-color: #1093DB; }
+        .stat-card.meal     { border-color: #28a745; }
+        .stat-card.accom    { border-color: #fd7e14; }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .stat-card.total     .stat-icon { background: #e8f1fb; color: var(--sidebar-color); }
+        .stat-card.transport .stat-icon { background: #dbeafe; color: #1093DB; }
+        .stat-card.meal      .stat-icon { background: #d4edda; color: #1a7a31; }
+        .stat-card.accom     .stat-icon { background: #ffe8cc; color: #b85c00; }
+
+        .stat-info label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #888;
+            margin-bottom: 3px;
+        }
+
+        .stat-info .stat-value {
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+            line-height: 1;
+        }
+
+        .stat-info .stat-sub {
+            font-size: 0.72rem;
+            color: #aaa;
+            margin-top: 2px;
+        }
+
+        /* ===== Filter Panel ===== */
+        .filter-panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 14px rgba(9,71,129,0.09);
+            border: 2px solid transparent;
+            background-image: linear-gradient(#fff,#fff), linear-gradient(135deg, var(--primary-color), var(--accent-color), var(--sidebar-color));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+
+        .filter-panel label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .filter-panel select,
+        .filter-panel input[type="text"],
+        .filter-panel input[type="date"] {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.88rem;
+            color: #333;
+            background: #fdfdfe;
+            box-sizing: border-box;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .filter-panel select:focus,
+        .filter-panel input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16,147,219,0.12);
+        }
+
+        /* ===== Table ===== */
+        .hist-table-wrapper {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(9,71,129,0.10);
+            overflow: hidden;
+        }
+
+        .hist-table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            color: #fff;
+        }
+
+        .hist-table-header h3 {
+            margin: 0;
+            font-size: 0.98rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hist-table-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 18px;
+            font-size: 0.82rem;
+            color: #777;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .table-scroller {
+            overflow-x: auto;
+            max-height: 540px;
+            overflow-y: auto;
+        }
+
+        .hist-table {
+            width: 100%;
+            min-width: 1300px;
+            border-collapse: collapse;
+            font-size: 0.87rem;
+            background: #fff;
+        }
+
+        .hist-table thead tr { background: #f0f6fb; }
+
+        .hist-table thead th {
+            padding: 11px 14px;
+            font-weight: 700;
+            text-align: left;
+            font-size: 0.74rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: var(--sidebar-color);
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background: #f0f6fb;
+            z-index: 1;
+        }
+
+        .hist-table thead th.sortable { cursor: pointer; user-select: none; }
+        .hist-table thead th.sortable:hover { color: var(--primary-color); }
+
+        .hist-table tbody tr {
+            border-bottom: 1px solid #edf2f7;
+            transition: background 0.14s;
+        }
+
+        .hist-table tbody tr:last-child { border-bottom: none; }
+        .hist-table tbody tr:nth-child(even) { background: #f8fcff; }
+        .hist-table tbody tr:hover { background: var(--bg-color); }
+
+        .hist-table td {
+            padding: 10px 14px;
+            color: var(--text-color);
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* Pocket badges */
+        .badge-pocket {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.74rem;
+            font-weight: 700;
+        }
+
+        .bp-transport     { background: #dbeafe; color: #1093DB; }
+        .bp-meal          { background: #d4edda; color: #1a7a31; }
+        .bp-accommodation { background: #ffe8cc; color: #b85c00; }
+
+        /* Status badges */
+        .badge-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.74rem;
+            font-weight: 600;
+        }
+
+        .bs-released  { background: #d4edda; color: #155724; }
+        .bs-reversed  { background: #f8d7da; color: #721c24; }
+        .bs-pending   { background: #fff3cd; color: #856404; }
+        .bs-cancelled { background: #e2e3e5; color: #383d41; }
+
+        /* Action button */
+        .btn-sm {
+            padding: 4px 11px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: opacity 0.18s;
+            background: #063154;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .btn-sm:hover { opacity: 0.82; }
+
+        /* Export / primary buttons */
+        .btn-primary-action {
+            padding: 9px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color));
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 0.87rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 3px 12px rgba(9,71,129,0.28);
+            transition: opacity 0.18s;
+        }
+
+        .btn-primary-action:hover { opacity: 0.88; }
+
+        .btn-outline {
+            padding: 8px 18px;
+            background: #fff;
+            color: var(--sidebar-color);
+            border: 1.5px solid var(--border-color);
+            border-radius: 7px;
+            font-size: 0.87rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .btn-outline:hover { background: #f0f8ff; border-color: var(--primary-color); }
+
+        /* Footer totals bar */
+        .totals-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 28px;
+            padding: 13px 20px;
+            border-top: 2px solid #edf2f7;
+            background: #f8fafc;
+        }
+
+        .totals-bar .tb-item label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #888;
+            display: block;
+        }
+
+        .totals-bar .tb-item span {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 20px;
+            justify-content: flex-end;
+            border-top: 1px solid #edf2f7;
+        }
+
+        .page-btn {
+            padding: 5px 11px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: #fff;
+            color: var(--sidebar-color);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.14s;
+        }
+
+        .page-btn:hover, .page-btn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <details>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="index.html">Profile</a></li>
+                <li><a href="#">Check-In</a></li>
+                <li><a href="#">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <!-- Payments (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="#">Process Payment</a></li>
+                <li><a href="payment_history.html" class="active">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="funding_selection.html">Allocations</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <a href="#" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="#" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-clock-history"></i> Payment History</h2>
+        <div style="display:flex;gap:10px;">
+            <button class="btn-outline"><i class="bi bi-filetype-csv"></i> Export CSV</button>
+            <button class="btn-primary-action"><i class="bi bi-printer"></i> Print Report</button>
+        </div>
+    </div>
+
+    <!-- Summary Strip -->
+    <div class="summary-strip">
+        <div class="stat-card total">
+            <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+            <div class="stat-info">
+                <label>Total Disbursed</label>
+                <div class="stat-value">R 5 247 100</div>
+                <div class="stat-sub">1 248 transactions</div>
+            </div>
+        </div>
+        <div class="stat-card transport">
+            <div class="stat-icon"><i class="bi bi-bus-front-fill"></i></div>
+            <div class="stat-info">
+                <label>Transport</label>
+                <div class="stat-value">R 612 000</div>
+                <div class="stat-sub">408 payments</div>
+            </div>
+        </div>
+        <div class="stat-card meal">
+            <div class="stat-icon"><i class="bi bi-egg-fried"></i></div>
+            <div class="stat-info">
+                <label>Meal</label>
+                <div class="stat-value">R 1 085 500</div>
+                <div class="stat-sub">497 payments</div>
+            </div>
+        </div>
+        <div class="stat-card accom">
+            <div class="stat-icon"><i class="bi bi-building"></i></div>
+            <div class="stat-info">
+                <label>Accommodation</label>
+                <div class="stat-value">R 3 549 600</div>
+                <div class="stat-sub">343 payments</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-panel">
+        <div class="grid grid-cols-12 gap-3 items-end">
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>University</label>
+                <select>
+                    <option value="">All Universities</option>
+                    <option>Main Campus</option>
+                    <option>Regional Campus – East</option>
+                    <option>Regional Campus – West</option>
+                    <option>Online Campus</option>
+                    <option>Extension Center</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>Faculty</label>
+                <select>
+                    <option value="">All Faculties</option>
+                    <option>Science &amp; Engineering</option>
+                    <option>Business &amp; Economics</option>
+                    <option>Health Sciences</option>
+                    <option>Arts &amp; Humanities</option>
+                    <option>Law</option>
+                    <option>Education</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>Qualification</label>
+                <select>
+                    <option value="">All Qualifications</option>
+                    <option>Bachelor's Degree</option>
+                    <option>Master's Degree</option>
+                    <option>Diploma</option>
+                    <option>Postgraduate Diploma</option>
+                    <option>PhD</option>
+                    <option>Certificate</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>Allowance Type</label>
+                <select>
+                    <option value="">All Types</option>
+                    <option>Transport</option>
+                    <option>Meal</option>
+                    <option>Accommodation</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>Status</label>
+                <select>
+                    <option value="">All Statuses</option>
+                    <option>Released</option>
+                    <option>Reversed</option>
+                    <option>Pending</option>
+                    <option>Cancelled</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>Year of Study</label>
+                <select>
+                    <option value="">All Years</option>
+                    <option>1st Year</option>
+                    <option>2nd Year</option>
+                    <option>3rd Year</option>
+                    <option>4th Year</option>
+                    <option>Postgraduate</option>
+                </select>
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>Date From</label>
+                <input type="date" value="2026-01-01">
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>Date To</label>
+                <input type="date" value="2026-05-19">
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>Batch Reference</label>
+                <input type="text" placeholder="e.g. TRN-2026-04">
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2">
+                <label>Search Student</label>
+                <input type="text" placeholder="Name or student no.">
+            </div>
+            <div class="col-span-12 md:col-span-6 lg:col-span-2" style="display:flex;gap:8px;align-items:flex-end;padding-bottom:0;">
+                <button type="button" style="flex:1;padding:9px 10px;background:#063154;color:#fff;font-weight:700;border:none;border-radius:6px;font-size:0.86rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 10px rgba(9,71,129,0.3);">
+                    <i class="bi bi-search"></i> Search
+                </button>
+                <button type="button" style="padding:9px 12px;background:#fff;color:#666;font-weight:600;border:1px solid var(--border-color);border-radius:6px;font-size:0.86rem;cursor:pointer;" title="Reset filters">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="hist-table-wrapper">
+        <div class="hist-table-header">
+            <h3><i class="bi bi-table"></i> Payment Records</h3>
+            <span style="font-size:0.82rem;opacity:0.85;">Showing 15 of 1 248 records</span>
+        </div>
+
+        <div class="table-scroller">
+            <table class="hist-table">
+                <thead>
+                    <tr>
+                        <th class="sortable">#</th>
+                        <th class="sortable">Payment Date <i class="bi bi-arrow-down-up" style="font-size:0.68rem;opacity:0.6;"></i></th>
+                        <th>Batch Reference</th>
+                        <th class="sortable">Student Name</th>
+                        <th>Student No.</th>
+                        <th>University</th>
+                        <th>Faculty</th>
+                        <th>Qualification</th>
+                        <th>Year</th>
+                        <th>Allowance Type</th>
+                        <th class="sortable">Amount <i class="bi bi-arrow-down-up" style="font-size:0.68rem;opacity:0.6;"></i></th>
+                        <th>Receipt / Ref</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>30 Apr 2026</td>
+                        <td><strong>TRN-2026-04-009</strong></td>
+                        <td><strong>Tumelo Motaung</strong></td>
+                        <td>STU-2024-0001</td>
+                        <td>Main Campus</td>
+                        <td>Science &amp; Engineering</td>
+                        <td>Bachelor's Degree</td>
+                        <td>2nd Year</td>
+                        <td><span class="badge-pocket bp-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                        <td><strong>R 1 200</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240430-001</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>30 Apr 2026</td>
+                        <td><strong>MEL-2026-04-007</strong></td>
+                        <td><strong>Tumelo Motaung</strong></td>
+                        <td>STU-2024-0001</td>
+                        <td>Main Campus</td>
+                        <td>Science &amp; Engineering</td>
+                        <td>Bachelor's Degree</td>
+                        <td>2nd Year</td>
+                        <td><span class="badge-pocket bp-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                        <td><strong>R 1 800</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240430-002</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>30 Apr 2026</td>
+                        <td><strong>ACC-2026-04-011</strong></td>
+                        <td><strong>Tumelo Motaung</strong></td>
+                        <td>STU-2024-0001</td>
+                        <td>Main Campus</td>
+                        <td>Science &amp; Engineering</td>
+                        <td>Bachelor's Degree</td>
+                        <td>2nd Year</td>
+                        <td><span class="badge-pocket bp-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                        <td><strong>R 4 800</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240430-003</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>30 Apr 2026</td>
+                        <td><strong>TRN-2026-04-009</strong></td>
+                        <td><strong>Priya Naidoo</strong></td>
+                        <td>STU-2024-0002</td>
+                        <td>Regional Campus – East</td>
+                        <td>Health Sciences</td>
+                        <td>Master's Degree</td>
+                        <td>Postgraduate</td>
+                        <td><span class="badge-pocket bp-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                        <td><strong>R 1 200</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240430-004</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>30 Apr 2026</td>
+                        <td><strong>MEL-2026-04-007</strong></td>
+                        <td><strong>Priya Naidoo</strong></td>
+                        <td>STU-2024-0002</td>
+                        <td>Regional Campus – East</td>
+                        <td>Health Sciences</td>
+                        <td>Master's Degree</td>
+                        <td>Postgraduate</td>
+                        <td><span class="badge-pocket bp-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                        <td><strong>R 2 200</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240430-005</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>30 Apr 2026</td>
+                        <td><strong>ACC-2026-04-011</strong></td>
+                        <td><strong>Priya Naidoo</strong></td>
+                        <td>STU-2024-0002</td>
+                        <td>Regional Campus – East</td>
+                        <td>Health Sciences</td>
+                        <td>Master's Degree</td>
+                        <td>Postgraduate</td>
+                        <td><span class="badge-pocket bp-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                        <td><strong>R 5 200</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240430-006</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>31 Mar 2026</td>
+                        <td><strong>MEL-2026-03-005</strong></td>
+                        <td><strong>Lerato van Wyk</strong></td>
+                        <td>STU-2023-0118</td>
+                        <td>Main Campus</td>
+                        <td>Business &amp; Economics</td>
+                        <td>Diploma</td>
+                        <td>3rd Year</td>
+                        <td><span class="badge-pocket bp-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                        <td><strong>R 1 800</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240331-007</td>
+                        <td><span class="badge-status bs-reversed">Reversed</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>31 Mar 2026</td>
+                        <td><strong>TRN-2026-03-004</strong></td>
+                        <td><strong>James Dlamini</strong></td>
+                        <td>STU-2022-0305</td>
+                        <td>Online Campus</td>
+                        <td>Law</td>
+                        <td>Bachelor's Degree</td>
+                        <td>4th Year</td>
+                        <td><span class="badge-pocket bp-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                        <td><strong>R 1 200</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240331-008</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>31 Mar 2026</td>
+                        <td><strong>ACC-2026-03-008</strong></td>
+                        <td><strong>Ayesha Baloyi</strong></td>
+                        <td>STU-2024-0047</td>
+                        <td>Regional Campus – West</td>
+                        <td>Education</td>
+                        <td>Postgraduate Diploma</td>
+                        <td>Postgraduate</td>
+                        <td><span class="badge-pocket bp-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                        <td><strong>R 4 800</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240331-009</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>28 Feb 2026</td>
+                        <td><strong>MEL-2026-02-003</strong></td>
+                        <td><strong>Kelebogile Osei</strong></td>
+                        <td>STU-2023-0209</td>
+                        <td>Main Campus</td>
+                        <td>Arts &amp; Humanities</td>
+                        <td>Master's Degree</td>
+                        <td>2nd Year</td>
+                        <td><span class="badge-pocket bp-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                        <td><strong>R 1 800</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240228-010</td>
+                        <td><span class="badge-status bs-cancelled">Cancelled</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td>28 Feb 2026</td>
+                        <td><strong>TRN-2026-02-002</strong></td>
+                        <td><strong>Nhlanhla Pretorius</strong></td>
+                        <td>STU-2024-0083</td>
+                        <td>Main Campus</td>
+                        <td>Science &amp; Engineering</td>
+                        <td>PhD</td>
+                        <td>Postgraduate</td>
+                        <td><span class="badge-pocket bp-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                        <td><strong>R 1 500</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240228-011</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td>28 Feb 2026</td>
+                        <td><strong>ACC-2026-02-006</strong></td>
+                        <td><strong>Nhlanhla Pretorius</strong></td>
+                        <td>STU-2024-0083</td>
+                        <td>Main Campus</td>
+                        <td>Science &amp; Engineering</td>
+                        <td>PhD</td>
+                        <td>Postgraduate</td>
+                        <td><span class="badge-pocket bp-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                        <td><strong>R 6 500</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240228-012</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>13</td>
+                        <td>31 Jan 2026</td>
+                        <td><strong>TRN-2026-01-001</strong></td>
+                        <td><strong>Zanele Ferreira</strong></td>
+                        <td>STU-2025-0012</td>
+                        <td>Main Campus</td>
+                        <td>Business &amp; Economics</td>
+                        <td>Bachelor's Degree</td>
+                        <td>1st Year</td>
+                        <td><span class="badge-pocket bp-transport"><i class="bi bi-bus-front-fill"></i> Transport</span></td>
+                        <td><strong>R 1 200</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240131-013</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>14</td>
+                        <td>31 Jan 2026</td>
+                        <td><strong>MEL-2026-01-001</strong></td>
+                        <td><strong>Zanele Ferreira</strong></td>
+                        <td>STU-2025-0012</td>
+                        <td>Main Campus</td>
+                        <td>Business &amp; Economics</td>
+                        <td>Bachelor's Degree</td>
+                        <td>1st Year</td>
+                        <td><span class="badge-pocket bp-meal"><i class="bi bi-egg-fried"></i> Meal</span></td>
+                        <td><strong>R 1 800</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240131-014</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                    <tr>
+                        <td>15</td>
+                        <td>31 Jan 2026</td>
+                        <td><strong>ACC-2026-01-002</strong></td>
+                        <td><strong>Zanele Ferreira</strong></td>
+                        <td>STU-2025-0012</td>
+                        <td>Main Campus</td>
+                        <td>Business &amp; Economics</td>
+                        <td>Bachelor's Degree</td>
+                        <td>1st Year</td>
+                        <td><span class="badge-pocket bp-accommodation"><i class="bi bi-building"></i> Accommodation</span></td>
+                        <td><strong>R 4 500</strong></td>
+                        <td style="font-family:monospace;font-size:0.78rem;">REC-240131-015</td>
+                        <td><span class="badge-status bs-released">Released</span></td>
+                        <td><button class="btn-sm"><i class="bi bi-eye"></i> View</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals Bar -->
+        <div class="totals-bar">
+            <div class="tb-item">
+                <label>Records shown</label>
+                <span>15 / 1 248</span>
+            </div>
+            <div class="tb-item">
+                <label>Transport (shown)</label>
+                <span style="color:#1093DB;">R 7 500</span>
+            </div>
+            <div class="tb-item">
+                <label>Meal (shown)</label>
+                <span style="color:#1a7a31;">R 9 400</span>
+            </div>
+            <div class="tb-item">
+                <label>Accommodation (shown)</label>
+                <span style="color:#b85c00;">R 25 800</span>
+            </div>
+            <div class="tb-item" style="border-left:2px solid #e0e0e0;padding-left:26px;">
+                <label>Page Total</label>
+                <span style="font-size:1.1rem;">R 42 700</span>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="page-btn"><i class="bi bi-chevron-double-left"></i></button>
+            <button class="page-btn"><i class="bi bi-chevron-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <span style="font-size:0.82rem;color:#aaa;padding:0 4px;">…</span>
+            <button class="page-btn">84</button>
+            <button class="page-btn"><i class="bi bi-chevron-right"></i></button>
+            <button class="page-btn"><i class="bi bi-chevron-double-right"></i></button>
+            <span style="font-size:0.8rem;color:#999;margin-left:10px;">Page 1 of 84</span>
+        </div>
+    </div>
+
+</div><!-- /main-content -->
+</body>
+</html>

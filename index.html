@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #1093DB;
+            --sidebar-color: #094781;
+            --accent-color: #337C96;
+            --bg-color: #E5F5FF;
+            --border-color: #ACC8CB;
+            --text-color: #094781;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #094781 0%, #0d6ebd 60%, #1093DB 100%);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 4px 0 18px rgba(9,71,129,0.25);
+        }
+
+        .sidebar-brand {
+            padding: 20px 16px 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+            font-weight: 600;
+            border-left: 3px solid #fff;
+            box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+        }
+
+        .sidebar .nav-section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.45);
+            padding: 16px 16px 4px;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #E5F5FF 0%, #f0f8ff 100%);
+        }
+
+        .container {
+            max-width: 100%;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(9,71,129,0.13);
+            border-top: 4px solid var(--primary-color);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--sidebar-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        /* --- Tab Layout CSS --- */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        /* Hide the actual radio buttons */
+        .tabs input[type="radio"],
+        input[name="student-tabs"] {
+            display: none;
+        }
+
+        /* Style the labels to look like navigation tabs */
+        .tabs label {
+            padding: 12px 24px;
+            background: #fff;
+            color: #666;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            cursor: pointer;
+            font-weight: 600;
+            border-radius: 6px 6px 0 0;
+            margin-right: 4px;
+            transition: color 0.2s, background 0.2s;
+            letter-spacing: 0.02em;
+        }
+
+        .tabs label:hover {
+            background: #f5f8ff;
+            color: var(--primary-color);
+            border-color: #dee2e6;
+        }
+
+        /* The Content Panes */
+        .tab-content {
+            width: 100%;
+            padding: 25px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 0 6px 6px 6px;
+            box-sizing: border-box;
+            display: none; /* Hidden by default */
+        }
+
+        /* Show content when corresponding radio button is checked */
+        #tab1:checked ~ .tabs label[for="tab1"],
+        #tab2:checked ~ .tabs label[for="tab2"],
+        #tab3:checked ~ .tabs label[for="tab3"],
+        #tab4:checked ~ .tabs label[for="tab4"],
+        #tab5:checked ~ .tabs label[for="tab5"],
+        #tab6:checked ~ .tabs label[for="tab6"],
+        #tab7:checked ~ .tabs label[for="tab7"] {
+            background: #fff;
+            color: var(--primary-color);
+            border-color: #dee2e6;
+            border-top: 3px solid var(--primary-color);
+            position: relative;
+            z-index: 2;
+        }
+
+        #tab1:checked ~ .tab-content-1,
+        #tab2:checked ~ .tab-content-2,
+        #tab3:checked ~ .tab-content-3,
+        #tab4:checked ~ .tab-content-4,
+        #tab5:checked ~ .tab-content-5,
+        #tab6:checked ~ .tab-content-6,
+        #tab7:checked ~ .tab-content-7 {
+            display: block;
+        }
+
+        /* --- Form Grid Formatting --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fafafa;
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .profile-picture-section {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .picture-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .picture-container {
+            width: 150px;
+            height: 150px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .picture-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .picture-placeholder {
+            color: #999;
+            font-size: 12px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        /* --- Filter section controls match form-group styling --- */
+        .filter-section select,
+        .filter-section input[type="text"] {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fafafa;
+            font-size: 0.95rem;
+            width: 100%;
+            color: var(--text-color);
+        }
+
+        .filter-section select:focus,
+        .filter-section input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: none;
+        }
+
+        .filter-section label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .filter-section .input-group {
+            display: flex;
+        }
+
+        .filter-section .input-group-text {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px 0 0 4px;
+            background-color: #fafafa;
+            border-right: none;
+        }
+
+        .filter-section .input-group input {
+            border-radius: 0 4px 4px 0;
+        }
+
+        .sidebar details summary {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.92rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            list-style: none;
+            transition: background 0.2s, color 0.2s;
+            user-select: none;
+        }
+
+        .sidebar details summary::-webkit-details-marker { display: none; }
+
+        .sidebar details summary:hover {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+        }
+
+        .sidebar details[open] > summary {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+        }
+
+        .sidebar details summary .chevron {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .sidebar details[open] summary .chevron {
+            transform: rotate(90deg);
+        }
+
+        .sidebar details .sub-nav {
+            list-style: none;
+            padding: 2px 0 4px 0;
+            margin: 0;
+        }
+
+        .sidebar details .sub-nav li a {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.87rem;
+            padding: 8px 16px 8px 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar details .sub-nav li a:hover,
+        .sidebar details .sub-nav li a.active {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+        }
+
+        .sidebar details .sub-nav li a.active {
+            border-left: 3px solid #fff;
+            padding-left: 37px;
+        }
+        #tab1:checked ~ .tabs label[for="tab1"],
+        #tab2:checked ~ .tabs label[for="tab2"],
+        #tab3:checked ~ .tabs label[for="tab3"],
+        #tab4:checked ~ .tabs label[for="tab4"],
+        #tab5:checked ~ .tabs label[for="tab5"],
+        #tab6:checked ~ .tabs label[for="tab6"],
+        #tab7:checked ~ .tabs label[for="tab7"] {
+            border-top-color: var(--primary-color) !important;
+        }
+
+
+    </style>
+    
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <!-- Students -->
+        <details open>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="index.html" class="active">Profile</a></li>
+                <li><a href="#">Check-In</a></li>
+                <li><a href="#">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <!-- Programme Managers -->
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <!-- Landlords -->
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <!-- Tasks -->
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link">
+            <i class="bi bi-bar-chart-line"></i> Reports
+        </a>
+        <a href="#" class="nav-link">
+            <i class="bi bi-gear"></i> Settings
+        </a>
+
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="#" class="nav-link">
+            <i class="bi bi-box-arrow-left"></i> Log Out
+        </a>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-content">
+<div class="container">
+    <!-- Student Header -->
+    <div style="display:flex;align-items:center;gap:20px;padding-bottom:16px;border-bottom:3px solid var(--primary-color);margin-bottom:4px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:#E5F5FF;border:2px solid var(--border-color);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi bi-person-fill" style="font-size:2rem;color:var(--primary-color);"></i>
+        </div>
+        <div style="flex:1;">
+            <h2 style="margin:0;padding:0;border:none;font-size:1.4rem;color:#494949;">Naledi Dlamini</h2>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:6px;font-size:0.88rem;color:#999;">
+                <span><i class="bi bi-building" style="color:#bbb;margin-right:4px;"></i>University of the Witwatersrand</span>
+                <span><i class="bi bi-diagram-3" style="color:#bbb;margin-right:4px;"></i>Science &amp; Engineering</span>
+                <span><i class="bi bi-mortarboard" style="color:#bbb;margin-right:4px;"></i>Bachelor of Science in Civil Engineering</span>
+                <span><i class="bi bi-telephone" style="color:#bbb;margin-right:4px;"></i>+27 82 345 6789</span>
+                <span><i class="bi bi-envelope" style="color:#bbb;margin-right:4px;"></i>naledi.dlamini@students.wits.ac.za</span>
+            </div>
+        </div>
+        <div style="flex-shrink:0;">
+            <button type="button" style="background:var(--primary-color);color:#fff;font-weight:600;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;gap:8px;transition:background 0.2s;" onmouseover="this.style.background='var(--sidebar-color)'" onmouseout="this.style.background='var(--primary-color)'">
+                <i class="bi bi-chat-dots"></i> Send Communication
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden Radio Buttons for Tab Controls -->
+    <input type="radio" name="student-tabs" id="tab1" checked>
+    <input type="radio" name="student-tabs" id="tab2">
+    <input type="radio" name="student-tabs" id="tab3">
+    <input type="radio" name="student-tabs" id="tab4">
+    <input type="radio" name="student-tabs" id="tab5">
+    <input type="radio" name="student-tabs" id="tab6">
+    <input type="radio" name="student-tabs" id="tab7">
+
+    <!-- Tab Navigation Labels -->
+    <div class="tabs">
+        <label for="tab1">Personal Details</label>
+        <label for="tab2">Academic Details</label>
+        <label for="tab3">Emergency Contacts</label>
+        <label for="tab4">Admin / System</label>
+        <label for="tab5">Allowances</label>
+        <label for="tab6">Payment History</label>
+        <label for="tab7">Documents</label>
+    </div>
+
+    <!-- TAB 1: Personal Info -->
+    <div class="tab-content tab-content-1">
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" value="[FirstName]">
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" value="[LastName]">
+            </div>
+            <div class="form-group">
+                <label>Identification Number</label>
+                <input type="text" value="[IdentificationNumber]">
+            </div>
+
+            <div class="form-group">
+                <label>Salutation</label>
+                <select>
+                    <option value="">Select Salutation</option>
+                    <option value="1">Mr.</option>
+                    <option value="2">Ms.</option>
+                    <option value="3">Mrs.</option>
+                    <option value="4">Dr.</option>
+                    <option value="5">Prof.</option>
+                    <option value="6">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" value="[Email]">
+            </div>
+            <div class="form-group">
+                <label>Contact Number</label>
+                <input type="text" value="[ContactNumber]">
+            </div>
+            <div class="form-group">
+                <label>Gender</label>
+                <select>
+                    <option value="">Select Gender</option>
+                    <option value="1">Male</option>
+                    <option value="2">Female</option>
+                    <option value="3">Other</option>
+                    <option value="4">Prefer not to say</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Race</label>
+                <select>
+                    <option value="">Select Race</option>
+                    <option value="1">White</option>
+                    <option value="2">Black/African</option>
+                    <option value="3">Asian</option>
+                    <option value="4">Hispanic/Latino</option>
+                    <option value="5">Indian</option>
+                    <option value="6">Mixed</option>
+                    <option value="7">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Home Language</label>
+                <select>
+                    <option value="">Select Language</option>
+                    <option value="1">English</option>
+                    <option value="2">Spanish</option>
+                    <option value="3">French</option>
+                    <option value="4">German</option>
+                    <option value="5">Mandarin</option>
+                    <option value="6">Arabic</option>
+                    <option value="7">Portuguese</option>
+                    <option value="8">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Marital Status</label>
+                <select>
+                    <option value="">Select Status</option>
+                    <option value="1">Single</option>
+                    <option value="2">Married</option>
+                    <option value="3">Divorced</option>
+                    <option value="4">Widowed</option>
+                    <option value="5">Civil Partnership</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Identification Type</label>
+                <select>
+                    <option value="">Select ID Type</option>
+                    <option value="1">National ID</option>
+                    <option value="2">Passport</option>
+                    <option value="3">Driver's License</option>
+                    <option value="4">Birth Certificate</option>
+                    <option value="5">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Household Income Range</label>
+                <select>
+                    <option value="">Select Income Range</option>
+                    <option value="1">Below R 25,000</option>
+                    <option value="2">R 25,000 - R 50,000</option>
+                    <option value="3">R 50,000 - R 75,000</option>
+                    <option value="4">R 75,000 - R 100,000</option>
+                    <option value="5">Above R 100,000</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Do you have any disabilities?</label>
+                <input type="text" value="[HasDisability]">
+            </div>
+            <div class="form-group full-width">
+                <label>Disability Description</label>
+                <textarea>[DisabilityDescription]</textarea>
+            </div>
+            <div class="form-group full-width">
+                <label>Allergies</label>
+                <textarea>[Allergies]</textarea>
+            </div>
+            <div class="form-group full-width">
+                <label>Student Biography Text</label>
+                <textarea>[StudentBiographyText]</textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: Academic Details -->
+    <div class="tab-content tab-content-2">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Qualification</label>
+                <select>
+                    <option value="">Select Qualification</option>
+                    <option value="1">Bachelor's Degree</option>
+                    <option value="2">Master's Degree</option>
+                    <option value="3">Diploma</option>
+                    <option value="4">Certificate</option>
+                    <option value="5">PhD</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Faculty</label>
+                <select>
+                    <option value="">Select Faculty</option>
+                    <option value="1">Science & Engineering</option>
+                    <option value="2">Business & Economics</option>
+                    <option value="3">Health Sciences</option>
+                    <option value="4">Arts & Humanities</option>
+                    <option value="5">Law</option>
+                    <option value="6">Education</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Institution</label>
+                <select>
+                    <option value="">Select Institution</option>
+                    <option value="1">Main Campus</option>
+                    <option value="2">Regional Campus - East</option>
+                    <option value="3">Regional Campus - West</option>
+                    <option value="4">Online Campus</option>
+                    <option value="5">Extension Center</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Student Number</label>
+                <input type="text" value="[StudentNumber]">
+            </div>
+            <div class="form-group">
+                <label>Academic Year</label>
+                <input type="text" value="[AcademicYear]">
+            </div>
+            <div class="form-group">
+                <label>Intake Year</label>
+                <input type="text" value="[IntakeYear]">
+            </div>
+            <div class="form-group">
+                <label>Expected Year Of Graduation</label>
+                <input type="text" value="[ExpectedYearOfGraduation]">
+            </div>
+            <div class="form-group">
+                <label>Student Academic Status</label>
+                <select>
+                    <option value="">Select Status</option>
+                    <option value="1">Active</option>
+                    <option value="2">Inactive</option>
+                    <option value="3">Suspended</option>
+                    <option value="4">Graduated</option>
+                    <option value="5">Withdrawn</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Student Type</label>
+                <select>
+                    <option value="">Select Type</option>
+                    <option value="1">Full-time</option>
+                    <option value="2">Part-time</option>
+                    <option value="3">Online</option>
+                    <option value="4">Hybrid</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Student Contract Type</label>
+                <select>
+                    <option value="">Select Contract Type</option>
+                    <option value="1">Standard</option>
+                    <option value="2">Extended</option>
+                    <option value="3">Accelerated</option>
+                    <option value="4">Flexible</option>
+                </select>
+            </div>
+            <div class="form-group full-width">
+                <label>Student Academic Status Reason</label>
+                <textarea>[StudentAcademicStatusReason]</textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: Emergency & Kin -->
+    <div class="tab-content tab-content-3">
+        <div class="form-grid">
+            <!-- Next of Kin Section -->
+            <div class="form-group">
+                <label>Next of Kin Name</label>
+                <input type="text" value="[NextofKinName]">
+            </div>
+            <div class="form-group">
+                <label>Next of Kin Relationship</label>
+                <select>
+                    <option value="">Select Relationship</option>
+                    <option value="1">Parent</option>
+                    <option value="2">Sibling</option>
+                    <option value="3">Spouse</option>
+                    <option value="4">Guardian</option>
+                    <option value="5">Grandparent</option>
+                    <option value="6">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Next of Kin Contact Number</label>
+                <input type="text" value="[NextofKinContactNumber]">
+            </div>
+            
+            <!-- Separator space via grid -->
+            <div class="form-group full-width"><hr style="border:0; border-top:1px dashed var(--border-color); margin:10px 0;"></div>
+
+            <!-- Emergency Contact Section -->
+            <div class="form-group">
+                <label>Emergency Contact Name</label>
+                <input type="text" value="[EmergencyContactName]">
+            </div>
+            <div class="form-group">
+                <label>Emergency Contact Relationship</label>
+                <select>
+                    <option value="">Select Relationship</option>
+                    <option value="1">Parent</option>
+                    <option value="2">Sibling</option>
+                    <option value="3">Spouse</option>
+                    <option value="4">Friend</option>
+                    <option value="5">Grandparent</option>
+                    <option value="6">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Emergency Contact Number</label>
+                <input type="text" value="[EmergencyContactNumber]">
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: Admin / System -->
+    <div class="tab-content tab-content-4">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Student ID (Internal)</label>
+                <input type="text" value="[StudentId]" readonly style="background:#eee;">
+            </div>
+            <div class="form-group">
+                <label>Online Student ID</label>
+                <input type="text" value="[Online_Student_Id]" readonly style="background:#eee;">
+            </div>
+            <div class="form-group">
+                <label>Student Profile Picture Document ID</label>
+                <input type="text" value="[StudentProfilePictureDocumentId]">
+            </div>
+            <div class="form-group">
+                <label>Check In Complete</label>
+                <input type="text" value="[CheckInComplete]">
+            </div>
+            <div class="form-group">
+                <label>Check In Status</label>
+                <select>
+                    <option value="">Select Status</option>
+                    <option value="1">Not Started</option>
+                    <option value="2">In Progress</option>
+                    <option value="3">Completed</option>
+                    <option value="4">Pending</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Check Up Status</label>
+                <select>
+                    <option value="">Select Status</option>
+                    <option value="1">Not Started</option>
+                    <option value="2">In Progress</option>
+                    <option value="3">Completed</option>
+                    <option value="4">Passed</option>
+                    <option value="5">Failed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Watchlist Severity Level</label>
+                <input type="text" value="[WatchlistSeverityLevel]">
+            </div>
+            <div class="form-group">
+                <label>Watchlist Add Reason</label>
+                <select>
+                    <option value="">Select Reason</option>
+                    <option value="1">Academic Concern</option>
+                    <option value="2">Attendance Issue</option>
+                    <option value="3">Behavioral Issue</option>
+                    <option value="4">Financial Issue</option>
+                    <option value="5">Health Issue</option>
+                    <option value="6">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Watchlist Remove Reason</label>
+                <select>
+                    <option value="">Select Reason</option>
+                    <option value="1">Resolved</option>
+                    <option value="2">Transferred</option>
+                    <option value="3">Graduated</option>
+                    <option value="4">Withdrawn</option>
+                    <option value="5">Other</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: Allowances -->
+    <div class="tab-content tab-content-5">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Allowance Type</label>
+                <select>
+                    <option value="">Select Type</option>
+                    <option value="1">Accommodation</option>
+                    <option value="2">Transport</option>
+                    <option value="3">Meals</option>
+                    <option value="4">Books &amp; Stationery</option>
+                    <option value="5">Technology</option>
+                    <option value="6">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Amount (R)</label>
+                <input type="text" value="[AllowanceAmount]">
+            </div>
+            <div class="form-group">
+                <label>Frequency</label>
+                <select>
+                    <option value="">Select Frequency</option>
+                    <option value="1">Monthly</option>
+                    <option value="2">Quarterly</option>
+                    <option value="3">Annually</option>
+                    <option value="4">Once-Off</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Allowance Status</label>
+                <select>
+                    <option value="">Select Status</option>
+                    <option value="1">Active</option>
+                    <option value="2">Suspended</option>
+                    <option value="3">Terminated</option>
+                    <option value="4">Pending</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Start Date</label>
+                <input type="date" value="[AllowanceStartDate]">
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input type="date" value="[AllowanceEndDate]">
+            </div>
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select>
+                    <option value="">Select Method</option>
+                    <option value="1">EFT</option>
+                    <option value="2">Cheque</option>
+                    <option value="3">Cash</option>
+                    <option value="4">Voucher</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Bank Name</label>
+                <input type="text" value="[BankName]">
+            </div>
+            <div class="form-group">
+                <label>Account Number</label>
+                <input type="text" value="[AccountNumber]">
+            </div>
+            <div class="form-group">
+                <label>Account Type</label>
+                <select>
+                    <option value="">Select Account Type</option>
+                    <option value="1">Cheque / Current</option>
+                    <option value="2">Savings</option>
+                    <option value="3">Transmission</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Branch Code</label>
+                <input type="text" value="[BranchCode]">
+            </div>
+            <div class="form-group full-width">
+                <label>Allowance Notes</label>
+                <textarea>[AllowanceNotes]</textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 6: Payment History -->
+    <div class="tab-content tab-content-6">
+        <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--border-color);box-shadow:0 2px 8px rgba(9,71,129,0.07);">
+            <table style="width:100%;border-collapse:collapse;font-size:0.9rem;background:#fff;">
+                <thead>
+                    <tr style="background:var(--sidebar-color);color:#fff;">
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">#</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Payment Date</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Reference No.</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Allowance Type</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Amount (R)</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Payment Method</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Status</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Processed By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:11px 14px;">1</td>
+                        <td style="padding:11px 14px;">2024-03-01</td>
+                        <td style="padding:11px 14px;">PAY-2024-00312</td>
+                        <td style="padding:11px 14px;">Accommodation</td>
+                        <td style="padding:11px 14px;">R 3,500.00</td>
+                        <td style="padding:11px 14px;">EFT</td>
+                        <td style="padding:11px 14px;"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Paid</span></td>
+                        <td style="padding:11px 14px;">Dr. Nkosi</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);background:#f9fbff;">
+                        <td style="padding:11px 14px;">2</td>
+                        <td style="padding:11px 14px;">2024-03-01</td>
+                        <td style="padding:11px 14px;">PAY-2024-00313</td>
+                        <td style="padding:11px 14px;">Transport</td>
+                        <td style="padding:11px 14px;">R 850.00</td>
+                        <td style="padding:11px 14px;">EFT</td>
+                        <td style="padding:11px 14px;"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Paid</span></td>
+                        <td style="padding:11px 14px;">Dr. Nkosi</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:11px 14px;">3</td>
+                        <td style="padding:11px 14px;">2024-02-01</td>
+                        <td style="padding:11px 14px;">PAY-2024-00198</td>
+                        <td style="padding:11px 14px;">Accommodation</td>
+                        <td style="padding:11px 14px;">R 3,500.00</td>
+                        <td style="padding:11px 14px;">EFT</td>
+                        <td style="padding:11px 14px;"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Paid</span></td>
+                        <td style="padding:11px 14px;">Dr. Nkosi</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);background:#f9fbff;">
+                        <td style="padding:11px 14px;">4</td>
+                        <td style="padding:11px 14px;">2024-02-01</td>
+                        <td style="padding:11px 14px;">PAY-2024-00199</td>
+                        <td style="padding:11px 14px;">Meals</td>
+                        <td style="padding:11px 14px;">R 1,200.00</td>
+                        <td style="padding:11px 14px;">Voucher</td>
+                        <td style="padding:11px 14px;"><span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Pending</span></td>
+                        <td style="padding:11px 14px;">Ms. Khumalo</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:11px 14px;">5</td>
+                        <td style="padding:11px 14px;">2024-01-15</td>
+                        <td style="padding:11px 14px;">PAY-2024-00087</td>
+                        <td style="padding:11px 14px;">Books &amp; Stationery</td>
+                        <td style="padding:11px 14px;">R 2,000.00</td>
+                        <td style="padding:11px 14px;">EFT</td>
+                        <td style="padding:11px 14px;"><span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Failed</span></td>
+                        <td style="padding:11px 14px;">Dr. Nkosi</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="text-align:right;padding:8px 2px 0;font-size:0.85rem;color:#999;">Showing 5 of 5 payments</div>
+    </div>
+
+    <!-- TAB 7: Documents -->
+    <div class="tab-content tab-content-7">
+        <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--border-color);box-shadow:0 2px 8px rgba(9,71,129,0.07);">
+            <table style="width:100%;border-collapse:collapse;font-size:0.9rem;background:#fff;">
+                <thead>
+                    <tr style="background:var(--sidebar-color);color:#fff;">
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">#</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Document Name</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Category</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">File Type</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Uploaded</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Uploaded By</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Status</th>
+                        <th style="padding:12px 14px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-weight:600;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:11px 14px;">1</td>
+                        <td style="padding:11px 14px;"><i class="bi bi-file-earmark-pdf" style="color:#dc3545;"></i> National_ID_Copy.pdf</td>
+                        <td style="padding:11px 14px;">Identity</td>
+                        <td style="padding:11px 14px;">PDF</td>
+                        <td style="padding:11px 14px;">2024-01-10</td>
+                        <td style="padding:11px 14px;">Dr. Nkosi</td>
+                        <td style="padding:11px 14px;"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Verified</span></td>
+                        <td style="padding:11px 14px;"><a href="#" style="color:var(--primary-color);font-weight:600;text-decoration:none;"><i class="bi bi-download"></i></a></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);background:#f9fbff;">
+                        <td style="padding:11px 14px;">2</td>
+                        <td style="padding:11px 14px;"><i class="bi bi-file-earmark-pdf" style="color:#dc3545;"></i> Matric_Certificate.pdf</td>
+                        <td style="padding:11px 14px;">Academic</td>
+                        <td style="padding:11px 14px;">PDF</td>
+                        <td style="padding:11px 14px;">2024-01-10</td>
+                        <td style="padding:11px 14px;">Dr. Nkosi</td>
+                        <td style="padding:11px 14px;"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Verified</span></td>
+                        <td style="padding:11px 14px;"><a href="#" style="color:var(--primary-color);font-weight:600;text-decoration:none;"><i class="bi bi-download"></i></a></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:11px 14px;">3</td>
+                        <td style="padding:11px 14px;"><i class="bi bi-file-earmark-image" style="color:#0d6efd;"></i> Proof_of_Residence.jpg</td>
+                        <td style="padding:11px 14px;">Residence</td>
+                        <td style="padding:11px 14px;">JPG</td>
+                        <td style="padding:11px 14px;">2024-01-12</td>
+                        <td style="padding:11px 14px;">Ms. Khumalo</td>
+                        <td style="padding:11px 14px;"><span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Pending</span></td>
+                        <td style="padding:11px 14px;"><a href="#" style="color:var(--primary-color);font-weight:600;text-decoration:none;"><i class="bi bi-download"></i></a></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);background:#f9fbff;">
+                        <td style="padding:11px 14px;">4</td>
+                        <td style="padding:11px 14px;"><i class="bi bi-file-earmark-pdf" style="color:#dc3545;"></i> Bank_Statement.pdf</td>
+                        <td style="padding:11px 14px;">Financial</td>
+                        <td style="padding:11px 14px;">PDF</td>
+                        <td style="padding:11px 14px;">2024-01-15</td>
+                        <td style="padding:11px 14px;">Dr. Nkosi</td>
+                        <td style="padding:11px 14px;"><span style="background:#f8d7da;color:#721c24;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Rejected</span></td>
+                        <td style="padding:11px 14px;"><a href="#" style="color:var(--primary-color);font-weight:600;text-decoration:none;"><i class="bi bi-download"></i></a></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:11px 14px;">5</td>
+                        <td style="padding:11px 14px;"><i class="bi bi-file-earmark-word" style="color:#0d6efd;"></i> Funding_Agreement.docx</td>
+                        <td style="padding:11px 14px;">Contract</td>
+                        <td style="padding:11px 14px;">DOCX</td>
+                        <td style="padding:11px 14px;">2024-02-01</td>
+                        <td style="padding:11px 14px;">Dr. Nkosi</td>
+                        <td style="padding:11px 14px;"><span style="background:#d4edda;color:#155724;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">Verified</span></td>
+                        <td style="padding:11px 14px;"><a href="#" style="color:var(--primary-color);font-weight:600;text-decoration:none;"><i class="bi bi-download"></i></a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="text-align:right;padding:8px 2px 0;font-size:0.85rem;color:#999;">Showing 5 of 5 documents</div>
+    </div>
+
+</div>
+</div><!-- /.main-content -->
+
+</body>
+</html>
