@@ -30,9 +30,19 @@
                 </summary>
                 <ul class="sub-nav">
                     <li><a href="student_list.html">List</a></li>
-                    <li><a href="index.html">Profile</a></li>
-                    <li><a href="#">Check-In</a></li>
-                    <li><a href="#">Watchlist</a></li>
+                    <li><a href="checkin.html">Check-In</a></li>
+                    <li><a href="watchlist.html">Watchlist</a></li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>
+                    <i class="bi bi-file-earmark-person-fill"></i> Applications
+                    <i class="bi bi-chevron-right chevron"></i>
+                </summary>
+                <ul class="sub-nav">
+                    <li><a href="applications.html">All Applications</a></li>
+                    <li><a href="#">Application Documents</a></li>
                 </ul>
             </details>
 
@@ -90,7 +100,7 @@
                 </summary>
                 <ul class="sub-nav">
                     <li><a href="payments.html">Overview</a></li>
-                    <li><a href="#">Process Payment</a></li>
+                    <li><a href="create_batch.html">Create Batch</a></li>
                     <li><a href="payment_history.html">Payment History</a></li>
                     <li><a href="#">Reconciliation</a></li>
                 </ul>
@@ -124,11 +134,19 @@
             <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
 
             <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
-            <a href="#" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+            <details>
+                <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+                <ul class="sub-nav">
+                    <li><a href="allowance_limits.html">Allowance Limits</a></li>
+                    <li><a href="#">Academic Calendar</a></li>
+                    <li><a href="#">User Management</a></li>
+                    <li><a href="#">Audit Log</a></li>
+                </ul>
+            </details>
 
         </div>
         <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
-            <a href="#" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+            <a href="login.html" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
         </div>
     </nav>
 
@@ -871,7 +889,7 @@
                 ]
             },
             'STU-2024-0199': {
-                name: 'Relebogile Mokoena', id: 'STU-2024-0199', year: 2022, subjects: [
+                name: 'Relebogile Letlela', id: 'STU-2024-0199', year: 2022, subjects: [
                     { name: 'Setswana Home Language', mark: 77, level: 6, achievement: 'Meritorious' },
                     { name: 'English First Add. Language', mark: 63, level: 5, achievement: 'Substantial' },
                     { name: 'Mathematical Literacy', mark: 68, level: 5, achievement: 'Substantial' },

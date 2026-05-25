@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Watchlist – ISFAP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="OneISFAPStyle.css">
+    <style>
+        /* ── Reason badges ── */
+        .reason-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .reason-tasks       { background: #fff3cd; color: #856404; }
+        .reason-performance { background: #ffe8cc; color: #b85c00; }
+        .reason-psych       { background: #ede9fe; color: #5b21b6; }
+        .reason-other       { background: #e2e3e5; color: #383d41; }
+
+        /* ── Watchlist status badges ── */
+        .wl-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .wl-active    { background: #fee2e2; color: #991b1b; }
+        .wl-review    { background: #fff3cd; color: #856404; }
+        .wl-escalated { background: #f3e8ff; color: #6d28d9; }
+        .wl-resolved  { background: #d1fae5; color: #065f46; }
+
+        /* ── Priority dot ── */
+        .priority-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+        .dot-high   { background: #dc2626; }
+        .dot-medium { background: #f59e0b; }
+        .dot-low    { background: #10b981; }
+
+        /* ── Summary banner ── */
+        .wl-banner {
+            background: linear-gradient(135deg, #1e3a5f, #094781);
+            border-radius: 12px;
+            padding: 20px 28px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .wl-banner-icon {
+            width: 56px; height: 56px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.7rem;
+            flex-shrink: 0;
+        }
+        .wl-banner-stats {
+            display: flex; gap: 32px; margin-left: auto; flex-wrap: wrap;
+        }
+        .wl-stat { text-align: center; }
+        .wl-stat-val { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+        .wl-stat-lbl { font-size: 0.72rem; opacity: 0.75; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+        /* ── Add-to-watchlist modal ── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 14px;
+            width: 520px;
+            max-width: 95vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .modal-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #094781, #1093DB);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e8eef5; display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-close { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; line-height: 1; }
+
+        .field-group { margin-bottom: 16px; }
+        .field-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #555; margin-bottom: 5px; }
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            width: 100%; padding: 9px 12px;
+            border: 1.5px solid #d1dce8;
+            border-radius: 7px; font-size: 0.87rem;
+            color: #2d3a4a; background: #fff;
+            box-sizing: border-box;
+        }
+        .field-group textarea { resize: vertical; min-height: 80px; }
+        .field-group input:focus,
+        .field-group select:focus,
+        .field-group textarea:focus { outline: none; border-color: var(--primary-color); }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <!-- Students (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="checkin.html">Check-In</a></li>
+                <li><a href="watchlist.html" class="active">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-file-earmark-person-fill"></i> Applications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="applications.html">All Applications</a></li>
+                <li><a href="#">Application Documents</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-check-fill"></i> Funding Selection
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funding_selection.html">Student Selection</a></li>
+                <li><a href="shortlist.html">Shortlisted Students</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <details>
+            <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="allowance_limits.html">Allowance Limits</a></li>
+                <li><a href="#">Academic Calendar</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Audit Log</a></li>
+            </ul>
+        </details>
+
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="login.html" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <div class="breadcrumb" style="margin-bottom:6px;">
+                <a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+                <a href="student_list.html">Students</a>
+                <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+                <span>Watchlist</span>
+            </div>
+            <h2><i class="bi bi-eye-fill"></i> Student Watchlist</h2>
+            <p style="margin:4px 0 0;color:#888;font-size:0.87rem;">Students flagged for close monitoring by Programme Managers. Review and act on outstanding concerns.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-outline"><i class="bi bi-download"></i> Export</button>
+            <button class="btn-primary-action" onclick="openModal('addWatchModal')">
+                <i class="bi bi-plus-lg"></i> Add to Watchlist
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div class="wl-banner">
+        <div class="wl-banner-icon"><i class="bi bi-eye-fill"></i></div>
+        <div>
+            <div style="font-size:1rem;font-weight:700;">Active Monitoring Programme</div>
+            <div style="font-size:0.82rem;opacity:0.75;margin-top:3px;">Students are reviewed bi-weekly by their assigned Programme Manager. Escalations are referred to Student Support Services.</div>
+        </div>
+        <div class="wl-banner-stats">
+            <div class="wl-stat">
+                <div class="wl-stat-val">18</div>
+                <div class="wl-stat-lbl">On Watchlist</div>
+            </div>
+            <div class="wl-stat">
+                <div class="wl-stat-val">5</div>
+                <div class="wl-stat-lbl">Review Due</div>
+            </div>
+            <div class="wl-stat">
+                <div class="wl-stat-val">3</div>
+                <div class="wl-stat-lbl">Escalated</div>
+            </div>
+            <div class="wl-stat">
+                <div class="wl-stat-val">42</div>
+                <div class="wl-stat-lbl">Resolved YTD</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-cards">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#dbeafe;color:#094781;"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <div class="stat-card-val">18</div>
+                <div class="stat-card-lbl">Total on Watchlist</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#fff3cd;color:#856404;"><i class="bi bi-list-task"></i></div>
+            <div>
+                <div class="stat-card-val">8</div>
+                <div class="stat-card-lbl">Incomplete Tasks</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#ffe8cc;color:#b85c00;"><i class="bi bi-graph-down-arrow"></i></div>
+            <div>
+                <div class="stat-card-val">6</div>
+                <div class="stat-card-lbl">Poor Performance</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#ede9fe;color:#5b21b6;"><i class="bi bi-heart-pulse-fill"></i></div>
+            <div>
+                <div class="stat-card-val">4</div>
+                <div class="stat-card-lbl">Psychological / PM Interaction</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#fee2e2;color:#991b1b;"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div>
+                <div class="stat-card-val">3</div>
+                <div class="stat-card-lbl">Escalated</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <span class="filter-label">Filter:</span>
+        <input type="text" id="searchInput" placeholder="&#xF52A; Search by name or student ID…" oninput="applyFilters()">
+        <select id="reasonFilter" onchange="applyFilters()">
+            <option value="">All Reasons</option>
+            <option value="tasks">Incomplete Tasks</option>
+            <option value="performance">Poor Performance</option>
+            <option value="psych">Psychological / PM Interaction</option>
+            <option value="other">Other</option>
+        </select>
+        <select id="statusFilter" onchange="applyFilters()">
+            <option value="">All Statuses</option>
+            <option value="active">Active Monitoring</option>
+            <option value="review">Review Due</option>
+            <option value="escalated">Escalated</option>
+            <option value="resolved">Resolved</option>
+        </select>
+        <select id="pmFilter" onchange="applyFilters()">
+            <option value="">All Programme Managers</option>
+            <option>Thabo Letlela</option>
+            <option>Priya Naidoo</option>
+            <option>Anele Sithole</option>
+            <option>Zanele Khumalo</option>
+        </select>
+    </div>
+
+    <!-- Watchlist Table -->
+    <div class="table-card">
+        <table class="sl-table" id="watchlistTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Institution</th>
+                    <th>Year</th>
+                    <th>Monitoring Reason</th>
+                    <th>Added By (PM)</th>
+                    <th>Date Added</th>
+                    <th>Last Reviewed</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="watchlistBody">
+
+                <!-- Row 1 -->
+                <tr data-reason="tasks" data-status="escalated" data-pm="thabo Letlela" data-name="Sipho Ndlovu" data-id="STU-2025-0014">
+                    <td>1</td>
+                    <td>
+                        <strong>Sipho Ndlovu</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">STU-2025-0014</div>
+                    </td>
+                    <td>University of the Witwatersrand</td>
+                    <td>2nd Year</td>
+                    <td><span class="reason-badge reason-tasks"><i class="bi bi-list-task"></i> Incomplete Tasks</span></td>
+                    <td>Thabo Letlela</td>
+                    <td style="font-size:0.82rem;color:#666;">03 Mar 2026</td>
+                    <td style="font-size:0.82rem;color:#666;">10 May 2026</td>
+                    <td><span class="priority-dot dot-high"></span> High</td>
+                    <td><span class="wl-badge wl-escalated"><i class="bi bi-exclamation-triangle-fill"></i> Escalated</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="viewStudent('STU-2025-0014','Sipho Ndlovu')"><i class="bi bi-eye"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="openNoteModal('Sipho Ndlovu')"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#065f46;border-color:#065f46;" onclick="resolveStudent('STU-2025-0014','Sipho Ndlovu')"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr data-reason="performance" data-status="active" data-pm="priya naidoo" data-name="Lerato Moagi" data-id="STU-2025-0028">
+                    <td>2</td>
+                    <td>
+                        <strong>Lerato Moagi</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">STU-2025-0028</div>
+                    </td>
+                    <td>University of Pretoria</td>
+                    <td>3rd Year</td>
+                    <td><span class="reason-badge reason-performance"><i class="bi bi-graph-down-arrow"></i> Poor Performance</span></td>
+                    <td>Priya Naidoo</td>
+                    <td style="font-size:0.82rem;color:#666;">15 Mar 2026</td>
+                    <td style="font-size:0.82rem;color:#666;">12 May 2026</td>
+                    <td><span class="priority-dot dot-high"></span> High</td>
+                    <td><span class="wl-badge wl-active"><i class="bi bi-record-circle-fill"></i> Active</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="viewStudent('STU-2025-0028','Lerato Moagi')"><i class="bi bi-eye"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="openNoteModal('Lerato Moagi')"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#065f46;border-color:#065f46;" onclick="resolveStudent('STU-2025-0028','Lerato Moagi')"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 3 -->
+                <tr data-reason="psych" data-status="review" data-pm="anele sithole" data-name="Nomvula Khumalo" data-id="STU-2025-0041">
+                    <td>3</td>
+                    <td>
+                        <strong>Nomvula Khumalo</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">STU-2025-0041</div>
+                    </td>
+                    <td>University of Cape Town</td>
+                    <td>1st Year</td>
+                    <td><span class="reason-badge reason-psych"><i class="bi bi-heart-pulse-fill"></i> Psychological / PM Interaction</span></td>
+                    <td>Anele Sithole</td>
+                    <td style="font-size:0.82rem;color:#666;">22 Apr 2026</td>
+                    <td style="font-size:0.82rem;color:#666;">08 May 2026</td>
+                    <td><span class="priority-dot dot-medium"></span> Medium</td>
+                    <td><span class="wl-badge wl-review"><i class="bi bi-clock-fill"></i> Review Due</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="viewStudent('STU-2025-0041','Nomvula Khumalo')"><i class="bi bi-eye"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="openNoteModal('Nomvula Khumalo')"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#065f46;border-color:#065f46;" onclick="resolveStudent('STU-2025-0041','Nomvula Khumalo')"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 4 -->
+                <tr data-reason="tasks" data-status="review" data-pm="zanele khumalo" data-name="Thandeka Dube" data-id="STU-2025-0057">
+                    <td>4</td>
+                    <td>
+                        <strong>Thandeka Dube</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">STU-2025-0057</div>
+                    </td>
+                    <td>University of KwaZulu-Natal</td>
+                    <td>2nd Year</td>
+                    <td><span class="reason-badge reason-tasks"><i class="bi bi-list-task"></i> Incomplete Tasks</span></td>
+                    <td>Zanele Khumalo</td>
+                    <td style="font-size:0.82rem;color:#666;">28 Apr 2026</td>
+                    <td style="font-size:0.82rem;color:#666;">05 May 2026</td>
+                    <td><span class="priority-dot dot-medium"></span> Medium</td>
+                    <td><span class="wl-badge wl-review"><i class="bi bi-clock-fill"></i> Review Due</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="viewStudent('STU-2025-0057','Thandeka Dube')"><i class="bi bi-eye"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="openNoteModal('Thandeka Dube')"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#065f46;border-color:#065f46;" onclick="resolveStudent('STU-2025-0057','Thandeka Dube')"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 5 -->
+                <tr data-reason="performance" data-status="active" data-pm="thabo Letlela" data-name="Lindelwe Mthembu" data-id="STU-2025-0063">
+                    <td>5</td>
+                    <td>
+                        <strong>Lindelwe Mthembu</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">STU-2025-0063</div>
+                    </td>
+                    <td>Tshwane University of Technology</td>
+                    <td>1st Year</td>
+                    <td><span class="reason-badge reason-performance"><i class="bi bi-graph-down-arrow"></i> Poor Performance</span></td>
+                    <td>Thabo Letlela</td>
+                    <td style="font-size:0.82rem;color:#666;">05 May 2026</td>
+                    <td style="font-size:0.82rem;color:#666;">19 May 2026</td>
+                    <td><span class="priority-dot dot-medium"></span> Medium</td>
+                    <td><span class="wl-badge wl-active"><i class="bi bi-record-circle-fill"></i> Active</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="viewStudent('STU-2025-0063','Lindelwe Mthembu')"><i class="bi bi-eye"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="openNoteModal('Lindelwe Mthembu')"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#065f46;border-color:#065f46;" onclick="resolveStudent('STU-2025-0063','Lindelwe Mthembu')"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 6 -->
+                <tr data-reason="psych" data-status="escalated" data-pm="priya naidoo" data-name="Ayanda Zulu" data-id="STU-2025-0079">
+                    <td>6</td>
+                    <td>
+                        <strong>Ayanda Zulu</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">STU-2025-0079</div>
+                    </td>
+                    <td>University of Johannesburg</td>
+                    <td>3rd Year</td>
+                    <td><span class="reason-badge reason-psych"><i class="bi bi-heart-pulse-fill"></i> Psychological / PM Interaction</span></td>
+                    <td>Priya Naidoo</td>
+                    <td style="font-size:0.82rem;color:#666;">10 Apr 2026</td>
+                    <td style="font-size:0.82rem;color:#666;">20 May 2026</td>
+                    <td><span class="priority-dot dot-high"></span> High</td>
+                    <td><span class="wl-badge wl-escalated"><i class="bi bi-exclamation-triangle-fill"></i> Escalated</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="viewStudent('STU-2025-0079','Ayanda Zulu')"><i class="bi bi-eye"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="openNoteModal('Ayanda Zulu')"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#065f46;border-color:#065f46;" onclick="resolveStudent('STU-2025-0079','Ayanda Zulu')"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 7 -->
+                <tr data-reason="tasks" data-status="active" data-pm="anele sithole" data-name="Bongani Nkosi" data-id="STU-2025-0088">
+                    <td>7</td>
+                    <td>
+                        <strong>Bongani Nkosi</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">STU-2025-0088</div>
+                    </td>
+                    <td>Stellenbosch University</td>
+                    <td>2nd Year</td>
+                    <td><span class="reason-badge reason-tasks"><i class="bi bi-list-task"></i> Incomplete Tasks</span></td>
+                    <td>Anele Sithole</td>
+                    <td style="font-size:0.82rem;color:#666;">14 May 2026</td>
+                    <td style="font-size:0.82rem;color:#666;">21 May 2026</td>
+                    <td><span class="priority-dot dot-low"></span> Low</td>
+                    <td><span class="wl-badge wl-active"><i class="bi bi-record-circle-fill"></i> Active</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="viewStudent('STU-2025-0088','Bongani Nkosi')"><i class="bi bi-eye"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="openNoteModal('Bongani Nkosi')"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#065f46;border-color:#065f46;" onclick="resolveStudent('STU-2025-0088','Bongani Nkosi')"><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 8 – Resolved -->
+                <tr data-reason="performance" data-status="resolved" data-pm="zanele khumalo" data-name="Naledi Dlamini" data-id="STU-2025-0031">
+                    <td>8</td>
+                    <td>
+                        <strong>Naledi Dlamini</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">STU-2025-0031</div>
+                    </td>
+                    <td>University of the Free State</td>
+                    <td>4th Year</td>
+                    <td><span class="reason-badge reason-performance"><i class="bi bi-graph-down-arrow"></i> Poor Performance</span></td>
+                    <td>Zanele Khumalo</td>
+                    <td style="font-size:0.82rem;color:#666;">01 Feb 2026</td>
+                    <td style="font-size:0.82rem;color:#666;">22 May 2026</td>
+                    <td><span class="priority-dot dot-low"></span> Low</td>
+                    <td><span class="wl-badge wl-resolved"><i class="bi bi-check-circle-fill"></i> Resolved</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="viewStudent('STU-2025-0031','Naledi Dlamini')"><i class="bi bi-eye"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;" onclick="openNoteModal('Naledi Dlamini')"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#666;" disabled><i class="bi bi-check-lg"></i></button>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <!-- Empty state -->
+        <div id="emptyState" style="display:none;text-align:center;padding:60px 20px;color:#aaa;">
+            <i class="bi bi-eye-slash" style="font-size:3rem;display:block;margin-bottom:12px;"></i>
+            No students match the selected filters.
+        </div>
+    </div>
+
+</div><!-- end main-content -->
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- MODAL: Add to Watchlist                        -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="addWatchModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="bi bi-eye-fill" style="margin-right:7px;"></i> Add Student to Watchlist</h3>
+            <button class="modal-close" onclick="closeModal('addWatchModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="field-group">
+                <label>Student ID or Name <span style="color:#dc2626;">*</span></label>
+                <input type="text" id="wl_student" placeholder="Search student ID or full name…">
+            </div>
+            <div class="field-group">
+                <label>Monitoring Reason <span style="color:#dc2626;">*</span></label>
+                <select id="wl_reason">
+                    <option value="">Select a reason…</option>
+                    <option value="tasks">Incomplete Tasks — student has not completed allocated tasks</option>
+                    <option value="performance">Poor Academic Performance — results below expected threshold</option>
+                    <option value="psych">Psychological Concern — raised after PM interaction</option>
+                    <option value="other">Other (specify in notes)</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Priority Level <span style="color:#dc2626;">*</span></label>
+                <select id="wl_priority">
+                    <option value="">Select priority…</option>
+                    <option value="high">High — immediate follow-up required</option>
+                    <option value="medium">Medium — monitor bi-weekly</option>
+                    <option value="low">Low — observe, no urgent action</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Assigned Programme Manager</label>
+                <select id="wl_pm">
+                    <option value="">Select PM…</option>
+                    <option>Thabo Letlela</option>
+                    <option>Priya Naidoo</option>
+                    <option>Anele Sithole</option>
+                    <option>Zanele Khumalo</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Notes / Context <span style="color:#dc2626;">*</span></label>
+                <textarea id="wl_notes" placeholder="Describe the concern, any prior interactions, and the action plan…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('addWatchModal')">Cancel</button>
+            <button class="btn-primary-action" onclick="submitWatchlist()"><i class="bi bi-eye-fill"></i> Add to Watchlist</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- MODAL: Add Note / Progress Update             -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="noteModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="bi bi-pencil-square" style="margin-right:7px;"></i> Add Note – <span id="noteStudentName"></span></h3>
+            <button class="modal-close" onclick="closeModal('noteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="field-group">
+                <label>Update Status</label>
+                <select id="note_status">
+                    <option value="active">Active Monitoring — no change</option>
+                    <option value="review">Review Due — schedule next check</option>
+                    <option value="escalated">Escalate — refer to Student Support Services</option>
+                    <option value="resolved">Mark as Resolved</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Note / Progress Update <span style="color:#dc2626;">*</span></label>
+                <textarea id="note_text" placeholder="Record the outcome of the latest interaction, any improvements or deterioration, and next steps…"></textarea>
+            </div>
+            <div class="field-group">
+                <label>Next Review Date</label>
+                <input type="date" id="note_next_review">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('noteModal')">Cancel</button>
+            <button class="btn-primary-action" onclick="saveNote()"><i class="bi bi-save-fill"></i> Save Note</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ── Modal helpers ── */
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+    });
+
+    /* ── Note modal ── */
+    function openNoteModal(name) {
+        document.getElementById('noteStudentName').textContent = name;
+        document.getElementById('note_text').value = '';
+        document.getElementById('note_next_review').value = '';
+        openModal('noteModal');
+    }
+
+    function saveNote() {
+        const text = document.getElementById('note_text').value.trim();
+        if (!text) { alert('Please enter a note before saving.'); return; }
+        alert('Note saved successfully.');
+        closeModal('noteModal');
+    }
+
+    /* ── Resolve ── */
+    function resolveStudent(id, name) {
+        if (!confirm('Mark ' + name + ' as Resolved and remove from active monitoring?')) return;
+        alert(name + ' has been marked as Resolved.');
+    }
+
+    /* ── View student ── */
+    function viewStudent(id, name) {
+        alert('Opening profile for ' + name + ' (' + id + ').');
+    }
+
+    /* ── Add to watchlist ── */
+    function submitWatchlist() {
+        const student  = document.getElementById('wl_student').value.trim();
+        const reason   = document.getElementById('wl_reason').value;
+        const priority = document.getElementById('wl_priority').value;
+        const notes    = document.getElementById('wl_notes').value.trim();
+        if (!student || !reason || !priority || !notes) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        alert(student + ' has been added to the watchlist.');
+        closeModal('addWatchModal');
+    }
+
+    /* ── Filters ── */
+    function applyFilters() {
+        const search  = document.getElementById('searchInput').value.toLowerCase();
+        const reason  = document.getElementById('reasonFilter').value;
+        const status  = document.getElementById('statusFilter').value;
+        const pm      = document.getElementById('pmFilter').value.toLowerCase();
+
+        const rows = document.querySelectorAll('#watchlistBody tr');
+        let visible = 0;
+
+        rows.forEach(row => {
+            const name   = (row.dataset.name  || '').toLowerCase();
+            const id     = (row.dataset.id    || '').toLowerCase();
+            const rReason = row.dataset.reason || '';
+            const rStatus = row.dataset.status || '';
+            const rPm    = (row.dataset.pm   || '').toLowerCase();
+
+            const matchSearch = !search  || name.includes(search)  || id.includes(search);
+            const matchReason = !reason  || rReason === reason;
+            const matchStatus = !status  || rStatus === status;
+            const matchPm     = !pm      || rPm.includes(pm);
+
+            const show = matchSearch && matchReason && matchStatus && matchPm;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
+    }
+</script>
+
+</body>
+</html>

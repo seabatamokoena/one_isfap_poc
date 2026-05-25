@@ -30,9 +30,19 @@
             </summary>
             <ul class="sub-nav">
                 <li><a href="student_list.html">List</a></li>
-                <li><a href="index.html">Profile</a></li>
-                <li><a href="#">Check-In</a></li>
-                <li><a href="#">Watchlist</a></li>
+                <li><a href="checkin.html">Check-In</a></li>
+                <li><a href="watchlist.html">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-file-earmark-person-fill"></i> Applications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="applications.html">All Applications</a></li>
+                <li><a href="#">Application Documents</a></li>
             </ul>
         </details>
 
@@ -90,7 +100,7 @@
             </summary>
             <ul class="sub-nav">
                 <li><a href="payments.html">Overview</a></li>
-                <li><a href="#">Process Payment</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
                 <li><a href="payment_history.html">Payment History</a></li>
                 <li><a href="#">Reconciliation</a></li>
             </ul>
@@ -124,11 +134,19 @@
         <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
 
         <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
-        <a href="#" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+        <details>
+            <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="allowance_limits.html">Allowance Limits</a></li>
+                <li><a href="#">Academic Calendar</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Audit Log</a></li>
+            </ul>
+        </details>
 
     </div>
     <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
-        <a href="#" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+        <a href="login.html" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
     </div>
 </nav>
 
@@ -296,8 +314,8 @@
                 </tr>
 
                 <!-- Row 3 – Accepted -->
-                <tr data-status="accepted" data-name="Lerato Mokoena" data-id="STU-2025-0033">                    <td>3</td>
-                    <td><strong>Lerato Mokoena</strong></td>
+                <tr data-status="accepted" data-name="Lerato Letlela" data-id="STU-2025-0033">                    <td>3</td>
+                    <td><strong>Lerato Letlela</strong></td>
                     <td style="color:#888;font-size:0.82rem;">STU-2025-0033</td>
                     <td>University Of Stellenbosch</td>
                     <td>BEng Mechanical Engineering</td>
@@ -305,7 +323,7 @@
                     <td style="font-size:0.82rem;color:#666;">14 May 2026</td>
                     <td><span class="badge badge-accepted"><i class="bi bi-check-circle-fill"></i> Accepted</span></td>
                     <td style="font-size:0.82rem;color:#666;">3 Jun 2026</td>
-                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0033','Lerato Mokoena')"><i class="bi bi-eye"></i> View</button></td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0033','Lerato Letlela')"><i class="bi bi-eye"></i> View</button></td>
                 </tr>
 
                 <!-- Row 4 – Accepted -->
@@ -437,8 +455,8 @@
                     <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0043','Sifiso Majola')"><i class="bi bi-eye"></i> View</button></td>
                 </tr>
 
-                <tr data-status="not-sent" data-name="Naledi Mokoena" data-id="STU-2025-0044">                    <td>14</td>
-                    <td><strong>Naledi Mokoena</strong></td>
+                <tr data-status="not-sent" data-name="Naledi Letlela" data-id="STU-2025-0044">                    <td>14</td>
+                    <td><strong>Naledi Letlela</strong></td>
                     <td style="color:#888;font-size:0.82rem;">STU-2025-0044</td>
                     <td>University of the Witwatersrand</td>
                     <td>BSc Mining Engineering</td>
@@ -446,7 +464,7 @@
                     <td style="font-size:0.82rem;color:#666;">20 May 2026</td>
                     <td><span class="badge badge-not-sent"><i class="bi bi-dash-circle"></i> Not Sent</span></td>
                     <td style="color:#aaa;font-size:0.82rem;">—</td>
-                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0044','Naledi Mokoena')"><i class="bi bi-eye"></i> View</button></td>
+                    <td><button class="btn-outline" style="padding:5px 12px;font-size:0.8rem;" onclick="viewStudent('STU-2025-0044','Naledi Letlela')"><i class="bi bi-eye"></i> View</button></td>
                 </tr>
 
                 <tr data-status="not-sent" data-name="Mthokozisi Cele" data-id="STU-2025-0045">                    <td>15</td>

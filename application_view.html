@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Review – ISFAP Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="OneISFAPStyle.css">
+    <style>
+        /* ── Application status badges ── */
+        .app-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 13px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 700; white-space: nowrap;
+        }
+        .app-pending  { background:#fff3cd; color:#856404; }
+        .app-review   { background:#dbeafe; color:#1e40af; }
+        .app-approved { background:#d1fae5; color:#065f46; }
+        .app-rejected { background:#fee2e2; color:#991b1b; }
+        .app-info     { background:#f3e8ff; color:#6d28d9; }
+
+        /* ── Read-only field ── */
+        .ro-field {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 7px;
+            padding: 9px 12px;
+            font-size: 0.87rem;
+            color: #1e293b;
+            min-height: 40px;
+        }
+        .ro-label {
+            font-size: 0.78rem; font-weight: 700; color: #64748b;
+            margin-bottom: 5px; display: block;
+        }
+        .ro-group { margin-bottom: 16px; }
+
+        /* ── Tabs ── */
+        .view-tabs { display: flex; border-bottom: 2px solid #e8eef5; margin-bottom: 24px; gap: 0; flex-wrap: wrap; }
+        .view-tab {
+            padding: 12px 22px; font-size: 0.85rem; font-weight: 700;
+            color: #64748b; cursor: pointer; border-bottom: 3px solid transparent;
+            margin-bottom: -2px; transition: all 0.15s; display: flex; align-items: center; gap: 7px;
+        }
+        .view-tab.active { color: #3730a3; border-bottom-color: #3730a3; }
+        .view-tab-pane   { display: none; }
+        .view-tab-pane.active { display: block; }
+
+        /* ── Section heading ── */
+        .section-heading {
+            font-size: 0.78rem; font-weight: 800; letter-spacing: 0.07em;
+            text-transform: uppercase; color: #3730a3;
+            margin: 24px 0 14px; display: flex; align-items: center; gap: 8px;
+            padding-bottom: 8px; border-bottom: 1px solid #e8eef5;
+        }
+
+        /* ── Audit trail ── */
+        .audit-item {
+            display: flex; gap: 14px; padding: 14px 0;
+            border-bottom: 1px solid #f0f4f8;
+        }
+        .audit-item:last-child { border-bottom: none; }
+        .audit-dot {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; flex-shrink: 0; margin-top: 2px;
+        }
+        .audit-dot-blue   { background:#dbeafe; color:#1e40af; }
+        .audit-dot-green  { background:#d1fae5; color:#065f46; }
+        .audit-dot-amber  { background:#fff3cd; color:#856404; }
+        .audit-dot-purple { background:#f3e8ff; color:#6d28d9; }
+        .audit-dot-red    { background:#fee2e2; color:#991b1b; }
+        .audit-time { font-size:0.75rem; color:#94a3b8; margin-top:3px; }
+
+        /* ── Document row ── */
+        .doc-row {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 16px; border: 1.5px solid #e2e8f0;
+            border-radius: 10px; margin-bottom: 10px;
+            background: #fafcff;
+        }
+        .doc-icon-sm {
+            width: 38px; height: 38px; border-radius: 9px;
+            background: #ede9fe; color: #4c1d95;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0;
+        }
+        .doc-status-badge {
+            margin-left: auto; font-size: 0.75rem; font-weight: 700;
+            padding: 3px 10px; border-radius: 20px;
+        }
+        .doc-ok  { background:#d1fae5; color:#065f46; }
+        .doc-mis { background:#fee2e2; color:#991b1b; }
+        .doc-pend { background:#fff3cd; color:#856404; }
+
+        /* ── Action bar (sticky top) ── */
+        .action-bar {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 20px;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .action-bar .sep { width:1px; height:28px; background:#e2e8f0; margin:0 4px; }
+
+        /* ── Modals ── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff; border-radius: 14px;
+            width: 540px; max-width: 96vw;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 18px 24px; color: #fff;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 1;
+        }
+        .modal-header h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+        .modal-body  { padding: 24px; }
+        .modal-footer {
+            padding: 16px 24px; background: #f8fafc;
+            border-top: 1px solid #e8eef5;
+            display: flex; gap: 10px; justify-content: flex-end;
+            position: sticky; bottom: 0;
+        }
+        .modal-close { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; }
+
+        .field-group { margin-bottom: 16px; }
+        .field-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #555; margin-bottom: 5px; }
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            width: 100%; padding: 9px 12px;
+            border: 1.5px solid #d1dce8; border-radius: 7px;
+            font-size: 0.87rem; color: #2d3a4a; background: #fff;
+            box-sizing: border-box;
+        }
+        .field-group textarea { resize: vertical; min-height: 90px; }
+        .field-group input:focus,
+        .field-group select:focus,
+        .field-group textarea:focus { outline: none; border-color: #3730a3; }
+
+        /* ── Completeness bar ── */
+        .comp-big { background:#e2e8f0; border-radius:8px; height:10px; overflow:hidden; margin-top:8px; }
+        .comp-big-fill { height:100%; border-radius:8px; background:linear-gradient(90deg,#3730a3,#6366f1); }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <details>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="checkin.html">Check-In</a></li>
+                <li><a href="watchlist.html">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <!-- Applications (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-file-earmark-person-fill"></i> Applications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="applications.html" class="active">All Applications</a></li>
+                <li><a href="#">Application Documents</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-check-fill"></i> Funding Selection
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funding_selection.html">Student Selection</a></li>
+                <li><a href="shortlist.html">Shortlisted Students</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <details>
+            <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="allowance_limits.html">Allowance Limits</a></li>
+                <li><a href="#">Academic Calendar</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Audit Log</a></li>
+            </ul>
+        </details>
+
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="login.html" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Breadcrumb -->
+    <div class="page-header" style="padding-bottom:16px;">
+        <div>
+            <div class="breadcrumb" style="margin-bottom:6px;">
+                <a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+                <a href="applications.html">Applications</a>
+                <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+                <span>APP-2026-0001</span>
+            </div>
+            <h2><i class="bi bi-file-earmark-person-fill"></i> Application Review</h2>
+        </div>
+        <a href="applications.html" class="btn-outline" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+            <i class="bi bi-arrow-left"></i> Back to Applications
+        </a>
+    </div>
+
+    <!-- Applicant header card -->
+    <div class="panel" style="padding:22px 26px;margin-bottom:20px;display:flex;align-items:flex-start;gap:22px;flex-wrap:wrap;">
+        <div style="width:60px;height:60px;border-radius:50%;background:#ede9fe;border:2px solid #c4b5fd;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi bi-person-fill" style="font-size:1.9rem;color:#4c1d95;"></i>
+        </div>
+        <div style="flex:1;min-width:220px;">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <h3 style="margin:0;font-size:1.3rem;color:#1e293b;">Sipho Ndlovu</h3>
+                <span class="app-badge app-pending"><i class="bi bi-hourglass-split"></i> Pending Review</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;font-size:0.84rem;color:#64748b;">
+                <span><i class="bi bi-hash" style="margin-right:3px;"></i>APP-2026-0001</span>
+                <span><i class="bi bi-person-badge" style="margin-right:3px;"></i>STU-2025-0014</span>
+                <span><i class="bi bi-building" style="margin-right:3px;"></i>University of the Witwatersrand</span>
+                <span><i class="bi bi-mortarboard" style="margin-right:3px;"></i>BCom Accounting · 2nd Year</span>
+                <span><i class="bi bi-calendar3" style="margin-right:3px;"></i>Submitted 14 Jan 2026</span>
+                <span><i class="bi bi-person-check" style="margin-right:3px;"></i>Reviewer: Thabo Letlela</span>
+            </div>
+            <!-- Completeness -->
+            <div style="margin-top:12px;max-width:400px;">
+                <div style="display:flex;justify-content:space-between;font-size:0.77rem;font-weight:700;color:#64748b;margin-bottom:4px;">
+                    <span>Application Completeness</span><span style="color:#3730a3;">85%</span>
+                </div>
+                <div class="comp-big"><div class="comp-big-fill" style="width:85%;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action bar -->
+    <div class="action-bar">
+        <button class="btn-primary-action" style="background:linear-gradient(135deg,#065f46,#059669);border-color:#059669;" onclick="openModal('approveModal')">
+            <i class="bi bi-check-circle-fill"></i> Approve
+        </button>
+        <button class="btn-primary-action" style="background:linear-gradient(135deg,#991b1b,#dc2626);border-color:#dc2626;" onclick="openModal('rejectModal')">
+            <i class="bi bi-x-circle-fill"></i> Reject
+        </button>
+        <div class="sep"></div>
+        <button class="btn-primary-action" style="background:linear-gradient(135deg,#4c1d95,#7c3aed);border-color:#7c3aed;" onclick="openModal('infoModal')">
+            <i class="bi bi-chat-left-dots-fill"></i> Request Additional Information
+        </button>
+        <div class="sep"></div>
+        <button class="btn-outline" onclick="openModal('assignModal')"><i class="bi bi-person-gear"></i> Reassign Reviewer</button>
+        <button class="btn-outline" style="margin-left:auto;"><i class="bi bi-download"></i> Download PDF</button>
+    </div>
+
+    <!-- Two-column layout: tabs + audit trail -->
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
+
+        <!-- LEFT: tabbed application detail -->
+        <div class="panel" style="padding:0;overflow:hidden;">
+
+            <div class="view-tabs" style="padding:0 24px;margin-bottom:0;background:#fafcff;border-bottom:2px solid #e8eef5;">
+                <div class="view-tab active" onclick="switchTab(this,'tab-personal')"><i class="bi bi-person-fill"></i> Personal Details</div>
+                <div class="view-tab" onclick="switchTab(this,'tab-school')"><i class="bi bi-house-fill"></i> School &amp; Household</div>
+                <div class="view-tab" onclick="switchTab(this,'tab-study')"><i class="bi bi-mortarboard-fill"></i> Study Choices</div>
+                <div class="view-tab" onclick="switchTab(this,'tab-docs')"><i class="bi bi-folder2-open"></i> Documents</div>
+            </div>
+
+            <!-- ── Personal Details ── -->
+            <div class="view-tab-pane active" id="tab-personal" style="padding:24px;">
+                <div class="section-heading"><i class="bi bi-person-vcard"></i> Identity &amp; Contact</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;">
+                    <div class="ro-group"><span class="ro-label">First Name</span><div class="ro-field">Sipho</div></div>
+                    <div class="ro-group"><span class="ro-label">Last Name</span><div class="ro-field">Ndlovu</div></div>
+                    <div class="ro-group"><span class="ro-label">SA ID Number</span><div class="ro-field">0301215432081</div></div>
+                    <div class="ro-group"><span class="ro-label">Date of Birth</span><div class="ro-field">21 January 2003</div></div>
+                    <div class="ro-group"><span class="ro-label">Gender</span><div class="ro-field">Male</div></div>
+                    <div class="ro-group"><span class="ro-label">Race</span><div class="ro-field">African / Black</div></div>
+                    <div class="ro-group"><span class="ro-label">Home Language</span><div class="ro-field">isiZulu</div></div>
+                    <div class="ro-group"><span class="ro-label">Marital Status</span><div class="ro-field">Single</div></div>
+                    <div class="ro-group"><span class="ro-label">Email Address</span><div class="ro-field">sipho.ndlovu@example.com</div></div>
+                    <div class="ro-group"><span class="ro-label">Contact Number</span><div class="ro-field">0712345678</div></div>
+                    <div class="ro-group"><span class="ro-label">Province of Residence</span><div class="ro-field">Gauteng</div></div>
+                    <div class="ro-group"><span class="ro-label">Salutation</span><div class="ro-field">Mr.</div></div>
+                </div>
+
+                <div class="section-heading" style="margin-top:28px;"><i class="bi bi-geo-alt-fill"></i> Address</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;">
+                    <div class="ro-group"><span class="ro-label">Street Address</span><div class="ro-field">14 Ntombi Street</div></div>
+                    <div class="ro-group"><span class="ro-label">Suburb</span><div class="ro-field">Soweto</div></div>
+                    <div class="ro-group"><span class="ro-label">City</span><div class="ro-field">Johannesburg</div></div>
+                    <div class="ro-group"><span class="ro-label">Postal Code</span><div class="ro-field">1816</div></div>
+                </div>
+            </div>
+
+            <!-- ── School & Household ── -->
+            <div class="view-tab-pane" id="tab-school" style="padding:24px;">
+                <div class="section-heading"><i class="bi bi-bank"></i> School Information</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;">
+                    <div class="ro-group"><span class="ro-label">Previous School</span><div class="ro-field">Jabulani Secondary School</div></div>
+                    <div class="ro-group"><span class="ro-label">School Province</span><div class="ro-field">Gauteng</div></div>
+                    <div class="ro-group"><span class="ro-label">Year of Matric</span><div class="ro-field">2024</div></div>
+                    <div class="ro-group"><span class="ro-label">Matric Average</span><div class="ro-field">71%</div></div>
+                    <div class="ro-group"><span class="ro-label">Mathematics Mark</span><div class="ro-field">68%</div></div>
+                    <div class="ro-group"><span class="ro-label">English Mark</span><div class="ro-field">74%</div></div>
+                </div>
+
+                <div class="section-heading" style="margin-top:28px;"><i class="bi bi-people-fill"></i> Household &amp; Financial</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;">
+                    <div class="ro-group"><span class="ro-label">Guardian / Parent Name</span><div class="ro-field">Nomsa Ndlovu</div></div>
+                    <div class="ro-group"><span class="ro-label">Relationship</span><div class="ro-field">Mother</div></div>
+                    <div class="ro-group"><span class="ro-label">Guardian Contact</span><div class="ro-field">0834567890</div></div>
+                    <div class="ro-group"><span class="ro-label">Number of Dependants</span><div class="ro-field">3</div></div>
+                    <div class="ro-group"><span class="ro-label">Household Income (pm)</span>
+                        <div class="ro-field" style="display:flex;align-items:center;justify-content:space-between;">
+                            R 4 500
+                            <span style="background:#d1fae5;color:#065f46;font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:10px;">Qualifies</span>
+                        </div>
+                    </div>
+                    <div class="ro-group"><span class="ro-label">Employment Status</span><div class="ro-field">Employed (part-time)</div></div>
+                    <div class="ro-group"><span class="ro-label">Currently NSFAS Funded</span><div class="ro-field">No</div></div>
+                </div>
+            </div>
+
+            <!-- ── Study Choices ── -->
+            <div class="view-tab-pane" id="tab-study" style="padding:24px;">
+
+                <!-- Choice 1 -->
+                <div style="background:#fafcff;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:18px;">
+                    <div style="padding:12px 18px;background:linear-gradient(135deg,#1e1b4b,#3730a3);color:#fff;display:flex;align-items:center;gap:10px;">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;">1</div>
+                        <span style="font-weight:700;font-size:0.9rem;">First Choice</span>
+                    </div>
+                    <div style="padding:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+                        <div class="ro-group"><span class="ro-label">Institution</span><div class="ro-field">University of the Witwatersrand</div></div>
+                        <div class="ro-group"><span class="ro-label">Faculty</span><div class="ro-field">Commerce, Law &amp; Management</div></div>
+                        <div class="ro-group"><span class="ro-label">Qualification</span><div class="ro-field">BCom Accounting</div></div>
+                    </div>
+                </div>
+
+                <!-- Choice 2 -->
+                <div style="background:#fafcff;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:18px;">
+                    <div style="padding:12px 18px;background:linear-gradient(135deg,#1e1b4b,#3730a3);color:#fff;display:flex;align-items:center;gap:10px;opacity:0.85;">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;">2</div>
+                        <span style="font-weight:700;font-size:0.9rem;">Second Choice</span>
+                    </div>
+                    <div style="padding:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+                        <div class="ro-group"><span class="ro-label">Institution</span><div class="ro-field">University of Johannesburg</div></div>
+                        <div class="ro-group"><span class="ro-label">Faculty</span><div class="ro-field">Accounting &amp; Informatics</div></div>
+                        <div class="ro-group"><span class="ro-label">Qualification</span><div class="ro-field">BCom Finance</div></div>
+                    </div>
+                </div>
+
+                <!-- Choice 3 -->
+                <div style="background:#fafcff;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;">
+                    <div style="padding:12px 18px;background:linear-gradient(135deg,#1e1b4b,#3730a3);color:#fff;display:flex;align-items:center;gap:10px;opacity:0.7;">
+                        <div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;">3</div>
+                        <span style="font-weight:700;font-size:0.9rem;">Third Choice</span>
+                    </div>
+                    <div style="padding:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
+                        <div class="ro-group"><span class="ro-label">Institution</span><div class="ro-field">University of Pretoria</div></div>
+                        <div class="ro-group"><span class="ro-label">Faculty</span><div class="ro-field">Economic &amp; Management Sciences</div></div>
+                        <div class="ro-group"><span class="ro-label">Qualification</span><div class="ro-field">BCom Economics</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Documents ── -->
+            <div class="view-tab-pane" id="tab-docs" style="padding:24px;">
+                <p style="font-size:0.85rem;color:#64748b;margin:0 0 18px;">Documents submitted by the applicant. Click the preview icon to view a document.</p>
+
+                <div class="doc-row">
+                    <div class="doc-icon-sm"><i class="bi bi-person-vcard-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.87rem;font-weight:700;">South African ID Document</div>
+                        <div style="font-size:0.78rem;color:#64748b;margin-top:2px;">Certified copy — ID_Sipho_Ndlovu.pdf · 1.2 MB</div>
+                    </div>
+                    <span class="doc-status-badge doc-ok">Received</span>
+                    <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-left:8px;" onclick="alert('Opening document preview…')"><i class="bi bi-eye"></i></button>
+                </div>
+
+                <div class="doc-row">
+                    <div class="doc-icon-sm"><i class="bi bi-file-earmark-text-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.87rem;font-weight:700;">Matric Certificate / Results</div>
+                        <div style="font-size:0.78rem;color:#64748b;margin-top:2px;">Matric_Results_2024.pdf · 890 KB</div>
+                    </div>
+                    <span class="doc-status-badge doc-ok">Received</span>
+                    <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-left:8px;" onclick="alert('Opening document preview…')"><i class="bi bi-eye"></i></button>
+                </div>
+
+                <div class="doc-row">
+                    <div class="doc-icon-sm"><i class="bi bi-house-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.87rem;font-weight:700;">Proof of Household Income</div>
+                        <div style="font-size:0.78rem;color:#64748b;margin-top:2px;">Payslip_Nomsa_Ndlovu.pdf · 450 KB</div>
+                    </div>
+                    <span class="doc-status-badge doc-ok">Received</span>
+                    <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-left:8px;" onclick="alert('Opening document preview…')"><i class="bi bi-eye"></i></button>
+                </div>
+
+                <div class="doc-row" style="border-color:#fca5a5;background:#fff8f8;">
+                    <div class="doc-icon-sm" style="background:#fee2e2;color:#991b1b;"><i class="bi bi-building"></i></div>
+                    <div>
+                        <div style="font-size:0.87rem;font-weight:700;">Proof of University Registration</div>
+                        <div style="font-size:0.78rem;color:#991b1b;margin-top:2px;"><i class="bi bi-exclamation-circle-fill"></i> Not yet uploaded — required document</div>
+                    </div>
+                    <span class="doc-status-badge doc-mis">Missing</span>
+                    <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-left:8px;color:#6d28d9;border-color:#6d28d9;" onclick="openInfoModal('Supporting Documents','Proof of University Registration','Please upload a certified copy of your university registration letter or proof of acceptance for the 2026 academic year.')">
+                        <i class="bi bi-chat-left-dots"></i>
+                    </button>
+                </div>
+
+                <div class="doc-row" style="border-color:#fde68a;background:#fffbeb;">
+                    <div class="doc-icon-sm" style="background:#fef3c7;color:#92400e;"><i class="bi bi-bank2"></i></div>
+                    <div>
+                        <div style="font-size:0.87rem;font-weight:700;">Bank Statement (3 months)</div>
+                        <div style="font-size:0.78rem;color:#92400e;margin-top:2px;"><i class="bi bi-clock-fill"></i> Awaiting upload from applicant</div>
+                    </div>
+                    <span class="doc-status-badge doc-pend">Pending</span>
+                    <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-left:8px;color:#6d28d9;border-color:#6d28d9;" onclick="openInfoModal('Supporting Documents','Bank Statement (3 months)','Please provide a certified bank statement covering the last 3 months for all household bank accounts.')">
+                        <i class="bi bi-chat-left-dots"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Audit trail -->
+        <div>
+            <div class="panel" style="padding:20px;">
+                <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#3730a3;margin-bottom:16px;display:flex;align-items:center;gap:7px;">
+                    <i class="bi bi-clock-history"></i> Application Audit Trail
+                </div>
+
+                <div class="audit-item">
+                    <div class="audit-dot audit-dot-amber"><i class="bi bi-hourglass-split"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Assigned to Reviewer</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Assigned to Thabo Letlela for review</div>
+                        <div class="audit-time">18 Jan 2026 · 09:14 · System</div>
+                    </div>
+                </div>
+
+                <div class="audit-item">
+                    <div class="audit-dot audit-dot-blue"><i class="bi bi-send-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Application Submitted</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Applicant submitted all completed sections</div>
+                        <div class="audit-time">14 Jan 2026 · 14:32 · Sipho Ndlovu</div>
+                    </div>
+                </div>
+
+                <div class="audit-item">
+                    <div class="audit-dot audit-dot-purple"><i class="bi bi-chat-left-dots-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Info Requested</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Proof of University Registration requested</div>
+                        <div class="audit-time">10 Jan 2026 · 11:05 · Thabo Letlela</div>
+                    </div>
+                </div>
+
+                <div class="audit-item">
+                    <div class="audit-dot audit-dot-blue"><i class="bi bi-pencil-square"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Study Choices Updated</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Applicant updated 3rd study choice</div>
+                        <div class="audit-time">08 Jan 2026 · 17:45 · Sipho Ndlovu</div>
+                    </div>
+                </div>
+
+                <div class="audit-item">
+                    <div class="audit-dot audit-dot-blue"><i class="bi bi-file-earmark-plus"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Documents Uploaded</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">ID, matric results &amp; payslip uploaded</div>
+                        <div class="audit-time">06 Jan 2026 · 10:20 · Sipho Ndlovu</div>
+                    </div>
+                </div>
+
+                <div class="audit-item" style="border-bottom:none;">
+                    <div class="audit-dot audit-dot-blue"><i class="bi bi-person-plus-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Application Started</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Applicant registered and began application</div>
+                        <div class="audit-time">02 Jan 2026 · 08:51 · Sipho Ndlovu</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Internal notes -->
+            <div class="panel" style="padding:20px;margin-top:16px;">
+                <div style="font-size:0.82rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:#3730a3;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+                    <span><i class="bi bi-sticky-fill"></i> Internal Notes</span>
+                    <button class="btn-outline" style="padding:4px 10px;font-size:0.75rem;" onclick="openModal('noteModal')"><i class="bi bi-plus-lg"></i> Add</button>
+                </div>
+
+                <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:0.84rem;color:#374151;">
+                    <div style="font-weight:700;margin-bottom:4px;">Thabo Letlela</div>
+                    <div style="color:#475569;">Household income confirmed via payslip. Awaiting registration proof before proceeding to approval.</div>
+                    <div style="font-size:0.75rem;color:#94a3b8;margin-top:6px;">20 Jan 2026 · 10:30</div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end two-column -->
+
+</div><!-- end main-content -->
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- MODAL: Request Additional Information              -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="infoModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#4c1d95,#7c3aed);">
+            <h3><i class="bi bi-chat-left-dots-fill" style="margin-right:7px;"></i> Request Additional Information</h3>
+            <button class="modal-close" onclick="closeModal('infoModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.87rem;color:#475569;margin:0 0 16px;">Requesting information from <strong>Sipho Ndlovu</strong> (APP-2026-0001). The applicant will receive an email and in-app notification.</p>
+
+            <div class="field-group">
+                <label>Application Section <span style="color:#dc2626;">*</span></label>
+                <select id="info_section">
+                    <option value="">Select section…</option>
+                    <option>Personal Details</option>
+                    <option>School &amp; Household Information</option>
+                    <option>Study Choices</option>
+                    <option>Supporting Documents</option>
+                    <option>General / Other</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Specific Field or Document Required <span style="color:#dc2626;">*</span></label>
+                <input type="text" id="info_field" placeholder="e.g. Certified copy of ID, Proof of household income…">
+            </div>
+            <div class="field-group">
+                <label>Message to Applicant <span style="color:#dc2626;">*</span></label>
+                <textarea id="info_message" placeholder="Clearly explain what is needed and why, so the applicant can respond accurately…" style="min-height:110px;"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div class="field-group" style="margin-bottom:0;">
+                    <label>Response Deadline <span style="color:#dc2626;">*</span></label>
+                    <input type="date" id="info_deadline">
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                    <label>Priority</label>
+                    <select id="info_priority">
+                        <option value="normal">Normal</option>
+                        <option value="urgent">Urgent — flag for immediate attention</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field-group" style="margin-top:16px;">
+                <label>Notify Via</label>
+                <div style="display:flex;gap:16px;margin-top:4px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:400;cursor:pointer;">
+                        <input type="checkbox" checked style="width:auto;padding:0;border:none;"> Email
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:400;cursor:pointer;">
+                        <input type="checkbox" checked style="width:auto;padding:0;border:none;"> SMS
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:400;cursor:pointer;">
+                        <input type="checkbox" checked style="width:auto;padding:0;border:none;"> In-App Notification
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('infoModal')">Cancel</button>
+            <button style="background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:0.87rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px;" onclick="submitInfoRequest()">
+                <i class="bi bi-send-fill"></i> Send Request
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- MODAL: Approve                     -->
+<!-- ══════════════════════════════════ -->
+<div class="modal-overlay" id="approveModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#065f46,#059669);">
+            <h3><i class="bi bi-check-circle-fill" style="margin-right:7px;"></i> Approve Application</h3>
+            <button class="modal-close" onclick="closeModal('approveModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.9rem;color:#374151;margin:0 0 16px;">You are about to <strong>approve</strong> the application for <strong>Sipho Ndlovu</strong> (APP-2026-0001). The applicant will be notified.</p>
+            <div class="field-group">
+                <label>Assigned Funder <span style="color:#dc2626;">*</span></label>
+                <select id="approve_funder">
+                    <option value="">Select funder…</option>
+                    <option>NSFAS</option>
+                    <option>Ikusasa Student Financial Aid Programme</option>
+                    <option>Allan Gray Orbis Foundation</option>
+                    <option>Rand Mutual Assurance</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Approval Note (optional)</label>
+                <textarea id="approve_note" placeholder="Add an internal note for this decision…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('approveModal')">Cancel</button>
+            <button class="btn-primary-action" style="background:linear-gradient(135deg,#065f46,#059669);border-color:#059669;" onclick="submitApprove()">
+                <i class="bi bi-check-circle-fill"></i> Confirm Approval
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- MODAL: Reject                      -->
+<!-- ══════════════════════════════════ -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
+            <h3><i class="bi bi-x-circle-fill" style="margin-right:7px;"></i> Reject Application</h3>
+            <button class="modal-close" onclick="closeModal('rejectModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.9rem;color:#374151;margin:0 0 16px;">You are about to <strong>reject</strong> the application for <strong>Sipho Ndlovu</strong> (APP-2026-0001). The applicant will be notified.</p>
+            <div class="field-group">
+                <label>Rejection Reason <span style="color:#dc2626;">*</span></label>
+                <select id="reject_reason">
+                    <option value="">Select a reason…</option>
+                    <option>Income threshold not met</option>
+                    <option>Incomplete documentation</option>
+                    <option>Does not meet academic criteria</option>
+                    <option>Duplicate application</option>
+                    <option>Already funded by another bursary</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Additional Comments (visible to applicant)</label>
+                <textarea id="reject_note" placeholder="Provide further context for this rejection…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('rejectModal')">Cancel</button>
+            <button style="background:linear-gradient(135deg,#991b1b,#dc2626);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:0.87rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px;" onclick="submitReject()">
+                <i class="bi bi-x-circle-fill"></i> Confirm Rejection
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- MODAL: Reassign Reviewer           -->
+<!-- ══════════════════════════════════ -->
+<div class="modal-overlay" id="assignModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#094781);">
+            <h3><i class="bi bi-person-gear" style="margin-right:7px;"></i> Reassign Reviewer</h3>
+            <button class="modal-close" onclick="closeModal('assignModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.87rem;color:#475569;margin:0 0 16px;">Currently assigned to <strong>Thabo Letlela</strong>. Select a new reviewer to reassign this application.</p>
+            <div class="field-group">
+                <label>New Reviewer <span style="color:#dc2626;">*</span></label>
+                <select id="new_reviewer">
+                    <option value="">Select reviewer…</option>
+                    <option>Thabo Letlela (current)</option>
+                    <option>Priya Naidoo</option>
+                    <option>Anele Sithole</option>
+                    <option>Zanele Khumalo</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Reason for Reassignment</label>
+                <textarea id="assign_reason" placeholder="Optional: note why this is being reassigned…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('assignModal')">Cancel</button>
+            <button class="btn-primary-action" onclick="submitReassign()">
+                <i class="bi bi-person-check-fill"></i> Confirm Reassignment
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- MODAL: Add Internal Note           -->
+<!-- ══════════════════════════════════ -->
+<div class="modal-overlay" id="noteModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#094781);">
+            <h3><i class="bi bi-sticky-fill" style="margin-right:7px;"></i> Add Internal Note</h3>
+            <button class="modal-close" onclick="closeModal('noteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.87rem;color:#475569;margin:0 0 16px;">Internal notes are visible only to ISFAP staff and are not shared with the applicant.</p>
+            <div class="field-group">
+                <label>Note <span style="color:#dc2626;">*</span></label>
+                <textarea id="note_text" placeholder="Add your internal note or observation about this application…" style="min-height:120px;"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('noteModal')">Cancel</button>
+            <button class="btn-primary-action" onclick="submitNote()">
+                <i class="bi bi-check-lg"></i> Save Note
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ── Tab switching ── */
+    function switchTab(el, paneId) {
+        document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view-tab-pane').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById(paneId).classList.add('active');
+    }
+
+    /* ── Modals ── */
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    /* ── Pre-fill info modal from doc row shortcut ── */
+    function openInfoModal(section, field, message) {
+        document.getElementById('info_section').value = section;
+        document.getElementById('info_field').value   = field;
+        document.getElementById('info_message').value = message;
+        const d = new Date(); d.setDate(d.getDate() + 7);
+        document.getElementById('info_deadline').value = d.toISOString().split('T')[0];
+        openModal('infoModal');
+    }
+
+    /* ── Submit handlers ── */
+    function submitInfoRequest() {
+        const section = document.getElementById('info_section').value;
+        const field   = document.getElementById('info_field').value.trim();
+        const msg     = document.getElementById('info_message').value.trim();
+        const dl      = document.getElementById('info_deadline').value;
+        if (!section || !field || !msg || !dl) { alert('Please complete all required fields.'); return; }
+        closeModal('infoModal');
+        alert('Information request sent to Sipho Ndlovu via email, SMS and in-app notification.');
+    }
+
+    function submitApprove() {
+        const funder = document.getElementById('approve_funder').value;
+        if (!funder) { alert('Please select an assigned funder.'); return; }
+        closeModal('approveModal');
+        alert('Application APP-2026-0001 approved. Sipho Ndlovu has been notified.');
+    }
+
+    function submitReject() {
+        const reason = document.getElementById('reject_reason').value;
+        if (!reason) { alert('Please select a rejection reason.'); return; }
+        closeModal('rejectModal');
+        alert('Application APP-2026-0001 rejected. Sipho Ndlovu has been notified.');
+    }
+
+    function submitReassign() {
+        const reviewer = document.getElementById('new_reviewer').value;
+        if (!reviewer || reviewer.includes('current')) { alert('Please select a different reviewer.'); return; }
+        closeModal('assignModal');
+        alert('Application reassigned to ' + reviewer + '.');
+    }
+
+    function submitNote() {
+        const note = document.getElementById('note_text').value.trim();
+        if (!note) { alert('Please enter a note.'); return; }
+        closeModal('noteModal');
+        alert('Internal note saved.');
+    }
+
+    /* ── Default info request deadline ── */
+    (function() {
+        const d = new Date(); d.setDate(d.getDate() + 7);
+        const iso = d.toISOString().split('T')[0];
+        const el = document.getElementById('info_deadline');
+        if (el) el.value = iso;
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learner Profile – OneISFAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="OneISFAPStyle.css">
+    <style>
+        /* ── Upload card ── */
+        .doc-card {
+            background: #fff;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 2px 10px rgba(9, 71, 129, 0.07);
+        }
+
+        .doc-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .doc-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
+            background: #E5F5FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .doc-card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--sidebar-color);
+        }
+
+        .doc-card-subtitle {
+            font-size: 0.82rem;
+            color: #718096;
+            margin-top: 3px;
+            line-height: 1.5;
+        }
+
+        .doc-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 11px;
+            border-radius: 20px;
+            margin-top: 6px;
+        }
+
+        .doc-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .doc-status.uploaded {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .doc-status.required {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 22px 16px;
+            text-align: center;
+            background: #f8fbff;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary-color);
+            background: #eaf5ff;
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-zone i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .upload-zone strong {
+            display: block;
+            font-size: 0.88rem;
+            color: var(--sidebar-color);
+        }
+
+        .upload-zone span {
+            font-size: 0.78rem;
+            color: #a0aec0;
+        }
+
+        .upload-preview {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            background: #f0f8ff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+
+        .upload-preview.visible {
+            display: flex;
+        }
+
+        .upload-preview i {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+        }
+
+        .upload-preview .file-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--sidebar-color);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .upload-preview .file-size {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 2px 4px;
+            line-height: 1;
+        }
+
+        .affidavit-note {
+            background: #eaf5ff;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+            padding: 11px 15px;
+            font-size: 0.82rem;
+            color: var(--sidebar-color);
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+        }
+
+        .affidavit-note i {
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* ── Study choice card ── */
+        .choice-card {
+            background: #fff;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(9, 71, 129, 0.07);
+            margin-bottom: 20px;
+        }
+
+        .choice-card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 22px;
+            background: linear-gradient(135deg, var(--sidebar-color), var(--primary-color));
+            color: #fff;
+        }
+
+        .choice-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .choice-card-body {
+            padding: 22px;
+        }
+
+        .choice-save-btn {
+            padding: 9px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--sidebar-color));
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 0.87rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 4px 14px rgba(9, 71, 129, 0.25);
+            transition: opacity 0.2s, transform 0.15s;
+            margin-top: 16px;
+        }
+
+        .choice-save-btn:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+
+        /* ── Profile status banner ── */
+        .profile-banner {
+            background: linear-gradient(135deg, #fff8e1, #fffde7);
+            border: 1.5px solid #ffc107;
+            border-radius: 10px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .profile-banner i {
+            color: #f59e0b;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .profile-banner strong {
+            color: #92400e;
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .profile-banner span {
+            color: #78350f;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        /* ── Completion progress ── */
+        .completion-bar-wrap {
+            background: #e2e8f0;
+            border-radius: 8px;
+            height: 8px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .completion-bar {
+            height: 100%;
+            border-radius: 8px;
+            background: linear-gradient(90deg, var(--primary-color), var(--sidebar-color));
+            transition: width 0.5s;
+        }
+
+        /* Doc grid */
+        .doc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 820px) {
+            .doc-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Learner tab labels */
+        input[name="learner-tabs"] {
+            display: none;
+        }
+
+        .ltab-label {
+            padding: 12px 24px;
+            background: #fff;
+            color: #666;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            cursor: pointer;
+            font-weight: 600;
+            border-radius: 6px 6px 0 0;
+            margin-right: 4px;
+            transition: color 0.2s, background 0.2s;
+            letter-spacing: 0.02em;
+            display: inline-block;
+            user-select: none;
+        }
+
+        .ltab-label:hover {
+            background: #f5f8ff;
+            color: var(--primary-color);
+        }
+
+        .ltab-label.active {
+            background: #fff;
+            color: var(--primary-color);
+            border-color: #dee2e6;
+            border-top: 3px solid var(--primary-color);
+            position: relative;
+            z-index: 2;
+        }
+
+        .ltab-content {
+            width: 100%;
+            padding: 25px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 0 6px 6px 6px;
+            box-sizing: border-box;
+            display: none;
+        }
+
+        .ltab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Sidebar ── -->
+    <nav class="sidebar">
+        <a href="#" class="sidebar-brand">
+            <img src="images/logo.png" alt="ISFAP Logo" style="height:56px;object-fit:contain;"
+                onerror="this.style.display='none'">
+        </a>
+        <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+            <a href="#" class="nav-link active" style="margin-bottom:4px;">
+                <i class="bi bi-person-circle"></i> My Profile
+            </a>
+            <a href="#" class="nav-link" style="margin-bottom:4px;">
+                <i class="bi bi-mortarboard"></i> My Application
+            </a>
+            <a href="#" class="nav-link" style="margin-bottom:4px;">
+                <i class="bi bi-file-earmark-text"></i> My Documents
+            </a>
+            <a href="#" class="nav-link" style="margin-bottom:4px;">
+                <i class="bi bi-bell"></i> Notifications
+            </a>
+
+            <div style="border-top:1px solid rgba(255,255,255,0.1);margin:14px 0;"></div>
+
+            <a href="#" class="nav-link" style="margin-bottom:4px;">
+                <i class="bi bi-question-circle"></i> Help &amp; Support
+            </a>
+
+        </div>
+        <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+            <a href="login.html" class="nav-link">
+                <i class="bi bi-box-arrow-left"></i> Log Out
+            </a>
+        </div>
+    </nav>
+
+    <!-- ── Main Content ── -->
+    <div class="main-content">
+        <div class="container">
+
+            <!-- Completion banner -->
+            <div class="profile-banner">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div>
+                    <strong>Complete your profile to submit your application</strong>
+                    <span>You have registered successfully! Please complete all 4 profile sections — Personal Details,
+                        School &amp; Household, Study Choices, and Documents — to submit your bursary
+                        application.</span>
+                    <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+                        <div class="completion-bar-wrap" style="flex:1;">
+                            <div class="completion-bar" id="completionBar" style="width:25%;"></div>
+                        </div>
+                        <span style="font-size:0.8rem;color:#92400e;font-weight:700;" id="completionPct">25%
+                            Complete</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learner Header -->
+            <div
+                style="display:flex;align-items:center;gap:20px;padding-bottom:16px;border-bottom:3px solid var(--primary-color);margin-bottom:4px;">
+                <div
+                    style="width:64px;height:64px;border-radius:50%;background:#E5F5FF;border:2px solid var(--border-color);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+                    <i class="bi bi-person-fill" style="font-size:2rem;color:var(--primary-color);"></i>
+                </div>
+                <div style="flex:1;">
+                    <h2 style="margin:0;padding:0;border:none;font-size:1.4rem;color:#494949;">Thapelo Mabulane</h2>
+                    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;font-size:0.85rem;color:#999;">
+                        <span><i class="bi bi-person-badge" style="color:#bbb;margin-right:4px;"></i>Currently in
+                            Matric</span>
+                        <span><i class="bi bi-book" style="color:#bbb;margin-right:4px;"></i>Hammanskraal Secondary
+                            School</span>
+                        <span><i class="bi bi-telephone" style="color:#bbb;margin-right:4px;"></i>0612345678</span>
+                        <span><i class="bi bi-envelope"
+                                style="color:#bbb;margin-right:4px;"></i>thapelo@example.com</span>
+                    </div>
+                </div>
+                <div style="flex-shrink:0;">
+                    <span
+                        style="background:#fff3cd;color:#856404;font-size:0.8rem;font-weight:700;padding:6px 14px;border-radius:20px;border:1px solid #ffc107;display:flex;align-items:center;gap:6px;">
+                        <i class="bi bi-clock-history"></i> Application Pending
+                    </span>
+                </div>
+            </div>
+
+            <!-- Hidden radio buttons for tab control -->
+            <input type="radio" name="learner-tabs" id="ltab1" checked>
+            <input type="radio" name="learner-tabs" id="ltab2">
+            <input type="radio" name="learner-tabs" id="ltab3">
+            <input type="radio" name="learner-tabs" id="ltab4">
+
+            <!-- Tab navigation -->
+            <div style="display:flex;flex-wrap:wrap;margin-top:20px;">
+                <label for="ltab1" class="ltab-label active" data-tab="0">
+                    <i class="bi bi-person" style="margin-right:6px;"></i>Personal Details
+                </label>
+                <label for="ltab2" class="ltab-label" data-tab="1">
+                    <i class="bi bi-house" style="margin-right:6px;"></i>School &amp; Household
+                </label>
+                <label for="ltab3" class="ltab-label" data-tab="2">
+                    <i class="bi bi-mortarboard" style="margin-right:6px;"></i>Study Choices
+                </label>
+                <label for="ltab4" class="ltab-label" data-tab="3">
+                    <i class="bi bi-folder2-open" style="margin-right:6px;"></i>Documents
+                </label>
+            </div>
+
+            <!-- ══════════════════════════════ -->
+            <!-- TAB 1: Personal Details        -->
+            <!-- ══════════════════════════════ -->
+            <div class="ltab-content active" id="ltab1content">
+
+                <p style="font-size:0.85rem;color:#718096;margin-bottom:22px;line-height:1.6;">
+                    Review and update your personal details below. Your <strong>Email Address</strong> and <strong>ID
+                        Number</strong> are locked as they were set during registration.
+                </p>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Salutation</label>
+                        <select id="p_salutation">
+                            <option value="">Select</option>
+                            <option value="1" selected>Mr.</option>
+                            <option value="2">Ms.</option>
+                            <option value="3">Mrs.</option>
+                            <option value="4">Dr.</option>
+                            <option value="5">Prof.</option>
+                            <option value="6">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Gender <span style="color:#e53e3e;">*</span></label>
+                        <select id="p_gender">
+                            <option value="">Select Gender</option>
+                            <option value="1" selected>Male</option>
+                            <option value="2">Female</option>
+                            <option value="3">Non-binary</option>
+                            <option value="4">Prefer not to say</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>First Name <span style="color:#e53e3e;">*</span></label>
+                        <input type="text" id="p_firstName" placeholder="Enter first name" value="Thapelo">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name <span style="color:#e53e3e;">*</span></label>
+                        <input type="text" id="p_lastName" placeholder="Enter last name" value="Mabulane">
+                    </div>
+                    <div class="form-group">
+                        <label>SA ID Number</label>
+                        <input type="text" id="p_idNumber" placeholder="[IdentificationNumber]" readonly value="0701255942081"
+                            style="background:#f3f4f6;color:#555;"
+                            title="ID number cannot be changed after registration">
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth</label>
+                        <input type="date" id="p_dob">
+                    </div>
+                    <div class="form-group">
+                        <label>Race</label>
+                        <select id="p_race">
+                            <option value="">Select Race</option>
+                            <option value="1" selected>African / Black</option>
+                            <option value="2">Coloured</option>
+                            <option value="3">Indian / Asian</option>
+                            <option value="4">White</option>
+                            <option value="5">Other</option>
+                            <option value="6">Prefer not to say</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Home Language</label>
+                        <select id="p_homeLanguage">
+                            <option value="">Select Language</option>
+                            <option value="1">isiZulu</option>
+                            <option value="2">isiXhosa</option>
+                            <option value="3">Afrikaans</option>
+                            <option value="4">English</option>
+                            <option value="5" selected>Sepedi / Northern Sotho</option>
+                            <option value="6">Setswana</option>
+                            <option value="7">Sesotho</option>
+                            <option value="8">Xitsonga</option>
+                            <option value="9">siSwati</option>
+                            <option value="10">Tshivenda</option>
+                            <option value="11">isiNdebele</option>
+                            <option value="12">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="p_email" placeholder="[Email]" value="thapelo@example.com" readonly
+                            style="background:#f3f4f6;color:#555;" title="Email cannot be changed after registration">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number <span style="color:#e53e3e;">*</span></label>
+                        <input type="tel" id="p_contact" placeholder="e.g. 082 345 6789" value="0612345678">
+                    </div>
+                    <div class="form-group">
+                        <label>Marital Status</label>
+                        <select id="p_maritalStatus">
+                            <option value="">Select Status</option>
+                            <option value="1" selected>Single</option>
+                            <option value="2">Married</option>
+                            <option value="3">Divorced</option>
+                            <option value="4">Widowed</option>
+                            <option value="5">Civil Partnership</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Province of Residence <span style="color:#e53e3e;">*</span></label>
+                        <select id="p_province">
+                            <option value="">Select Province</option>
+                            <option value="EC">Eastern Cape</option>
+                            <option value="FS">Free State</option>
+                            <option value="GP" selected>Gauteng</option>
+                            <option value="KZN">KwaZulu-Natal</option>
+                            <option value="LP">Limpopo</option>
+                            <option value="MP">Mpumalanga</option>
+                            <option value="NC">Northern Cape</option>
+                            <option value="NW">North West</option>
+                            <option value="WC">Western Cape</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end;">
+                    <button type="button" class="btn-primary-action" onclick="savePersonalDetails()"
+                        style="font-size:0.87rem;">
+                        <i class="bi bi-check-circle"></i> Save Personal Details
+                    </button>
+                    <button type="button" class="btn-outline" onclick="goToTab(1)" style="font-size:0.87rem;">
+                        Next: School &amp; Household <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- ══════════════════════════════════ -->
+            <!-- TAB 2: School & Household          -->
+            <!-- ══════════════════════════════════ -->
+            <div class="ltab-content" id="ltab2content">
+
+                <p style="font-size:0.85rem;color:#718096;margin-bottom:22px;line-height:1.6;">
+                    Tell us about your current school and household. This information is used to assess your eligibility
+                    for ISFAP funding.
+                </p>
+
+                <div class="form-grid">
+
+                    <div class="form-group full-width">
+                        <p
+                            style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--primary-color);margin-bottom:4px;border-bottom:1px solid var(--border-color);padding-bottom:6px;">
+                            <i class="bi bi-book" style="margin-right:5px;"></i>Matric Details
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Current School Name <span style="color:#e53e3e;">*</span></label>
+                        <input type="text" id="sh_schoolName" placeholder="e.g. Soweto High School"
+                            value="Hammanskraal Secondary School">
+                    </div>
+                    <div class="form-group">
+                        <label>School Province <span style="color:#e53e3e;">*</span></label>
+                        <select id="sh_schoolProvince">
+                            <option value="">Select Province</option>
+                            <option value="EC">Eastern Cape</option>
+                            <option value="FS">Free State</option>
+                            <option value="GP" selected>Gauteng</option>
+                            <option value="KZN">KwaZulu-Natal</option>
+                            <option value="LP">Limpopo</option>
+                            <option value="MP">Mpumalanga</option>
+                            <option value="NC">Northern Cape</option>
+                            <option value="NW">North West</option>
+                            <option value="WC">Western Cape</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Matric Year <span style="color:#e53e3e;">*</span></label>
+                        <select id="sh_matricYear">
+                            <option value="">Select Year</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>EMIS Number (if known)</label>
+                        <input type="text" id="sh_emisNumber" placeholder="School EMIS number" value="123456">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <p
+                            style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--primary-color);margin:8px 0 4px;border-bottom:1px solid var(--border-color);padding-bottom:6px;">
+                            <i class="bi bi-house" style="margin-right:5px;"></i>Household Information
+                        </p>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Annual Household Income Range <span style="color:#e53e3e;">*</span></label>
+                        <select id="sh_income">
+                            <option value="">Select Income Range</option>
+                            <option value="1" selected>R 0 – No formal income (affidavit required)</option>
+                            <option value="2">Below R 25,000 per year</option>
+                            <option value="3">R 25,001 – R 50,000 per year</option>
+                            <option value="4">R 50,001 – R 75,000 per year</option>
+                            <option value="5">R 75,001 – R 100,000 per year</option>
+                            <option value="6">R 100,001 – R 150,000 per year</option>
+                            <option value="7">Above R 150,000 per year</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <p
+                            style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--primary-color);margin:8px 0 4px;border-bottom:1px solid var(--border-color);padding-bottom:6px;">
+                            <i class="bi bi-person-wheelchair" style="margin-right:5px;"></i>Disability
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Do you have a disability?</label>
+                        <select id="sh_hasDisability" onchange="toggleProfileDisability(this.value)">
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1" selected>Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="sh_disabilityTypeField" style="display:none;">
+                        <label>Disability Type</label>
+                        <select id="sh_disabilities">
+                            <option value="">Select Disability</option>
+                            <option value="1" selected>Visual impairment</option>
+                            <option value="2">Hearing impairment</option>
+                            <option value="3">Physical / mobility</option>
+                            <option value="4">Intellectual / cognitive</option>
+                            <option value="5">Psychosocial / mental health</option>
+                            <option value="6">Multiple disabilities</option>
+                            <option value="7">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width" id="sh_disabilityDescField" style="display:none;">
+                        <label>Disability Description</label>
+                        <textarea id="sh_disabilityDescription"
+                            placeholder="Briefly describe your disability and any support you may require"
+                            style="resize:vertical;min-height:70px;"></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <p
+                            style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--primary-color);margin:8px 0 4px;border-bottom:1px solid var(--border-color);padding-bottom:6px;">
+                            <i class="bi bi-people" style="margin-right:5px;"></i>Next of Kin
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Next of Kin Name <span style="color:#e53e3e;">*</span></label>
+                        <input type="text" id="sh_nextofKinName" placeholder="Full name" value="Simon Gopane">
+                    </div>
+                    <div class="form-group">
+                        <label>Relationship <span style="color:#e53e3e;">*</span></label>
+                        <select id="sh_nextofKinRelationship">
+                            <option value="">Select Relationship</option>
+                            <option value="1" selected>Parent</option>
+                            <option value="2">Legal Guardian</option>
+                            <option value="3">Sibling</option>
+                            <option value="4">Grandparent</option>
+                            <option value="5">Aunt / Uncle</option>
+                            <option value="6">Spouse / Partner</option>
+                            <option value="7">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Next of Kin Contact <span style="color:#e53e3e;">*</span></label>
+                        <input type="tel" id="sh_nextofKinContact" placeholder="e.g. 071 234 5678" value="0712345678">
+                    </div>
+                    <div class="form-group"><!-- spacer --></div>
+
+                    <div class="form-group full-width">
+                        <p
+                            style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--primary-color);margin:8px 0 4px;border-bottom:1px solid var(--border-color);padding-bottom:6px;">
+                            <i class="bi bi-telephone-forward" style="margin-right:5px;"></i>Emergency Contact
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Emergency Contact Name <span style="color:#e53e3e;">*</span></label>
+                        <input type="text" id="sh_emergencyName" placeholder="Full name" value="Simon Gopane">
+                    </div>
+                    <div class="form-group">
+                        <label>Relationship <span style="color:#e53e3e;">*</span></label>
+                        <select id="sh_emergencyRelationship">
+                            <option value="">Select Relationship</option>
+                            <option value="1" selected>Parent</option>
+                            <option value="2">Legal Guardian</option>
+                            <option value="3">Sibling</option>
+                            <option value="4">Grandparent</option>
+                            <option value="5">Friend</option>
+                            <option value="6">Teacher / Educator</option>
+                            <option value="7">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact Number <span style="color:#e53e3e;">*</span></label>
+                        <input type="tel" id="sh_emergencyContact" placeholder="e.g. 073 456 7890" value="0712345678">
+                    </div>
+
+                </div>
+
+                <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end;">
+                    <button type="button" class="btn-outline" onclick="goToTab(0)" style="font-size:0.87rem;">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn-primary-action" onclick="saveSchoolHousehold()"
+                        style="font-size:0.87rem;">
+                        <i class="bi bi-check-circle"></i> Save &amp; Continue to Study Choices <i
+                            class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- ══════════════════════════════ -->
+            <!-- TAB 3: Study Choices           -->
+            <!-- ══════════════════════════════ -->
+            <div class="ltab-content" id="ltab3content">
+
+                <p style="font-size:0.85rem;color:#718096;margin-bottom:22px;line-height:1.6;">
+                    Select your preferred degree programmes and universities below. Rank them in order of preference —
+                    your <strong>First Choice</strong> is your top preference. ISFAP will use these choices when placing
+                    learners at institutions.
+                </p>
+
+                <!-- First Choice -->
+                <div class="choice-card">
+                    <div class="choice-card-header">
+                        <div class="choice-badge">1</div>
+                        <div>
+                            <div style="font-size:1rem;font-weight:700;">First Choice</div>
+                            <div style="font-size:0.82rem;opacity:0.8;margin-top:2px;">Your top preferred degree and
+                                institution</div>
+                        </div>
+                        <div style="margin-left:auto;">
+                            <span
+                                style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);border-radius:20px;font-size:0.75rem;font-weight:700;padding:4px 12px;display:inline-flex;align-items:center;gap:5px;">
+                                <i class="bi bi-star-fill"></i> Primary
+                            </span>
+                        </div>
+                    </div>
+                    <div class="choice-card-body">
+                        <div class="form-grid form-grid-3">
+                            <div class="form-group">
+                                <label>Institution <span class="req">*</span></label>
+                                <select id="choice1_institution" onchange="filterFaculties('choice1')">
+                                    <option value="">Select University / Institution</option>
+                                    <optgroup label="Comprehensive Universities">
+                                        <option value="UJ">University of Johannesburg (UJ)</option>
+                                        <option value="UWC">University of the Western Cape (UWC)</option>
+                                        <option value="UNISA">University of South Africa (UNISA)</option>
+                                    </optgroup>
+                                    <optgroup label="Traditional Universities">
+                                        <option value="UCT">University of Cape Town (UCT)</option>
+                                        <option value="WITS">University of the Witwatersrand (Wits)</option>
+                                        <option value="UP" selected>University of Pretoria (UP)</option>
+                                        <option value="SU">Stellenbosch University (SU)</option>
+                                        <option value="UKZN">University of KwaZulu-Natal (UKZN)</option>
+                                        <option value="RU">Rhodes University (RU)</option>
+                                        <option value="UFS">University of the Free State (UFS)</option>
+                                        <option value="NWU">North-West University (NWU)</option>
+                                        <option value="UL">University of Limpopo (UL)</option>
+                                        <option value="UFH">University of Fort Hare (UFH)</option>
+                                        <option value="WSU">Walter Sisulu University (WSU)</option>
+                                        <option value="UNIZULU">University of Zululand (UniZulu)</option>
+                                        <option value="SMU">Sefako Makgatho Health Sciences University (SMU)</option>
+                                    </optgroup>
+                                    <optgroup label="Universities of Technology">
+                                        <option value="TUT">Tshwane University of Technology (TUT)</option>
+                                        <option value="DUT">Durban University of Technology (DUT)</option>
+                                        <option value="CPUT">Cape Peninsula University of Technology (CPUT)</option>
+                                        <option value="VUT">Vaal University of Technology (VUT)</option>
+                                        <option value="CUT">Central University of Technology (CUT)</option>
+                                        <option value="MUT">Mangosuthu University of Technology (MUT)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Faculty <span class="req">*</span></label>
+                                <select id="choice1_faculty" onchange="filterQualifications('choice1')">
+                                    <option value="">Select Faculty</option>
+                                    <option value="engineering">Engineering &amp; Built Environment</option>
+                                    <option value="health" selected>Health Sciences</option>
+                                    <option value="business">Business &amp; Commerce / Management Sciences</option>
+                                    <option value="humanities">Humanities, Arts &amp; Social Sciences</option>
+                                    <option value="science">Natural &amp; Agricultural Sciences</option>
+                                    <option value="law">Law</option>
+                                    <option value="education">Education</option>
+                                    <option value="ict">Information &amp; Communication Technology</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Qualification / Degree <span class="req">*</span></label>
+                                <select id="choice1_qualification">
+                                    <option value="">Select Qualification</option>
+                                    <option value="bsc_eng">BSc Engineering</option>
+                                    <option value="bcom">BCom (General)</option>
+                                    <option value="bcom_acc">BCom Accounting</option>
+                                    <option value="bcom_fin">BCom Finance</option>
+                                    <option value="bsc_cs">BSc Computer Science</option>
+                                    <option value="bsc_it">BSc Information Technology</option>
+                                    <option value="bsc_gen">BSc (General)</option>
+                                    <option value="ba">BA (General)</option>
+                                    <option value="llb">LLB (Bachelor of Laws)</option>
+                                    <option value="med" selected>MBChB (Medicine &amp; Surgery)</option>
+                                    <option value="bed">BEd (Education)</option>
+                                    <option value="bpharm">BPharm (Pharmacy)</option>
+                                    <option value="bsc_nursing">BSc Nursing</option>
+                                    <option value="bsc_agric">BSc Agriculture</option>
+                                    <option value="btech">BTech / Advanced Diploma</option>
+                                    <option value="nat_dip">National Diploma</option>
+                                    <option value="other">Other (specify below)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Additional Notes (optional)</label>
+                                <textarea id="choice1_notes"
+                                    placeholder="Any additional information about your first choice programme, e.g. specific stream or specialisation..."></textarea>
+                            </div>
+                        </div>
+                        <button type="button" class="choice-save-btn" onclick="saveChoice(1)">
+                            <i class="bi bi-check-circle"></i> Save First Choice
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Second Choice -->
+                <div class="choice-card">
+                    <div class="choice-card-header" style="background:linear-gradient(135deg, #337C96, #1093DB);">
+                        <div class="choice-badge">2</div>
+                        <div>
+                            <div style="font-size:1rem;font-weight:700;">Second Choice</div>
+                            <div style="font-size:0.82rem;opacity:0.8;margin-top:2px;">Your second preferred degree and
+                                institution</div>
+                        </div>
+                        <div style="margin-left:auto;">
+                            <span
+                                style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);border-radius:20px;font-size:0.75rem;font-weight:700;padding:4px 12px;display:inline-flex;align-items:center;gap:5px;">
+                                <i class="bi bi-star-half"></i> Secondary
+                            </span>
+                        </div>
+                    </div>
+                    <div class="choice-card-body">
+                        <div class="form-grid form-grid-3">
+                            <div class="form-group">
+                                <label>Institution</label>
+                                <select id="choice2_institution">
+                                    <option value="">Select University / Institution</option>
+                                    <optgroup label="Comprehensive Universities">
+                                        <option value="UJ" selected>University of Johannesburg (UJ)</option>
+                                        <option value="UWC">University of the Western Cape (UWC)</option>
+                                        <option value="UNISA">University of South Africa (UNISA)</option>
+                                    </optgroup>
+                                    <optgroup label="Traditional Universities">
+                                        <option value="UCT">University of Cape Town (UCT)</option>
+                                        <option value="WITS">University of the Witwatersrand (Wits)</option>
+                                        <option value="UP">University of Pretoria (UP)</option>
+                                        <option value="SU">Stellenbosch University (SU)</option>
+                                        <option value="UKZN">University of KwaZulu-Natal (UKZN)</option>
+                                        <option value="RU">Rhodes University (RU)</option>
+                                        <option value="UFS">University of the Free State (UFS)</option>
+                                        <option value="NWU">North-West University (NWU)</option>
+                                        <option value="UL">University of Limpopo (UL)</option>
+                                        <option value="UFH">University of Fort Hare (UFH)</option>
+                                        <option value="WSU">Walter Sisulu University (WSU)</option>
+                                        <option value="UNIZULU">University of Zululand (UniZulu)</option>
+                                        <option value="SMU">Sefako Makgatho Health Sciences University (SMU)</option>
+                                    </optgroup>
+                                    <optgroup label="Universities of Technology">
+                                        <option value="TUT">Tshwane University of Technology (TUT)</option>
+                                        <option value="DUT">Durban University of Technology (DUT)</option>
+                                        <option value="CPUT">Cape Peninsula University of Technology (CPUT)</option>
+                                        <option value="VUT">Vaal University of Technology (VUT)</option>
+                                        <option value="CUT">Central University of Technology (CUT)</option>
+                                        <option value="MUT">Mangosuthu University of Technology (MUT)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Faculty</label>
+                                <select id="choice2_faculty">
+                                    <option value="">Select Faculty</option>
+                                    <option value="engineering" selected>Engineering &amp; Built Environment</option>
+                                    <option value="health">Health Sciences</option>
+                                    <option value="business">Business &amp; Commerce / Management Sciences</option>
+                                    <option value="humanities">Humanities, Arts &amp; Social Sciences</option>
+                                    <option value="science">Natural &amp; Agricultural Sciences</option>
+                                    <option value="law">Law</option>
+                                    <option value="education">Education</option>
+                                    <option value="ict">Information &amp; Communication Technology</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Qualification / Degree</label>
+                                <select id="choice2_qualification">
+                                    <option value="">Select Qualification</option>
+                                    <option value="bsc_eng" selected>BSc Electrical Engineering</option>
+                                    <option value="bcom">BCom (General)</option>
+                                    <option value="bcom_acc">BCom Accounting</option>
+                                    <option value="bcom_fin">BCom Finance</option>
+                                    <option value="bsc_cs">BSc Computer Science</option>
+                                    <option value="bsc_it">BSc Information Technology</option>
+                                    <option value="bsc_gen">BSc (General)</option>
+                                    <option value="ba">BA (General)</option>
+                                    <option value="llb">LLB (Bachelor of Laws)</option>
+                                    <option value="med">MBChB (Medicine &amp; Surgery)</option>
+                                    <option value="bed">BEd (Education)</option>
+                                    <option value="bpharm">BPharm (Pharmacy)</option>
+                                    <option value="bsc_nursing">BSc Nursing</option>
+                                    <option value="bsc_agric">BSc Agriculture</option>
+                                    <option value="btech">BTech / Advanced Diploma</option>
+                                    <option value="nat_dip">National Diploma</option>
+                                    <option value="other">Other (specify below)</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Additional Notes (optional)</label>
+                                <textarea id="choice2_notes"
+                                    placeholder="Any additional information about your second choice..."></textarea>
+                            </div>
+                        </div>
+                        <button type="button" class="choice-save-btn"
+                            style="background:linear-gradient(135deg,#337C96,#1093DB);" onclick="saveChoice(2)">
+                            <i class="bi bi-check-circle"></i> Save Second Choice
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Third Choice -->
+                <div class="choice-card">
+                    <div class="choice-card-header" style="background:linear-gradient(135deg, #5a6e82, #7b9ab5);">
+                        <div class="choice-badge">3</div>
+                        <div>
+                            <div style="font-size:1rem;font-weight:700;">Third Choice</div>
+                            <div style="font-size:0.82rem;opacity:0.8;margin-top:2px;">Your third preferred degree and
+                                institution</div>
+                        </div>
+                        <div style="margin-left:auto;">
+                            <span
+                                style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);border-radius:20px;font-size:0.75rem;font-weight:700;padding:4px 12px;display:inline-flex;align-items:center;gap:5px;">
+                                <i class="bi bi-star"></i> Tertiary
+                            </span>
+                        </div>
+                    </div>
+                    <div class="choice-card-body">
+                        <div class="form-grid form-grid-3">
+                            <div class="form-group">
+                                <label>Institution</label>
+                                <select id="choice3_institution">
+                                    <option value="">Select University / Institution</option>
+                                    <optgroup label="Comprehensive Universities">
+                                        <option value="UJ">University of Johannesburg (UJ)</option>
+                                        <option value="UWC">University of the Western Cape (UWC)</option>
+                                        <option value="UNISA">University of South Africa (UNISA)</option>
+                                    </optgroup>
+                                    <optgroup label="Traditional Universities">
+                                        <option value="UCT">University of Cape Town (UCT)</option>
+                                        <option value="WITS" selected>University of the Witwatersrand (Wits)</option>
+                                        <option value="UP">University of Pretoria (UP)</option>
+                                        <option value="SU">Stellenbosch University (SU)</option>
+                                        <option value="UKZN">University of KwaZulu-Natal (UKZN)</option>
+                                        <option value="RU">Rhodes University (RU)</option>
+                                        <option value="UFS">University of the Free State (UFS)</option>
+                                        <option value="NWU">North-West University (NWU)</option>
+                                        <option value="UL">University of Limpopo (UL)</option>
+                                        <option value="UFH">University of Fort Hare (UFH)</option>
+                                        <option value="WSU">Walter Sisulu University (WSU)</option>
+                                        <option value="UNIZULU">University of Zululand (UniZulu)</option>
+                                        <option value="SMU">Sefako Makgatho Health Sciences University (SMU)</option>
+                                    </optgroup>
+                                    <optgroup label="Universities of Technology">
+                                        <option value="TUT">Tshwane University of Technology (TUT)</option>
+                                        <option value="DUT">Durban University of Technology (DUT)</option>
+                                        <option value="CPUT">Cape Peninsula University of Technology (CPUT)</option>
+                                        <option value="VUT">Vaal University of Technology (VUT)</option>
+                                        <option value="CUT">Central University of Technology (CUT)</option>
+                                        <option value="MUT">Mangosuthu University of Technology (MUT)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Faculty</label>
+                                <select id="choice3_faculty">
+                                    <option value="">Select Faculty</option>
+                                    <option value="engineering">Engineering &amp; Built Environment</option>
+                                    <option value="health" selected>Health Sciences</option>
+                                    <option value="business">Business &amp; Commerce / Management Sciences</option>
+                                    <option value="humanities">Humanities, Arts &amp; Social Sciences</option>
+                                    <option value="science">Natural &amp; Agricultural Sciences</option>
+                                    <option value="law">Law</option>
+                                    <option value="education">Education</option>
+                                    <option value="ict">Information &amp; Communication Technology</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Qualification / Degree</label>
+                                <select id="choice3_qualification">
+                                    <option value="">Select Qualification</option>
+                                    <option value="bsc_eng">BSc Engineering</option>
+                                    <option value="bcom">BCom (General)</option>
+                                    <option value="bcom_acc">BCom Accounting</option>
+                                    <option value="bcom_fin">BCom Finance</option>
+                                    <option value="bsc_cs">BSc Computer Science</option>
+                                    <option value="bsc_it">BSc Information Technology</option>
+                                    <option value="bsc_gen">BSc (General)</option>
+                                    <option value="ba">BA (General)</option>
+                                    <option value="llb">LLB (Bachelor of Laws)</option>
+                                    <option value="med" selected>MBChB (Medicine &amp; Surgery)</option>
+                                    <option value="bed">BEd (Education)</option>
+                                    <option value="bpharm">BPharm (Pharmacy)</option>
+                                    <option value="bsc_nursing">BSc Nursing</option>
+                                    <option value="bsc_agric">BSc Agriculture</option>
+                                    <option value="btech">BTech / Advanced Diploma</option>
+                                    <option value="nat_dip">National Diploma</option>
+                                    <option value="other">Other (specify below)</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Additional Notes (optional)</label>
+                                <textarea id="choice3_notes"
+                                    placeholder="Any additional information about your third choice..."></textarea>
+                            </div>
+                        </div>
+                        <button type="button" class="choice-save-btn"
+                            style="background:linear-gradient(135deg,#5a6e82,#7b9ab5);" onclick="saveChoice(3)">
+                            <i class="bi bi-check-circle"></i> Save Third Choice
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ══════════════════════════════ -->
+            <!-- TAB 4: Documents               -->
+            <!-- ══════════════════════════════ -->
+            <div class="ltab-content" id="ltab4content">
+
+                <p style="font-size:0.85rem;color:#718096;margin-bottom:18px;line-height:1.6;">
+                    Upload the required documents below. PDF, JPG or PNG · max 5 MB each.
+                </p>
+
+                <div class="doc-grid">
+
+                    <!-- Document 1: Proof of Household Income -->
+                    <div class="doc-card">
+                        <div class="doc-card-header">
+                            <div class="doc-icon"><i class="bi bi-house-check"></i></div>
+                            <div>
+                                <div class="doc-card-title">Proof of Household Income</div>
+                                <div class="doc-card-subtitle">Payslips, bank statements, SASSA grant letter, or sworn affidavit (no formal income)</div>
+                                <span class="doc-status required" id="incomeDocStatus">
+                                    <i class="bi bi-x-circle-fill"></i> Required
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label
+                                style="font-size:0.78rem;font-weight:700;color:#555;display:block;margin-bottom:6px;">Document
+                                Type</label>
+                            <select id="incomeDocType"
+                                style="width:100%;padding:9px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.85rem;background:#fff;color:#333;margin-bottom:12px;"
+                                onchange="toggleAffidavitHint(this.value)">
+                                <option value="">Select document type</option>
+                                <option value="payslip">Payslip(s)</option>
+                                <option value="bank_statement">Bank Statement</option>
+                                <option value="sassa">SASSA Grant Letter</option>
+                                <option value="uif">UIF / Unemployment Letter</option>
+                                <option value="affidavit">Sworn Affidavit (no formal income)</option>
+                                <option value="other">Other income document</option>
+                            </select>
+
+                            <div id="affidavitHint" style="display:none;margin-bottom:12px;">
+                                <div class="affidavit-note" style="background:#fff8e1;border-color:#f59e0b;">
+                                    <i class="bi bi-pencil-square" style="color:#f59e0b;"></i>
+                                    <span style="color:#78350f;">Must be signed before a Commissioner of Oaths (free at most police stations).</span>
+                                </div>
+                            </div>
+
+                            <div class="upload-zone" id="incomeUploadZone">
+                                <input type="file" id="incomeDocFile" accept=".pdf,.jpg,.jpeg,.png"
+                                    onchange="handleDocUpload(this, 'income')">
+                                <i class="bi bi-cloud-arrow-up-fill"></i>
+                                <strong>Click to upload or drag &amp; drop</strong>
+                                <span>PDF, JPG or PNG · Max 5 MB</span>
+                            </div>
+
+                            <div class="upload-preview" id="incomeDocPreview">
+                                <i class="bi bi-file-earmark-check-fill" style="color:#38a169;"></i>
+                                <div>
+                                    <div class="file-name" id="incomeFileName"></div>
+                                    <div class="file-size" id="incomeFileSize"></div>
+                                </div>
+                                <button type="button" class="btn-remove" title="Remove file"
+                                    onclick="removeDoc('income')">
+                                    <i class="bi bi-x-circle-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document 2: Certified ID Copy -->
+                    <div class="doc-card">
+                        <div class="doc-card-header">
+                            <div class="doc-icon"><i class="bi bi-person-vcard"></i></div>
+                            <div>
+                                <div class="doc-card-title">Certified Copy of Identification</div>
+                                <div class="doc-card-subtitle">Certified copy of SA ID book, Smart ID card, passport, or birth certificate</div>
+                                <span class="doc-status required" id="idDocStatus">
+                                    <i class="bi bi-x-circle-fill"></i> Required
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label
+                                style="font-size:0.78rem;font-weight:700;color:#555;display:block;margin-bottom:6px;">ID
+                                Document Type</label>
+                            <select id="idDocType"
+                                style="width:100%;padding:9px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:0.85rem;background:#fff;color:#333;margin-bottom:12px;">
+                                <option value="">Select ID type</option>
+                                <option value="sa_id">South African ID Book</option>
+                                <option value="smart_id">Smart ID Card</option>
+                                <option value="passport">Passport</option>
+                                <option value="birth_cert">Birth Certificate</option>
+                            </select>
+
+                            <div class="upload-zone" id="idUploadZone">
+                                <input type="file" id="idDocFile" accept=".pdf,.jpg,.jpeg,.png"
+                                    onchange="handleDocUpload(this, 'id')">
+                                <i class="bi bi-cloud-arrow-up-fill"></i>
+                                <strong>Click to upload or drag &amp; drop</strong>
+                                <span>PDF, JPG or PNG · Max 5 MB</span>
+                            </div>
+
+                            <div class="upload-preview" id="idDocPreview">
+                                <i class="bi bi-file-earmark-check-fill" style="color:#38a169;"></i>
+                                <div>
+                                    <div class="file-name" id="idFileName"></div>
+                                    <div class="file-size" id="idFileSize"></div>
+                                </div>
+                                <button type="button" class="btn-remove" title="Remove file" onclick="removeDoc('id')">
+                                    <i class="bi bi-x-circle-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Document checklist summary -->
+                <div
+                    style="margin-top:28px;background:#f8fbff;border:1.5px solid var(--border-color);border-radius:12px;padding:20px 24px;">
+                    <div
+                        style="font-size:0.85rem;font-weight:700;color:var(--sidebar-color);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                        <i class="bi bi-list-check" style="font-size:1.1rem;color:var(--primary-color);"></i>
+                        Document Submission Checklist
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:10px;font-size:0.85rem;">
+                        <div style="display:flex;align-items:center;gap:10px;" id="check_income">
+                            <i class="bi bi-circle" style="color:#aaa;font-size:1.1rem;"></i>
+                            <span style="color:#555;">Proof of Household Income (or Sworn Affidavit)</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;" id="check_id">
+                            <i class="bi bi-circle" style="color:#aaa;font-size:1.1rem;"></i>
+                            <span style="color:#555;">Certified Copy of Identification</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+                        <button type="button" class="btn-primary-action" id="submitDocsBtn" onclick="submitDocuments()"
+                            style="opacity:0.5;cursor:not-allowed;" disabled>
+                            <i class="bi bi-send-check"></i> Submit Documents
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        /* ── Tab switching ── */
+        const tabLabels = document.querySelectorAll('.ltab-label');
+        const tabContents = document.querySelectorAll('.ltab-content');
+
+        function goToTab(idx) {
+            tabLabels.forEach(l => l.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            tabLabels[idx].classList.add('active');
+            tabContents[idx].classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        tabLabels.forEach((label, idx) => {
+            label.addEventListener('click', () => goToTab(idx));
+        });
+
+        /* ── Disability toggle (Profile Tab 2) ── */
+        function toggleProfileDisability(val) {
+            const show = val === '1';
+            document.getElementById('sh_disabilityTypeField').style.display = show ? '' : 'none';
+            document.getElementById('sh_disabilityDescField').style.display = show ? '' : 'none';
+        }
+
+        /* ── Save Personal Details (Tab 1) ── */
+        let personalSaved = false;
+        function savePersonalDetails() {
+            const firstName = document.getElementById('p_firstName').value.trim();
+            const lastName = document.getElementById('p_lastName').value.trim();
+            const contact = document.getElementById('p_contact').value.trim();
+            const gender = document.getElementById('p_gender').value;
+            const province = document.getElementById('p_province').value;
+
+            if (!firstName || !lastName || !contact || !gender || !province) {
+                alert('Please fill in all required fields (First Name, Last Name, Contact, Gender and Province).');
+                return;
+            }
+
+            personalSaved = true;
+            updateCompletion();
+            alert('Personal details saved successfully!');
+            goToTab(1);
+        }
+
+        /* ── Save School & Household (Tab 2) ── */
+        let schoolSaved = false;
+        function saveSchoolHousehold() {
+            const schoolName = document.getElementById('sh_schoolName').value.trim();
+            const province = document.getElementById('sh_schoolProvince').value;
+            const year = document.getElementById('sh_matricYear').value;
+            const income = document.getElementById('sh_income').value;
+            const nokName = document.getElementById('sh_nextofKinName').value.trim();
+            const nokRel = document.getElementById('sh_nextofKinRelationship').value;
+            const nokContact = document.getElementById('sh_nextofKinContact').value.trim();
+            const emName = document.getElementById('sh_emergencyName').value.trim();
+            const emRel = document.getElementById('sh_emergencyRelationship').value;
+            const emContact = document.getElementById('sh_emergencyContact').value.trim();
+
+            if (!schoolName || !province || !year || !income || !nokName || !nokRel || !nokContact || !emName || !emRel || !emContact) {
+                alert('Please fill in all required fields before continuing.');
+                return;
+            }
+
+            schoolSaved = true;
+            updateCompletion();
+            alert('School & Household details saved successfully!');
+            goToTab(2);
+        }
+
+        /* ── Affidavit hint toggle ── */
+        function toggleAffidavitHint(val) {
+            document.getElementById('affidavitHint').style.display = val === 'affidavit' ? 'block' : 'none';
+        }
+
+        /* ── Document upload handler ── */
+        const MAX_SIZE_MB = 5;
+
+        function handleDocUpload(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                alert('File is too large. Maximum file size is 5 MB.');
+                input.value = '';
+                return;
+            }
+
+            const allowed = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            if (!allowed.includes(file.type)) {
+                alert('Only PDF, JPG, and PNG files are accepted.');
+                input.value = '';
+                return;
+            }
+
+            const sizeStr = file.size < 1024 * 1024
+                ? (file.size / 1024).toFixed(1) + ' KB'
+                : (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+            if (type === 'income') {
+                document.getElementById('incomeFileName').textContent = file.name;
+                document.getElementById('incomeFileSize').textContent = sizeStr;
+                document.getElementById('incomeDocPreview').classList.add('visible');
+                document.getElementById('incomeUploadZone').style.display = 'none';
+                updateStatus('incomeDocStatus', 'uploaded', 'Uploaded');
+                updateChecklist('check_income', true);
+            } else if (type === 'id') {
+                document.getElementById('idFileName').textContent = file.name;
+                document.getElementById('idFileSize').textContent = sizeStr;
+                document.getElementById('idDocPreview').classList.add('visible');
+                document.getElementById('idUploadZone').style.display = 'none';
+                updateStatus('idDocStatus', 'uploaded', 'Uploaded');
+                updateChecklist('check_id', true);
+            }
+
+            checkAllDocs();
+        }
+
+        function removeDoc(type) {
+            if (type === 'income') {
+                document.getElementById('incomeDocFile').value = '';
+                document.getElementById('incomeDocPreview').classList.remove('visible');
+                document.getElementById('incomeUploadZone').style.display = '';
+                updateStatus('incomeDocStatus', 'required', 'Required');
+                updateChecklist('check_income', false);
+            } else if (type === 'id') {
+                document.getElementById('idDocFile').value = '';
+                document.getElementById('idDocPreview').classList.remove('visible');
+                document.getElementById('idUploadZone').style.display = '';
+                updateStatus('idDocStatus', 'required', 'Required');
+                updateChecklist('check_id', false);
+            }
+            checkAllDocs();
+        }
+
+        function updateStatus(id, cls, text) {
+            const el = document.getElementById(id);
+            el.className = 'doc-status ' + cls;
+            const icons = { required: 'bi-x-circle-fill', uploaded: 'bi-check-circle-fill', pending: 'bi-clock' };
+            el.innerHTML = `<i class="bi ${icons[cls]}"></i> ${text}`;
+        }
+
+        function updateChecklist(id, done) {
+            const row = document.getElementById(id);
+            const icon = row.querySelector('i');
+            const span = row.querySelector('span');
+            if (done) {
+                icon.className = 'bi bi-check-circle-fill';
+                icon.style.color = '#38a169';
+                span.style.color = '#2d6a4f';
+                span.style.fontWeight = '600';
+            } else {
+                icon.className = 'bi bi-circle';
+                icon.style.color = '#aaa';
+                span.style.color = '#555';
+                span.style.fontWeight = '';
+            }
+        }
+
+        function checkAllDocs() {
+            const incomeUploaded = document.getElementById('incomeDocPreview').classList.contains('visible');
+            const idUploaded = document.getElementById('idDocPreview').classList.contains('visible');
+            const btn = document.getElementById('submitDocsBtn');
+            if (incomeUploaded && idUploaded) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+            updateCompletion();
+        }
+
+        function submitDocuments() {
+            alert('Documents submitted successfully. Our team will review and verify your documents within 2-3 business days. You will receive an email notification once the review is complete.');
+            updateStatus('incomeDocStatus', 'pending', 'Under Review');
+            updateStatus('idDocStatus', 'pending', 'Under Review');
+        }
+
+        /* ── Completion progress (4 sections × 25%) ── */
+        function updateCompletion() {
+            const incomeUploaded = document.getElementById('incomeDocPreview').classList.contains('visible');
+            const idUploaded = document.getElementById('idDocPreview').classList.contains('visible');
+            const choicesDone = document.getElementById('choice1_institution').value !== '';
+
+            let pct = 25; // registration = 1st 25% always done
+            if (personalSaved) pct += 25;
+            if (schoolSaved) pct += 0;  // counted separately below
+            if (schoolSaved) pct += 25;
+            if (incomeUploaded && idUploaded && choicesDone) pct = Math.min(pct + 25, 100);
+
+            document.getElementById('completionBar').style.width = pct + '%';
+            document.getElementById('completionPct').textContent = pct + '% Complete';
+        }
+
+        /* ── Study choices ── */
+        function filterFaculties(choiceId) {
+            // Placeholder – extend to filter faculties based on institution selection
+        }
+
+        function filterQualifications(choiceId) {
+            // Placeholder – extend to filter qualifications based on faculty selection
+        }
+
+        function saveChoice(n) {
+            const inst = document.getElementById('choice' + n + '_institution').value;
+            const qual = document.getElementById('choice' + n + '_qualification').value;
+            if (!inst || !qual) {
+                alert('Please select an institution and qualification before saving.');
+                return;
+            }
+            const institutionText = document.getElementById('choice' + n + '_institution').options[document.getElementById('choice' + n + '_institution').selectedIndex].text;
+            const qualText = document.getElementById('choice' + n + '_qualification').options[document.getElementById('choice' + n + '_qualification').selectedIndex].text;
+            alert('Choice ' + n + ' saved:\n' + institutionText + ' \u2013 ' + qualText);
+            updateCompletion();
+        }
+    </script>
+
+</body>
+
+</html>

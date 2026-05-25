@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applications – ISFAP Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="OneISFAPStyle.css">
+    <style>
+        /* ── Application status badges ── */
+        .app-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .app-pending  { background: #fff3cd; color: #856404; }
+        .app-review   { background: #dbeafe; color: #1e40af; }
+        .app-approved { background: #d1fae5; color: #065f46; }
+        .app-rejected { background: #fee2e2; color: #991b1b; }
+        .app-info     { background: #f3e8ff; color: #6d28d9; }
+
+        /* ── Banner ── */
+        .app-banner {
+            background: linear-gradient(135deg, #1e1b4b, #3730a3);
+            border-radius: 12px;
+            padding: 20px 28px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .app-banner-icon {
+            width: 56px; height: 56px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.7rem;
+            flex-shrink: 0;
+        }
+        .app-banner-stats { display: flex; gap: 28px; margin-left: auto; flex-wrap: wrap; }
+        .app-stat { text-align: center; }
+        .app-stat-val { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+        .app-stat-lbl { font-size: 0.72rem; opacity: 0.75; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+        /* ── Completeness bar (inline) ── */
+        .comp-wrap { display: flex; align-items: center; gap: 8px; min-width: 110px; }
+        .comp-bar-bg { flex: 1; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .comp-bar-fill { height: 100%; border-radius: 4px; }
+        .comp-pct { font-size: 0.76rem; font-weight: 700; color: #475569; white-space: nowrap; }
+
+        /* ── Confirm/action modals ── */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 14px;
+            width: 480px;
+            max-width: 95vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .modal-header {
+            padding: 18px 24px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e8eef5; display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-close { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; line-height: 1; }
+
+        .field-group { margin-bottom: 16px; }
+        .field-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #555; margin-bottom: 5px; }
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            width: 100%; padding: 9px 12px;
+            border: 1.5px solid #d1dce8;
+            border-radius: 7px; font-size: 0.87rem;
+            color: #2d3a4a; background: #fff;
+            box-sizing: border-box;
+        }
+        .field-group textarea { resize: vertical; min-height: 90px; }
+        .field-group input:focus,
+        .field-group select:focus,
+        .field-group textarea:focus { outline: none; border-color: #3730a3; }
+
+        .btn-approve { background: linear-gradient(135deg,#065f46,#059669); color:#fff; border:none; padding:6px 14px; border-radius:7px; font-size:0.8rem; font-weight:700; cursor:pointer; display:inline-flex;align-items:center;gap:5px; }
+        .btn-reject  { background: linear-gradient(135deg,#991b1b,#dc2626); color:#fff; border:none; padding:6px 14px; border-radius:7px; font-size:0.8rem; font-weight:700; cursor:pointer; display:inline-flex;align-items:center;gap:5px; }
+        .btn-info    { background: linear-gradient(135deg,#4c1d95,#7c3aed); color:#fff; border:none; padding:6px 14px; border-radius:7px; font-size:0.8rem; font-weight:700; cursor:pointer; display:inline-flex;align-items:center;gap:5px; }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <details>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="checkin.html">Check-In</a></li>
+                <li><a href="watchlist.html">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <!-- Applications (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-file-earmark-person-fill"></i> Applications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="applications.html" class="active">All Applications</a></li>
+                <li><a href="#">Application Documents</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">My Tasks</a></li>
+                <li><a href="#">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-check-fill"></i> Funding Selection
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funding_selection.html">Student Selection</a></li>
+                <li><a href="shortlist.html">Shortlisted Students</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <details>
+            <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="allowance_limits.html">Allowance Limits</a></li>
+                <li><a href="#">Academic Calendar</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Audit Log</a></li>
+            </ul>
+        </details>
+
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="login.html" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <div class="breadcrumb" style="margin-bottom:6px;">
+                <a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+                <span>Applications</span>
+            </div>
+            <h2><i class="bi bi-file-earmark-person-fill"></i> Bursary Applications</h2>
+            <p style="margin:4px 0 0;color:#888;font-size:0.87rem;">Review, process and manage all student bursary applications for the 2026 intake cycle.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-outline"><i class="bi bi-download"></i> Export</button>
+            <button class="btn-outline"><i class="bi bi-printer"></i> Print</button>
+        </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div class="app-banner">
+        <div class="app-banner-icon"><i class="bi bi-file-earmark-person-fill"></i></div>
+        <div>
+            <div style="font-size:1rem;font-weight:700;">2026 Bursary Intake — Applications Open</div>
+            <div style="font-size:0.82rem;opacity:0.75;margin-top:3px;">Application window: <strong>01 Jan 2026 – 31 Mar 2026</strong>. Applicants must complete all four profile sections and upload supporting documents before submission. Incomplete applications are held as drafts.</div>
+        </div>
+        <div class="app-banner-stats">
+            <div class="app-stat"><div class="app-stat-val">234</div><div class="app-stat-lbl">Received</div></div>
+            <div class="app-stat"><div class="app-stat-val">67</div><div class="app-stat-lbl">Pending</div></div>
+            <div class="app-stat"><div class="app-stat-val">45</div><div class="app-stat-lbl">Under Review</div></div>
+            <div class="app-stat"><div class="app-stat-val">89</div><div class="app-stat-lbl">Approved</div></div>
+            <div class="app-stat"><div class="app-stat-val">18</div><div class="app-stat-lbl">Rejected</div></div>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-cards">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#ede9fe;color:#4c1d95;"><i class="bi bi-file-earmark-text-fill"></i></div>
+            <div><div class="stat-card-val">234</div><div class="stat-card-lbl">Total Received</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#fff3cd;color:#856404;"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="stat-card-val">67</div><div class="stat-card-lbl">Pending Review</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#dbeafe;color:#1e40af;"><i class="bi bi-eye-fill"></i></div>
+            <div><div class="stat-card-val">45</div><div class="stat-card-lbl">Under Review</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#d1fae5;color:#065f46;"><i class="bi bi-check-circle-fill"></i></div>
+            <div><div class="stat-card-val">89</div><div class="stat-card-lbl">Approved</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#fee2e2;color:#991b1b;"><i class="bi bi-x-circle-fill"></i></div>
+            <div><div class="stat-card-val">18</div><div class="stat-card-lbl">Rejected</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background:#f3e8ff;color:#6d28d9;"><i class="bi bi-chat-left-dots-fill"></i></div>
+            <div><div class="stat-card-val">15</div><div class="stat-card-lbl">Info Requested</div></div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <span class="filter-label">Filter:</span>
+        <input type="text" id="searchInput" placeholder="&#xF52A; Search by name or ID…" oninput="applyFilters()">
+        <select id="statusFilter" onchange="applyFilters()">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending Review</option>
+            <option value="review">Under Review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="info">Info Requested</option>
+        </select>
+        <select id="institutionFilter" onchange="applyFilters()">
+            <option value="">All Institutions</option>
+            <option>University of the Witwatersrand</option>
+            <option>University of Pretoria</option>
+            <option>University of Cape Town</option>
+            <option>University of KwaZulu-Natal</option>
+            <option>Tshwane University of Technology</option>
+            <option>University of Johannesburg</option>
+            <option>Stellenbosch University</option>
+            <option>University of the Free State</option>
+        </select>
+        <select id="yearFilter" onchange="applyFilters()">
+            <option value="">All Years</option>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+        </select>
+        <select id="reviewerFilter" onchange="applyFilters()">
+            <option value="">All Reviewers</option>
+            <option>Thabo Letlela</option>
+            <option>Priya Naidoo</option>
+            <option>Anele Sithole</option>
+            <option>Zanele Khumalo</option>
+            <option>Unassigned</option>
+        </select>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="table-card">
+        <table class="sl-table" id="appTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Applicant</th>
+                    <th>Institution</th>
+                    <th>Qualification</th>
+                    <th>Year</th>
+                    <th>Submitted</th>
+                    <th>Completeness</th>
+                    <th>Status</th>
+                    <th>Assigned Reviewer</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="appBody">
+
+                <!-- Row 1 -->
+                <tr data-status="pending" data-institution="university of the witwatersrand" data-year="2" data-reviewer="thabo Letlela" data-name="Sipho Ndlovu" data-id="APP-2026-0001">
+                    <td>1</td>
+                    <td>
+                        <strong>Sipho Ndlovu</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0001 · STU-2025-0014</div>
+                    </td>
+                    <td>University of the Witwatersrand</td>
+                    <td style="font-size:0.84rem;">BCom Accounting</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">14 Jan 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:85%;background:#f59e0b;"></div></div>
+                            <span class="comp-pct">85%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
+                    <td style="font-size:0.84rem;">Thabo Letlela</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#065f46;border-color:#aaa;" onclick="confirmApprove('APP-2026-0001','Sipho Ndlovu')"><i class="bi bi-check-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#991b1b;border-color:#aaa;" onclick="openReject('APP-2026-0001','Sipho Ndlovu')"><i class="bi bi-x-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#6d28d9;border-color:#aaa;" onclick="openInfoRequest('APP-2026-0001','Sipho Ndlovu')"><i class="bi bi-chat-left-dots"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr data-status="review" data-institution="university of pretoria" data-year="3" data-reviewer="priya naidoo" data-name="Lerato Moagi" data-id="APP-2026-0002">
+                    <td>2</td>
+                    <td>
+                        <strong>Lerato Moagi</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0002 · STU-2025-0028</div>
+                    </td>
+                    <td>University of Pretoria</td>
+                    <td style="font-size:0.84rem;">BSc Computer Science</td>
+                    <td>3rd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">20 Jan 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:100%;background:#059669;"></div></div>
+                            <span class="comp-pct">100%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-review"><i class="bi bi-eye-fill"></i> Under Review</span></td>
+                    <td style="font-size:0.84rem;">Priya Naidoo</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#065f46;border-color:#aaa;" onclick="confirmApprove('APP-2026-0002','Lerato Moagi')"><i class="bi bi-check-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#991b1b;border-color:#aaa;" onclick="openReject('APP-2026-0002','Lerato Moagi')"><i class="bi bi-x-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#6d28d9;border-color:#aaa;" onclick="openInfoRequest('APP-2026-0002','Lerato Moagi')"><i class="bi bi-chat-left-dots"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 3 – Approved -->
+                <tr data-status="approved" data-institution="university of cape town" data-year="1" data-reviewer="anele sithole" data-name="Nomvula Khumalo" data-id="APP-2026-0003">
+                    <td>3</td>
+                    <td>
+                        <strong>Nomvula Khumalo</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0003 · STU-2025-0041</div>
+                    </td>
+                    <td>University of Cape Town</td>
+                    <td style="font-size:0.84rem;">BA Psychology</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">08 Jan 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:100%;background:#059669;"></div></div>
+                            <span class="comp-pct">100%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-approved"><i class="bi bi-check-circle-fill"></i> Approved</span></td>
+                    <td style="font-size:0.84rem;">Anele Sithole</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                    </td>
+                </tr>
+
+                <!-- Row 4 – Info Requested -->
+                <tr data-status="info" data-institution="university of kwazulu-natal" data-year="2" data-reviewer="zanele khumalo" data-name="Thandeka Dube" data-id="APP-2026-0004">
+                    <td>4</td>
+                    <td>
+                        <strong>Thandeka Dube</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0004 · STU-2025-0057</div>
+                    </td>
+                    <td>University of KwaZulu-Natal</td>
+                    <td style="font-size:0.84rem;">BEd Foundation Phase</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">05 Feb 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:70%;background:#f59e0b;"></div></div>
+                            <span class="comp-pct">70%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-info"><i class="bi bi-chat-left-dots-fill"></i> Info Requested</span></td>
+                    <td style="font-size:0.84rem;">Zanele Khumalo</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#6d28d9;border-color:#aaa;" onclick="openInfoRequest('APP-2026-0004','Thandeka Dube')"><i class="bi bi-chat-left-dots"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 5 – Pending -->
+                <tr data-status="pending" data-institution="tshwane university of technology" data-year="1" data-reviewer="unassigned" data-name="Lindelwe Mthembu" data-id="APP-2026-0005">
+                    <td>5</td>
+                    <td>
+                        <strong>Lindelwe Mthembu</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0005 · STU-2025-0063</div>
+                    </td>
+                    <td>Tshwane University of Technology</td>
+                    <td style="font-size:0.84rem;">NDip Engineering (Civil)</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">22 Jan 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:60%;background:#f59e0b;"></div></div>
+                            <span class="comp-pct">60%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
+                    <td style="font-size:0.84rem;color:#aaa;font-style:italic;">Unassigned</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#065f46;border-color:#aaa;" onclick="confirmApprove('APP-2026-0005','Lindelwe Mthembu')"><i class="bi bi-check-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#991b1b;border-color:#aaa;" onclick="openReject('APP-2026-0005','Lindelwe Mthembu')"><i class="bi bi-x-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#6d28d9;border-color:#aaa;" onclick="openInfoRequest('APP-2026-0005','Lindelwe Mthembu')"><i class="bi bi-chat-left-dots"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 6 – Approved -->
+                <tr data-status="approved" data-institution="university of johannesburg" data-year="2" data-reviewer="priya naidoo" data-name="Ayanda Zulu" data-id="APP-2026-0006">
+                    <td>6</td>
+                    <td>
+                        <strong>Ayanda Zulu</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0006 · STU-2025-0079</div>
+                    </td>
+                    <td>University of Johannesburg</td>
+                    <td style="font-size:0.84rem;">LLB</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">10 Jan 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:100%;background:#059669;"></div></div>
+                            <span class="comp-pct">100%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-approved"><i class="bi bi-check-circle-fill"></i> Approved</span></td>
+                    <td style="font-size:0.84rem;">Priya Naidoo</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                    </td>
+                </tr>
+
+                <!-- Row 7 – Rejected -->
+                <tr data-status="rejected" data-institution="stellenbosch university" data-year="2" data-reviewer="anele sithole" data-name="Bongani Nkosi" data-id="APP-2026-0007">
+                    <td>7</td>
+                    <td>
+                        <strong>Bongani Nkosi</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0007 · STU-2025-0088</div>
+                    </td>
+                    <td>Stellenbosch University</td>
+                    <td style="font-size:0.84rem;">BSc Agriculture</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">18 Feb 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:100%;background:#dc2626;"></div></div>
+                            <span class="comp-pct">100%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span></td>
+                    <td style="font-size:0.84rem;">Anele Sithole</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                    </td>
+                </tr>
+
+                <!-- Row 8 – Under Review -->
+                <tr data-status="review" data-institution="university of the free state" data-year="4" data-reviewer="zanele khumalo" data-name="Naledi Dlamini" data-id="APP-2026-0008">
+                    <td>8</td>
+                    <td>
+                        <strong>Naledi Dlamini</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0008 · STU-2025-0031</div>
+                    </td>
+                    <td>University of the Free State</td>
+                    <td style="font-size:0.84rem;">BNur (Nursing)</td>
+                    <td>4th Year</td>
+                    <td style="font-size:0.82rem;color:#666;">03 Feb 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:95%;background:#3b82f6;"></div></div>
+                            <span class="comp-pct">95%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-review"><i class="bi bi-eye-fill"></i> Under Review</span></td>
+                    <td style="font-size:0.84rem;">Zanele Khumalo</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#065f46;border-color:#aaa;" onclick="confirmApprove('APP-2026-0008','Naledi Dlamini')"><i class="bi bi-check-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#991b1b;border-color:#aaa;" onclick="openReject('APP-2026-0008','Naledi Dlamini')"><i class="bi bi-x-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#6d28d9;border-color:#aaa;" onclick="openInfoRequest('APP-2026-0008','Naledi Dlamini')"><i class="bi bi-chat-left-dots"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 9 – Pending -->
+                <tr data-status="pending" data-institution="cape peninsula university of technology" data-year="1" data-reviewer="thabo Letlela" data-name="Karabo Sithole" data-id="APP-2026-0009">
+                    <td>9</td>
+                    <td>
+                        <strong>Karabo Sithole</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0009 · STU-2025-0102</div>
+                    </td>
+                    <td>Cape Peninsula University of Technology</td>
+                    <td style="font-size:0.84rem;">NDip Information Technology</td>
+                    <td>1st Year</td>
+                    <td style="font-size:0.82rem;color:#666;">28 Feb 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:75%;background:#f59e0b;"></div></div>
+                            <span class="comp-pct">75%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-pending"><i class="bi bi-hourglass-split"></i> Pending</span></td>
+                    <td style="font-size:0.84rem;">Thabo Letlela</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#065f46;border-color:#aaa;" onclick="confirmApprove('APP-2026-0009','Karabo Sithole')"><i class="bi bi-check-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;color:#991b1b;border-color:#aaa;" onclick="openReject('APP-2026-0009','Karabo Sithole')"><i class="bi bi-x-lg"></i></button>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#6d28d9;border-color:#aaa;" onclick="openInfoRequest('APP-2026-0009','Karabo Sithole')"><i class="bi bi-chat-left-dots"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 10 – Info Requested -->
+                <tr data-status="info" data-institution="nelson mandela university" data-year="2" data-reviewer="zanele khumalo" data-name="Mpho Ramaphosa" data-id="APP-2026-0010">
+                    <td>10</td>
+                    <td>
+                        <strong>Mpho Ramaphosa</strong>
+                        <div style="font-size:0.78rem;color:#999;margin-top:1px;">APP-2026-0010 · STU-2025-0117</div>
+                    </td>
+                    <td>Nelson Mandela University</td>
+                    <td style="font-size:0.84rem;">BEd Intermediate Phase</td>
+                    <td>2nd Year</td>
+                    <td style="font-size:0.82rem;color:#666;">15 Jan 2026</td>
+                    <td>
+                        <div class="comp-wrap">
+                            <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:80%;background:#f59e0b;"></div></div>
+                            <span class="comp-pct">80%</span>
+                        </div>
+                    </td>
+                    <td><span class="app-badge app-info"><i class="bi bi-chat-left-dots-fill"></i> Info Requested</span></td>
+                    <td style="font-size:0.84rem;">Zanele Khumalo</td>
+                    <td style="white-space:nowrap;">
+                        <a href="application_view.html" class="btn-outline" style="padding:5px 10px;font-size:0.78rem;margin-right:4px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;"><i class="bi bi-eye"></i> View</a>
+                        <button class="btn-outline" style="padding:5px 10px;font-size:0.78rem;color:#6d28d9;border-color:#aaa;" onclick="openInfoRequest('APP-2026-0010','Mpho Ramaphosa')"><i class="bi bi-chat-left-dots"></i></button>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <div id="emptyState" style="display:none;text-align:center;padding:60px 20px;color:#aaa;">
+            <i class="bi bi-file-earmark-x" style="font-size:3rem;display:block;margin-bottom:12px;"></i>
+            No applications match the selected filters.
+        </div>
+    </div>
+
+</div><!-- end main-content -->
+
+<!-- ══════════════════════════════════ -->
+<!-- MODAL: Approve Confirmation        -->
+<!-- ══════════════════════════════════ -->
+<div class="modal-overlay" id="approveModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#065f46,#059669);">
+            <h3><i class="bi bi-check-circle-fill" style="margin-right:7px;"></i> Approve Application</h3>
+            <button class="modal-close" onclick="closeModal('approveModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.9rem;color:#374151;margin:0 0 16px;">You are about to <strong>approve</strong> the application for <strong id="approve_name"></strong> (<span id="approve_id" style="color:#64748b;"></span>).</p>
+            <div class="field-group">
+                <label>Approval Note (optional)</label>
+                <textarea id="approve_note" placeholder="Add an internal note or comment for this decision…"></textarea>
+            </div>
+            <div class="field-group">
+                <label>Assigned Funder</label>
+                <select id="approve_funder">
+                    <option value="">Select funder…</option>
+                    <option>NSFAS</option>
+                    <option>Ikusasa Student Financial Aid Programme</option>
+                    <option>Allan Gray Orbis Foundation</option>
+                    <option>Rand Mutual Assurance</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('approveModal')">Cancel</button>
+            <button class="btn-primary-action" style="background:linear-gradient(135deg,#065f46,#059669);border-color:#059669;" onclick="submitApprove()">
+                <i class="bi bi-check-circle-fill"></i> Confirm Approval
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- MODAL: Reject Application          -->
+<!-- ══════════════════════════════════ -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
+            <h3><i class="bi bi-x-circle-fill" style="margin-right:7px;"></i> Reject Application</h3>
+            <button class="modal-close" onclick="closeModal('rejectModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.9rem;color:#374151;margin:0 0 16px;">You are about to <strong>reject</strong> the application for <strong id="reject_name"></strong> (<span id="reject_id" style="color:#64748b;"></span>). The applicant will be notified.</p>
+            <div class="field-group">
+                <label>Rejection Reason <span style="color:#dc2626;">*</span></label>
+                <select id="reject_reason">
+                    <option value="">Select a reason…</option>
+                    <option>Income threshold not met</option>
+                    <option>Incomplete documentation</option>
+                    <option>Does not meet academic criteria</option>
+                    <option>Duplicate application</option>
+                    <option>Already funded by another bursary</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Additional Comments</label>
+                <textarea id="reject_note" placeholder="Provide further context for this rejection (visible to applicant)…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('rejectModal')">Cancel</button>
+            <button style="background:linear-gradient(135deg,#991b1b,#dc2626);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:0.87rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px;" onclick="submitReject()">
+                <i class="bi bi-x-circle-fill"></i> Confirm Rejection
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- MODAL: Request Additional Info     -->
+<!-- ══════════════════════════════════ -->
+<div class="modal-overlay" id="infoModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#4c1d95,#7c3aed);">
+            <h3><i class="bi bi-chat-left-dots-fill" style="margin-right:7px;"></i> Request Additional Information</h3>
+            <button class="modal-close" onclick="closeModal('infoModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.87rem;color:#475569;margin:0 0 16px;">Requesting info from <strong id="info_name"></strong> (<span id="info_id" style="color:#64748b;"></span>). The applicant will receive an email and in-app notification.</p>
+            <div class="field-group">
+                <label>Application Section <span style="color:#dc2626;">*</span></label>
+                <select id="info_section">
+                    <option value="">Select section…</option>
+                    <option>Personal Details</option>
+                    <option>School &amp; Household Information</option>
+                    <option>Study Choices</option>
+                    <option>Supporting Documents</option>
+                    <option>General / Other</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Specific Field or Document <span style="color:#dc2626;">*</span></label>
+                <input type="text" id="info_field" placeholder="e.g. Certified copy of ID, Proof of household income…">
+            </div>
+            <div class="field-group">
+                <label>Message to Applicant <span style="color:#dc2626;">*</span></label>
+                <textarea id="info_message" placeholder="Clearly explain what information is needed and why…"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div class="field-group" style="margin-bottom:0;">
+                    <label>Response Deadline</label>
+                    <input type="date" id="info_deadline">
+                </div>
+                <div class="field-group" style="margin-bottom:0;">
+                    <label>Priority</label>
+                    <select id="info_priority">
+                        <option value="normal">Normal</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('infoModal')">Cancel</button>
+            <button style="background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:0.87rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px;" onclick="submitInfoRequest()">
+                <i class="bi bi-send-fill"></i> Send Request
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ── Filters ── */
+    function applyFilters() {
+        const search   = document.getElementById('searchInput').value.toLowerCase();
+        const status   = document.getElementById('statusFilter').value;
+        const inst     = document.getElementById('institutionFilter').value.toLowerCase();
+        const year     = document.getElementById('yearFilter').value;
+        const reviewer = document.getElementById('reviewerFilter').value.toLowerCase();
+
+        const rows = document.querySelectorAll('#appBody tr');
+        let visible = 0;
+        rows.forEach(row => {
+            const name   = (row.dataset.name        || '').toLowerCase();
+            const id     = (row.dataset.id          || '').toLowerCase();
+            const rowSt  = row.dataset.status       || '';
+            const rowIn  = (row.dataset.institution || '').toLowerCase();
+            const rowYr  = row.dataset.year         || '';
+            const rowRv  = (row.dataset.reviewer    || '').toLowerCase();
+
+            let show = true;
+            if (search   && !name.includes(search) && !id.includes(search)) show = false;
+            if (status   && rowSt !== status)   show = false;
+            if (inst     && !rowIn.includes(inst.replace('all institutions','').trim())) {
+                if (inst !== '') show = false;
+            }
+            if (year     && rowYr !== year)     show = false;
+            if (reviewer && !rowRv.includes(reviewer.replace('all reviewers','').trim())) {
+                if (reviewer !== '') show = false;
+            }
+
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    /* ── Modals ── */
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function confirmApprove(appId, name) {
+        document.getElementById('approve_name').textContent = name;
+        document.getElementById('approve_id').textContent   = appId;
+        openModal('approveModal');
+    }
+    function submitApprove() {
+        closeModal('approveModal');
+        alert('Application approved successfully. The applicant will be notified.');
+    }
+
+    function openReject(appId, name) {
+        document.getElementById('reject_name').textContent = name;
+        document.getElementById('reject_id').textContent   = appId;
+        openModal('rejectModal');
+    }
+    function submitReject() {
+        const reason = document.getElementById('reject_reason').value;
+        if (!reason) { alert('Please select a rejection reason.'); return; }
+        closeModal('rejectModal');
+        alert('Application rejected. The applicant will be notified via email.');
+    }
+
+    function openInfoRequest(appId, name) {
+        document.getElementById('info_name').textContent = name;
+        document.getElementById('info_id').textContent   = appId;
+        // Default deadline: 7 days from today
+        const d = new Date(); d.setDate(d.getDate() + 7);
+        document.getElementById('info_deadline').value = d.toISOString().split('T')[0];
+        openModal('infoModal');
+    }
+    function submitInfoRequest() {
+        const section = document.getElementById('info_section').value;
+        const field   = document.getElementById('info_field').value.trim();
+        const msg     = document.getElementById('info_message').value.trim();
+        if (!section || !field || !msg) { alert('Please complete all required fields.'); return; }
+        closeModal('infoModal');
+        alert('Information request sent. The applicant has been notified via email and in-app notification.');
+    }
+</script>
+</body>
+</html>

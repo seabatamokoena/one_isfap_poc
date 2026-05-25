@@ -28,9 +28,19 @@
             </summary>
             <ul class="sub-nav">
                 <li><a href="student_list.html">List</a></li>
-                <li><a href="index.html">Profile</a></li>
-                <li><a href="#">Check-In</a></li>
-                <li><a href="#">Watchlist</a></li>
+                <li><a href="checkin.html">Check-In</a></li>
+                <li><a href="watchlist.html">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-file-earmark-person-fill"></i> Applications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="applications.html">All Applications</a></li>
+                <li><a href="#">Application Documents</a></li>
             </ul>
         </details>
 
@@ -89,7 +99,7 @@
             </summary>
             <ul class="sub-nav">
                 <li><a href="payments.html">Overview</a></li>
-                <li><a href="#">Process Payment</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
                 <li><a href="payment_history.html">Payment History</a></li>
                 <li><a href="#">Reconciliation</a></li>
             </ul>
@@ -102,20 +112,39 @@
             </summary>
             <ul class="sub-nav">
                 <li><a href="funders.html">Funders</a></li>
-                <li><a href="funding_selection.html">Allocations</a></li>
                 <li><a href="#">Agreements</a></li>
                 <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <!-- Funding Selection -->
+        <details>
+            <summary>
+                <i class="bi bi-person-check-fill"></i> Funding Selection
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funding_selection.html">Student Selection</a></li>
+                <li><a href="shortlist.html">Shortlisted Students</a></li>
             </ul>
         </details>
 
         <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
 
         <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
-        <a href="#" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+        <details>
+            <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="allowance_limits.html">Allowance Limits</a></li>
+                <li><a href="#">Academic Calendar</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Audit Log</a></li>
+            </ul>
+        </details>
 
     </div>
     <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
-        <a href="#" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+        <a href="login.html" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
     </div>
 </nav>
 
@@ -361,14 +390,14 @@
                 <div class="card-avatar-row">
                     <div class="landlord-avatar" style="background:linear-gradient(135deg,#adb5bd,#ced4da);color:#333;"><i class="bi bi-building-fill" style="font-size:1.4rem;"></i></div>
                     <div>
-                        <div class="landlord-name">Mokoena Residences</div>
+                        <div class="landlord-name">Letlela Residences</div>
                         <div class="landlord-id">LLD-2020-0003</div>
                     </div>
                 </div>
                 <div class="card-details">
-                    <div class="detail-row"><i class="bi bi-person-fill"></i> Lungisa Mokoena</div>
+                    <div class="detail-row"><i class="bi bi-person-fill"></i> Lungisa Letlela</div>
                     <div class="detail-row"><i class="bi bi-telephone-fill"></i> 082 111 2233</div>
-                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> l.mokoena@webmail.co.za</div>
+                    <div class="detail-row"><i class="bi bi-envelope-fill"></i> l.Letlela@webmail.co.za</div>
                     <div class="detail-row"><i class="bi bi-geo-alt-fill"></i> 55 Protea St, Main Campus Area</div>
                 </div>
                 <div class="card-stats">
@@ -627,7 +656,7 @@
                     <tr><td>2</td><td>LLD-2021-0002</td><td><strong>Fatima Nkosi</strong></td><td>083 456 7890</td><td>fatima.nkosi@rentals.co.za</td><td>Regional East</td><td>2</td><td>18</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
                     <tr><td>3</td><td>LLD-2023-0019</td><td><strong>Brenda van der Merwe</strong></td><td>064 890 1234</td><td>b.vdmerwe@gmail.com</td><td>Main Campus Area</td><td>1</td><td>4</td><td><span class="status-pill sp-pending"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Pending</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
                     <tr><td>4</td><td>LLD-2022-0008</td><td><strong>Rajesh Dlamini</strong></td><td>079 321 6540</td><td>rajesh.d@properties.co.za</td><td>Regional West</td><td>3</td><td>21</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
-                    <tr><td>5</td><td>LLD-2020-0003</td><td><strong>Lungisa Mokoena</strong></td><td>082 111 2233</td><td>l.mokoena@webmail.co.za</td><td>Main Campus Area</td><td>2</td><td>0</td><td><span class="status-pill sp-inactive"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Inactive</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
+                    <tr><td>5</td><td>LLD-2020-0003</td><td><strong>Lungisa Letlela</strong></td><td>082 111 2233</td><td>l.Letlela@webmail.co.za</td><td>Main Campus Area</td><td>2</td><td>0</td><td><span class="status-pill sp-inactive"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Inactive</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
                     <tr><td>6</td><td>LLD-2022-0011</td><td><strong>Zanele Pretorius</strong></td><td>076 654 3210</td><td>zanele.p@housenet.co.za</td><td>Regional East</td><td>5</td><td>35</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
                     <tr><td>7</td><td>LLD-2023-0021</td><td><strong>Adaeze Okonkwo</strong></td><td>060 789 0123</td><td>adaeze.ok@rentals.co.za</td><td>Main Campus Area</td><td>2</td><td>14</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
                     <tr><td>8</td><td>LLD-2021-0006</td><td><strong>Pieter Joubert</strong></td><td>084 567 8901</td><td>pieter.j@joubert-prop.co.za</td><td>Regional West</td><td>3</td><td>20</td><td><span class="status-pill sp-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Active</span></td><td><button class="btn-card btn-card-primary"><i class="bi bi-eye"></i> View</button></td></tr>
