@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks – ISFAP Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="OneISFAPStyle.css">
+    <style>
+        /* ── Priority badges ── */
+        .pri-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 0.73rem; font-weight: 800; white-space: nowrap;
+        }
+        .pri-high   { background:#fee2e2; color:#991b1b; }
+        .pri-medium { background:#fff3cd; color:#856404; }
+        .pri-low    { background:#f0fdf4; color:#166534; }
+
+        /* ── Status badges ── */
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 11px; border-radius: 20px;
+            font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+        }
+        .st-open     { background:#dbeafe; color:#1e40af; }
+        .st-progress { background:#fef3c7; color:#92400e; }
+        .st-done     { background:#d1fae5; color:#065f46; }
+        .st-overdue  { background:#fee2e2; color:#991b1b; }
+        .st-blocked  { background:#e0f2fe; color:#0369a1; }
+
+        /* ── Type chip ── */
+        .type-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 8px;
+            font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+            background:#f1f5f9; color:#334155;
+        }
+
+        /* ── Summary banner ── */
+        .task-banner {
+            background: linear-gradient(135deg, #1e3a5f, #094781);
+            border-radius: 12px; padding: 20px 28px; color:#fff;
+            display:flex; align-items:center; gap:28px; margin-bottom:24px; flex-wrap:wrap;
+        }
+        .task-banner-icon {
+            width:56px; height:56px; background:rgba(255,255,255,0.15);
+            border-radius:14px; display:flex; align-items:center; justify-content:center;
+            font-size:1.7rem; flex-shrink:0;
+        }
+        .banner-stats { display:flex; gap:28px; margin-left:auto; flex-wrap:wrap; }
+        .bstat { text-align:center; }
+        .bstat-val { font-size:1.6rem; font-weight:800; line-height:1; }
+        .bstat-lbl { font-size:0.72rem; opacity:0.75; margin-top:3px; text-transform:uppercase; letter-spacing:0.04em; }
+
+        /* ── Task table rows ── */
+        .hist-table td { vertical-align: middle; }
+        .student-cell { display:flex; flex-direction:column; gap:2px; }
+        .student-name { font-size:0.87rem; font-weight:700; color:#1e293b; }
+        .student-id   { font-size:0.75rem; color:#94a3b8; }
+
+        /* ── Overdue row highlight ── */
+        tr.row-overdue { background:#fff8f8; }
+        tr.row-overdue:hover { background:#fee2e2 !important; }
+
+        /* ── Action icon buttons ── */
+        .act-btn {
+            width:32px; height:32px; border-radius:7px; border:1.5px solid #e2e8f0;
+            background:#fff; display:inline-flex; align-items:center; justify-content:center;
+            cursor:pointer; font-size:0.9rem; color:#475569; transition:all 0.15s;
+        }
+        .act-btn:hover { border-color:#094781; color:#094781; background:#e8f1fb; }
+        .act-btn.green:hover  { border-color:#059669; color:#059669; background:#f0fdf4; }
+        .act-btn.red:hover    { border-color:#dc2626; color:#dc2626; background:#fff8f8; }
+
+        /* ── View tabs (in modal) ── */
+        .vtabs { display:flex; border-bottom:2px solid #e8eef5; margin-bottom:18px; }
+        .vtab {
+            padding:10px 18px; font-size:0.83rem; font-weight:700;
+            color:#64748b; cursor:pointer; border-bottom:3px solid transparent;
+            margin-bottom:-2px; transition:all 0.15s;
+        }
+        .vtab.active { color:#094781; border-bottom-color:#094781; }
+        .vtab-pane { display:none; }
+        .vtab-pane.active { display:block; }
+
+        /* ── Timeline (activity log) ── */
+        .tl-item { display:flex; gap:12px; padding:11px 0; border-bottom:1px solid #f0f4f8; }
+        .tl-item:last-child { border-bottom:none; }
+        .tl-dot {
+            width:30px; height:30px; border-radius:50%; flex-shrink:0;
+            display:flex; align-items:center; justify-content:center; font-size:0.85rem; margin-top:2px;
+        }
+        .tl-blue   { background:#dbeafe; color:#1e40af; }
+        .tl-green  { background:#d1fae5; color:#065f46; }
+        .tl-amber  { background:#fef3c7; color:#92400e; }
+        .tl-purple { background:#e0f2fe; color:#0369a1; }
+        .tl-red    { background:#fee2e2; color:#991b1b; }
+        .tl-time   { font-size:0.73rem; color:#94a3b8; margin-top:3px; }
+
+        /* ── Modals ── */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.45);
+            z-index:1000; display:none; align-items:center; justify-content:center;
+        }
+        .modal-overlay.open { display:flex; }
+        .modal-box {
+            background:#fff; border-radius:14px;
+            width:580px; max-width:96vw; max-height:90vh; overflow-y:auto;
+            box-shadow:0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-box.wide { width:740px; }
+        .modal-header {
+            padding:18px 24px; color:#fff;
+            display:flex; align-items:center; justify-content:space-between;
+            position:sticky; top:0; z-index:1;
+        }
+        .modal-header h3 { margin:0; font-size:1rem; font-weight:700; }
+        .modal-body  { padding:24px; }
+        .modal-footer {
+            padding:14px 24px; background:#f8fafc; border-top:1px solid #e8eef5;
+            display:flex; gap:10px; justify-content:flex-end;
+            position:sticky; bottom:0;
+        }
+        .modal-close { background:none; border:none; color:#fff; font-size:1.3rem; cursor:pointer; }
+
+        .field-group { margin-bottom:16px; }
+        .field-group label { display:block; font-size:0.8rem; font-weight:700; color:#555; margin-bottom:5px; }
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            width:100%; padding:9px 12px;
+            border:1.5px solid #d1dce8; border-radius:7px;
+            font-size:0.87rem; color:#2d3a4a; background:#fff; box-sizing:border-box;
+        }
+        .field-group textarea { resize:vertical; min-height:80px; }
+        .field-group input:focus,
+        .field-group select:focus,
+        .field-group textarea:focus { outline:none; border-color:#094781; }
+
+        .ro-field {
+            background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:7px;
+            padding:9px 12px; font-size:0.87rem; color:#1e293b; min-height:40px;
+        }
+        .ro-label { font-size:0.78rem; font-weight:700; color:#64748b; margin-bottom:5px; display:block; }
+        .ro-group { margin-bottom:14px; }
+
+        /* ── Tabs header toggle (My Tasks / All Tasks) ── */
+        .page-tabs {
+            display:flex; gap:0; border-bottom:2px solid #e2e8f0; margin-bottom:20px;
+        }
+        .page-tab {
+            padding:11px 22px; font-size:0.87rem; font-weight:700; color:#64748b;
+            cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px;
+            display:flex; align-items:center; gap:7px; transition:all 0.15s;
+        }
+        .page-tab.active { color:#094781; border-bottom-color:#094781; }
+        .page-tab-count {
+            font-size:0.72rem; font-weight:800;
+            padding:2px 7px; border-radius:20px;
+            background:#dbeafe; color:#094781;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <details>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="checkin.html">Check-In</a></li>
+                <li><a href="watchlist.html">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-file-earmark-person-fill"></i> Applications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="applications.html">All Applications</a></li>
+                <li><a href="#">Application Documents</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <!-- Tasks (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="tasks.html" class="active">My Tasks</a></li>
+                <li><a href="tasks.html">All Tasks</a></li>
+                <li><a href="#" onclick="openModal('createModal');return false;">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="#">Agreements</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-check-fill"></i> Funding Selection
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funding_selection.html">Student Selection</a></li>
+                <li><a href="shortlist.html">Shortlisted Students</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <details>
+            <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="allowance_limits.html">Allowance Limits</a></li>
+                <li><a href="#">Academic Calendar</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Audit Log</a></li>
+            </ul>
+        </details>
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="login.html" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Page header -->
+    <div class="page-header">
+        <div>
+            <h2><i class="bi bi-check2-square"></i> Tasks</h2>
+        </div>
+        <button class="btn-primary-action" onclick="openModal('createModal')">
+            <i class="bi bi-plus-lg"></i> Create Task
+        </button>
+    </div>
+
+    <!-- Summary banner -->
+    <div class="task-banner">
+        <div class="task-banner-icon"><i class="bi bi-check2-square"></i></div>
+        <div>
+            <div style="font-size:1.1rem;font-weight:800;">Student Task Management</div>
+            <div style="font-size:0.85rem;opacity:0.8;margin-top:3px;">Semester 1 · 2026 · Assigned to you</div>
+        </div>
+        <div class="banner-stats">
+            <div class="bstat"><div class="bstat-val">12</div><div class="bstat-lbl">Open</div></div>
+            <div class="bstat"><div class="bstat-val" style="color:#fde68a;">5</div><div class="bstat-lbl">In Progress</div></div>
+            <div class="bstat"><div class="bstat-val" style="color:#fca5a5;">3</div><div class="bstat-lbl">Overdue</div></div>
+            <div class="bstat"><div class="bstat-val" style="color:#6ee7b7;">28</div><div class="bstat-lbl">Completed</div></div>
+        </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="summary-strip" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
+        <div class="stat-card total">
+            <div class="stat-icon" style="background:#e8f1fb;color:#094781;"><i class="bi bi-list-task"></i></div>
+            <div class="stat-info">
+                <label>Total Tasks</label>
+                <div class="stat-card-val">48</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#f59e0b;">
+            <div class="stat-icon" style="background:#fef3c7;color:#d97706;"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-info">
+                <label>In Progress</label>
+                <div class="stat-card-val" style="color:#d97706;">5</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#dc2626;">
+            <div class="stat-icon" style="background:#fee2e2;color:#dc2626;"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="stat-info">
+                <label>Overdue</label>
+                <div class="stat-card-val" style="color:#dc2626;">3</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#16a34a;">
+            <div class="stat-icon" style="background:#dcfce7;color:#16a34a;"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-info">
+                <label>Completed</label>
+                <div class="stat-card-val" style="color:#16a34a;">28</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page-level tabs -->
+    <div class="page-tabs">
+        <div class="page-tab active" onclick="switchPageTab(this,'tab-my')">
+            <i class="bi bi-person-check"></i> My Tasks <span class="page-tab-count">17</span>
+        </div>
+        <div class="page-tab" onclick="switchPageTab(this,'tab-all')">
+            <i class="bi bi-list-task"></i> All Tasks <span class="page-tab-count">48</span>
+        </div>
+        <div class="page-tab" onclick="switchPageTab(this,'tab-overdue')">
+            <i class="bi bi-exclamation-triangle"></i> Overdue <span class="page-tab-count" style="background:#fee2e2;color:#991b1b;">3</span>
+        </div>
+        <div class="page-tab" onclick="switchPageTab(this,'tab-done')">
+            <i class="bi bi-check-circle"></i> Completed
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-panel">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+            <div>
+                <label>Search</label>
+                <input type="search" id="searchInput" placeholder="Student name or task ID…" oninput="applyFilters()" style="min-width:220px;">
+            </div>
+            <div>
+                <label>Task Type</label>
+                <select id="filterType" onchange="applyFilters()">
+                    <option value="">All Task Types</option>
+                    <option value="check-in">Redo Check-In</option>
+                    <option value="lease">Upload Lease Agreement</option>
+                    <option value="transcript">Upload Academic Transcript</option>
+                    <option value="id">Upload ID Document</option>
+                    <option value="income">Upload Proof of Income</option>
+                    <option value="bank">Upload Bank Statement</option>
+                    <option value="registration">Upload Proof of Registration</option>
+                    <option value="contact">Update Contact Details</option>
+                    <option value="banking">Update Banking Details</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div>
+                <label>Priority</label>
+                <select id="filterPriority" onchange="applyFilters()">
+                    <option value="">All Priorities</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            <div>
+                <label>Status</label>
+                <select id="filterStatus" onchange="applyFilters()">
+                    <option value="">All Statuses</option>
+                    <option value="open">Open</option>
+                    <option value="progress">In Progress</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="blocked">Blocked</option>
+                    <option value="done">Completed</option>
+                </select>
+            </div>
+            <div>
+                <label>Assignee</label>
+                <select id="filterAssignee" onchange="applyFilters()">
+                    <option value="">All Assignees</option>
+                    <option value="thabo letlela">Thabo Letlela</option>
+                    <option value="priya naidoo">Priya Naidoo</option>
+                    <option value="anele sithole">Anele Sithole</option>
+                    <option value="zanele khumalo">Zanele Khumalo</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-end;">
+                <button type="button" style="padding:9px 18px;background:#063154;color:#fff;font-weight:700;border:none;border-radius:6px;font-size:0.86rem;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(9,71,129,0.3);">
+                    <i class="bi bi-search"></i> Search
+                </button>
+                <button type="button" onclick="clearFilters()" style="padding:9px 12px;background:#fff;color:#666;font-weight:600;border:1px solid var(--border-color);border-radius:6px;font-size:0.86rem;cursor:pointer;" title="Reset filters">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task table -->
+    <div class="hist-table-wrapper">
+        <div class="hist-table-header">
+            <h3><i class="bi bi-table"></i> Task Records</h3>
+            <span style="font-size:0.82rem;opacity:0.85;">Showing 10 of 48 tasks</span>
+        </div>
+        <div class="table-scroller">
+        <table class="hist-table" id="taskTable">
+            <thead>
+                <tr>
+                    <th class="sortable">Task ID</th>
+                    <th class="sortable">Student</th>
+                    <th>Task Type</th>
+                    <th>Description</th>
+                    <th>Assigned To</th>
+                    <th class="sortable">Priority</th>
+                    <th class="sortable">Status</th>
+                    <th class="sortable">Due Date <i class="bi bi-arrow-down-up" style="font-size:0.68rem;opacity:0.6;"></i></th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="taskBody">
+
+                <!-- Row 1 – Overdue -->
+                <tr class="row-overdue"
+                    data-type="check-in" data-priority="high" data-status="overdue"
+                    data-assignee="thabo letlela" data-name="sipho ndlovu" data-id="TSK-2026-001">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-001</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Sipho Ndlovu</span>
+                            <span class="student-id">STU-2025-0014</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-arrow-repeat"></i> Redo Check-In</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">Semester 1 check-in flagged — academic and psychological concerns. Student must redo full check-in.</td>
+                    <td style="font-size:0.84rem;">Thabo Letlela</td>
+                    <td><span class="pri-badge pri-high"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> High</span></td>
+                    <td><span class="status-badge st-overdue"><i class="bi bi-exclamation-circle-fill"></i> Overdue</span></td>
+                    <td style="font-size:0.82rem;color:#dc2626;font-weight:700;">12 May 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-001')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-001','Sipho Ndlovu')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-001','Sipho Ndlovu')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 2 – Overdue -->
+                <tr class="row-overdue"
+                    data-type="lease" data-priority="high" data-status="overdue"
+                    data-assignee="thabo letlela" data-name="lindelwe mthembu" data-id="TSK-2026-002">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-002</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Lindelwe Mthembu</span>
+                            <span class="student-id">STU-2025-0063</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-file-earmark-text"></i> Upload Lease Agreement</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">Lease agreement for University Heights residence not yet submitted. Required for accommodation allowance.</td>
+                    <td style="font-size:0.84rem;">Thabo Letlela</td>
+                    <td><span class="pri-badge pri-high"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> High</span></td>
+                    <td><span class="status-badge st-overdue"><i class="bi bi-exclamation-circle-fill"></i> Overdue</span></td>
+                    <td style="font-size:0.82rem;color:#dc2626;font-weight:700;">08 May 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-002')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-002','Lindelwe Mthembu')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-002','Lindelwe Mthembu')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 3 – Overdue -->
+                <tr class="row-overdue"
+                    data-type="transcript" data-priority="high" data-status="overdue"
+                    data-assignee="priya naidoo" data-name="karabo sithole" data-id="TSK-2026-003">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-003</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Karabo Sithole</span>
+                            <span class="student-id">STU-2025-0102</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-mortarboard"></i> Upload Academic Transcript</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">2025 year-end academic transcript outstanding. Required for academic progress review and continued funding.</td>
+                    <td style="font-size:0.84rem;">Priya Naidoo</td>
+                    <td><span class="pri-badge pri-high"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> High</span></td>
+                    <td><span class="status-badge st-overdue"><i class="bi bi-exclamation-circle-fill"></i> Overdue</span></td>
+                    <td style="font-size:0.82rem;color:#dc2626;font-weight:700;">01 May 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-003')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-003','Karabo Sithole')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-003','Karabo Sithole')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 4 – In Progress -->
+                <tr data-type="income" data-priority="medium" data-status="progress"
+                    data-assignee="thabo letlela" data-name="nomsa dlamini" data-id="TSK-2026-004">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-004</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Nomsa Dlamini</span>
+                            <span class="student-id">STU-2025-0087</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-house-check"></i> Upload Proof of Income</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">Guardian payslip for Q1 2026 not yet received. Student contacted — document being arranged.</td>
+                    <td style="font-size:0.84rem;">Thabo Letlela</td>
+                    <td><span class="pri-badge pri-medium"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Medium</span></td>
+                    <td><span class="status-badge st-progress"><i class="bi bi-hourglass-split"></i> In Progress</span></td>
+                    <td style="font-size:0.82rem;color:#64748b;">30 May 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-004')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-004','Nomsa Dlamini')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-004','Nomsa Dlamini')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 5 – In Progress -->
+                <tr data-type="banking" data-priority="medium" data-status="progress"
+                    data-assignee="anele sithole" data-name="thabo mosia" data-id="TSK-2026-005">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-005</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Thabo Mosia</span>
+                            <span class="student-id">STU-2025-0041</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-bank2"></i> Update Banking Details</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">Payment returned — student's bank account closed. New account confirmation letter needed.</td>
+                    <td style="font-size:0.84rem;">Anele Sithole</td>
+                    <td><span class="pri-badge pri-medium"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Medium</span></td>
+                    <td><span class="status-badge st-progress"><i class="bi bi-hourglass-split"></i> In Progress</span></td>
+                    <td style="font-size:0.82rem;color:#64748b;">28 May 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-005')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-005','Thabo Mosia')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-005','Thabo Mosia')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 6 – Open -->
+                <tr data-type="registration" data-priority="high" data-status="open"
+                    data-assignee="thabo letlela" data-name="palesa sithole" data-id="TSK-2026-006">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-006</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Palesa Sithole</span>
+                            <span class="student-id">STU-2025-0119</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-building"></i> Upload Proof of Registration</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">2026 registration proof not yet uploaded. Funding disbursement on hold until confirmed.</td>
+                    <td style="font-size:0.84rem;">Thabo Letlela</td>
+                    <td><span class="pri-badge pri-high"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> High</span></td>
+                    <td><span class="status-badge st-open"><i class="bi bi-circle"></i> Open</span></td>
+                    <td style="font-size:0.82rem;color:#64748b;">05 Jun 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-006')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-006','Palesa Sithole')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-006','Palesa Sithole')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 7 – Open -->
+                <tr data-type="check-in" data-priority="medium" data-status="open"
+                    data-assignee="zanele khumalo" data-name="amahle nkosi" data-id="TSK-2026-007">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-007</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Amahle Nkosi</span>
+                            <span class="student-id">STU-2025-0055</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-arrow-repeat"></i> Redo Check-In</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">Living situation section incomplete during initial check-in. Student to complete with PM present.</td>
+                    <td style="font-size:0.84rem;">Zanele Khumalo</td>
+                    <td><span class="pri-badge pri-medium"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Medium</span></td>
+                    <td><span class="status-badge st-open"><i class="bi bi-circle"></i> Open</span></td>
+                    <td style="font-size:0.82rem;color:#64748b;">10 Jun 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-007')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-007','Amahle Nkosi')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-007','Amahle Nkosi')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 8 – Open -->
+                <tr data-type="id" data-priority="low" data-status="open"
+                    data-assignee="priya naidoo" data-name="lungelo zulu" data-id="TSK-2026-008">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-008</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Lungelo Zulu</span>
+                            <span class="student-id">STU-2025-0033</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-person-vcard"></i> Upload ID Document</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">Uploaded ID copy is blurry and not legible. Student must resubmit a clear certified copy.</td>
+                    <td style="font-size:0.84rem;">Priya Naidoo</td>
+                    <td><span class="pri-badge pri-low"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Low</span></td>
+                    <td><span class="status-badge st-open"><i class="bi bi-circle"></i> Open</span></td>
+                    <td style="font-size:0.82rem;color:#64748b;">15 Jun 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-008')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-008','Lungelo Zulu')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-008','Lungelo Zulu')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 9 – Blocked -->
+                <tr data-type="bank" data-priority="medium" data-status="blocked"
+                    data-assignee="anele sithole" data-name="siyanda mthethwa" data-id="TSK-2026-009">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-009</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Siyanda Mthethwa</span>
+                            <span class="student-id">STU-2025-0077</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-bank"></i> Upload Bank Statement</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">Student unable to obtain 3-month statement — awaiting resolution from ABSA branch. PM following up.</td>
+                    <td style="font-size:0.84rem;">Anele Sithole</td>
+                    <td><span class="pri-badge pri-medium"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Medium</span></td>
+                    <td><span class="status-badge st-blocked"><i class="bi bi-slash-circle"></i> Blocked</span></td>
+                    <td style="font-size:0.82rem;color:#64748b;">20 Jun 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-009')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-009','Siyanda Mthethwa')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-009','Siyanda Mthethwa')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 10 – Open -->
+                <tr data-type="contact" data-priority="low" data-status="open"
+                    data-assignee="zanele khumalo" data-name="refilwe molapo" data-id="TSK-2026-010">
+                    <td style="font-size:0.82rem;color:#64748b;font-weight:700;">TSK-2026-010</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Refilwe Molapo</span>
+                            <span class="student-id">STU-2025-0091</span>
+                        </div>
+                    </td>
+                    <td><span class="type-chip"><i class="bi bi-telephone"></i> Update Contact Details</span></td>
+                    <td style="font-size:0.84rem;color:#475569;max-width:240px;">Phone number on record is inactive. SMS notifications failing. Student to update emergency contact too.</td>
+                    <td style="font-size:0.84rem;">Zanele Khumalo</td>
+                    <td><span class="pri-badge pri-low"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> Low</span></td>
+                    <td><span class="status-badge st-open"><i class="bi bi-circle"></i> Open</span></td>
+                    <td style="font-size:0.82rem;color:#64748b;">20 Jun 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View task" onclick="openViewModal('TSK-2026-010')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('TSK-2026-010','Refilwe Molapo')"><i class="bi bi-check-lg"></i></button>
+                            <button class="act-btn" title="Reassign" onclick="openReassignModal('TSK-2026-010','Refilwe Molapo')"><i class="bi bi-person-gear"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+        <!-- Empty state -->
+        <div id="emptyState" style="display:none;text-align:center;padding:48px 24px;color:#94a3b8;">
+            <i class="bi bi-inbox" style="font-size:2.5rem;display:block;margin-bottom:12px;"></i>
+            No tasks match the current filters.
+        </div>
+        </div><!-- end table-scroller -->
+    </div><!-- end hist-table-wrapper -->
+
+</div><!-- end main-content -->
+
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: View Task Detail                 -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal-box wide">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#094781);">
+            <h3><i class="bi bi-eye-fill" style="margin-right:7px;"></i> Task Detail</h3>
+            <button class="modal-close" onclick="closeModal('viewModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Task header -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e8eef5;">
+                <div>
+                    <div style="font-size:0.75rem;font-weight:700;color:#94a3b8;margin-bottom:4px;" id="vTaskId">TSK-2026-001</div>
+                    <div style="font-size:1rem;font-weight:800;color:#1e293b;" id="vTaskTitle">Redo Check-In</div>
+                    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;" id="vTaskBadges">
+                        <span class="pri-badge pri-high"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> High</span>
+                        <span class="status-badge st-overdue"><i class="bi bi-exclamation-circle-fill"></i> Overdue</span>
+                        <span class="type-chip"><i class="bi bi-arrow-repeat"></i> Redo Check-In</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-primary-action" style="background:linear-gradient(135deg,#065f46,#059669);border-color:#059669;font-size:0.82rem;" onclick="closeModal('viewModal');openCompleteModal('TSK-2026-001','Sipho Ndlovu')">
+                        <i class="bi bi-check-lg"></i> Mark Complete
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="vtabs">
+                <div class="vtab active" onclick="switchVTab(this,'vt-detail')"><i class="bi bi-info-circle"></i> Details</div>
+                <div class="vtab" onclick="switchVTab(this,'vt-activity')"><i class="bi bi-clock-history"></i> Activity Log</div>
+                <div class="vtab" onclick="switchVTab(this,'vt-note')"><i class="bi bi-sticky"></i> Notes</div>
+            </div>
+
+            <!-- Details tab -->
+            <div class="vtab-pane active" id="vt-detail">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div class="ro-group"><span class="ro-label">Student</span><div class="ro-field">Sipho Ndlovu · STU-2025-0014</div></div>
+                    <div class="ro-group"><span class="ro-label">Institution</span><div class="ro-field">University of the Witwatersrand</div></div>
+                    <div class="ro-group"><span class="ro-label">Assigned To</span><div class="ro-field">Thabo Letlela</div></div>
+                    <div class="ro-group"><span class="ro-label">Created By</span><div class="ro-field">Zanele Khumalo · 13 May 2026</div></div>
+                    <div class="ro-group"><span class="ro-label">Due Date</span><div class="ro-field" style="color:#dc2626;font-weight:700;">12 May 2026 <span style="background:#fee2e2;color:#991b1b;font-size:0.72rem;padding:2px 8px;border-radius:10px;margin-left:6px;">13 days overdue</span></div></div>
+                    <div class="ro-group"><span class="ro-label">Semester</span><div class="ro-field">Semester 1 · 2026</div></div>
+                </div>
+                <div class="ro-group" style="margin-top:4px;">
+                    <span class="ro-label">Task Description</span>
+                    <div class="ro-field" style="min-height:70px;line-height:1.6;">Semester 1 check-in was flagged with academic and psychological concerns. Student must redo the full check-in with the PM present. Both the academic progress section and the psychological wellbeing section must be re-completed and signed off.</div>
+                </div>
+            </div>
+
+            <!-- Activity log tab -->
+            <div class="vtab-pane" id="vt-activity">
+                <div class="tl-item">
+                    <div class="tl-dot tl-red"><i class="bi bi-exclamation-circle-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Task became Overdue</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Due date passed without completion</div>
+                        <div class="tl-time">12 May 2026 · 00:00 · System</div>
+                    </div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-dot tl-amber"><i class="bi bi-chat-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Reminder sent to student</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Email and SMS reminder dispatched</div>
+                        <div class="tl-time">10 May 2026 · 08:30 · Thabo Letlela</div>
+                    </div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-dot tl-purple"><i class="bi bi-arrow-right-circle-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Status set to In Progress</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">PM acknowledged and began follow-up</div>
+                        <div class="tl-time">15 May 2026 · 09:15 · Thabo Letlela</div>
+                    </div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-dot tl-blue"><i class="bi bi-plus-circle-fill"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Task created</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Assigned to Thabo Letlela</div>
+                        <div class="tl-time">13 May 2026 · 11:00 · Zanele Khumalo</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes tab -->
+            <div class="vtab-pane" id="vt-note">
+                <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:0.84rem;margin-bottom:14px;">
+                    <div style="font-weight:700;margin-bottom:3px;">Thabo Letlela <span style="font-weight:400;color:#94a3b8;font-size:0.75rem;">· 15 May 2026</span></div>
+                    <div style="color:#475569;line-height:1.5;">Spoke to student by phone. He is aware of the task. Will come in on 27 May for the redo session. Slot booked.</div>
+                </div>
+                <div class="field-group" style="margin-top:10px;">
+                    <label>Add a note</label>
+                    <textarea placeholder="Add an internal note about this task…"></textarea>
+                </div>
+                <button class="btn-outline" style="font-size:0.83rem;margin-top:4px;"><i class="bi bi-plus-lg"></i> Save Note</button>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('viewModal')">Close</button>
+            <button class="btn-outline" onclick="closeModal('viewModal');openReassignModal('TSK-2026-001','Sipho Ndlovu')"><i class="bi bi-person-gear"></i> Reassign</button>
+            <button class="btn-primary-action" style="background:linear-gradient(135deg,#065f46,#059669);border-color:#059669;" onclick="closeModal('viewModal');openCompleteModal('TSK-2026-001','Sipho Ndlovu')">
+                <i class="bi bi-check-lg"></i> Mark Complete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: Create Task                      -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#094781);">
+            <h3><i class="bi bi-plus-circle-fill" style="margin-right:7px;"></i> Create New Task</h3>
+            <button class="modal-close" onclick="closeModal('createModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div class="field-group" style="grid-column:1/-1;">
+                    <label>Student <span style="color:#dc2626;">*</span></label>
+                    <input type="text" id="ct_student" placeholder="Search by name or student ID…">
+                </div>
+                <div class="field-group" style="grid-column:1/-1;">
+                    <label>Task Type <span style="color:#dc2626;">*</span></label>
+                    <select id="ct_type" onchange="prefillTaskDesc(this.value)">
+                        <option value="">Select task type…</option>
+                        <option value="check-in">Redo Check-In</option>
+                        <option value="lease">Upload Lease Agreement</option>
+                        <option value="transcript">Upload Academic Transcript</option>
+                        <option value="id">Upload ID Document</option>
+                        <option value="income">Upload Proof of Income</option>
+                        <option value="bank">Upload Bank Statement</option>
+                        <option value="registration">Upload Proof of Registration</option>
+                        <option value="contact">Update Contact Details</option>
+                        <option value="banking">Update Banking Details</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="field-group" style="grid-column:1/-1;">
+                    <label>Description <span style="color:#dc2626;">*</span></label>
+                    <textarea id="ct_desc" placeholder="Describe what the student or PM needs to do…" style="min-height:90px;"></textarea>
+                </div>
+                <div class="field-group">
+                    <label>Assign To <span style="color:#dc2626;">*</span></label>
+                    <select id="ct_assignee">
+                        <option value="">Select PM / Admin…</option>
+                        <option>Thabo Letlela</option>
+                        <option>Priya Naidoo</option>
+                        <option>Anele Sithole</option>
+                        <option>Zanele Khumalo</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Priority <span style="color:#dc2626;">*</span></label>
+                    <select id="ct_priority">
+                        <option value="">Select…</option>
+                        <option value="high">High</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Due Date <span style="color:#dc2626;">*</span></label>
+                    <input type="date" id="ct_due">
+                </div>
+                <div class="field-group">
+                    <label>Semester</label>
+                    <select id="ct_semester">
+                        <option value="sem1-2026" selected>Semester 1 · 2026</option>
+                        <option value="sem2-2026">Semester 2 · 2026</option>
+                    </select>
+                </div>
+                <div class="field-group" style="grid-column:1/-1;">
+                    <label>Notify Student?</label>
+                    <div style="display:flex;gap:16px;margin-top:4px;">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:400;cursor:pointer;">
+                            <input type="checkbox" checked style="width:auto;padding:0;border:none;"> Email
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:400;cursor:pointer;">
+                            <input type="checkbox" checked style="width:auto;padding:0;border:none;"> SMS
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('createModal')">Cancel</button>
+            <button class="btn-primary-action" onclick="submitCreateTask()">
+                <i class="bi bi-plus-circle-fill"></i> Create Task
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: Mark Complete                    -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-overlay" id="completeModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#065f46,#059669);">
+            <h3><i class="bi bi-check-circle-fill" style="margin-right:7px;"></i> Mark Task as Complete</h3>
+            <button class="modal-close" onclick="closeModal('completeModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.87rem;color:#374151;margin:0 0 18px;">
+                Marking <strong id="completeTaskId"></strong> as complete for <strong id="completeStudentName"></strong>.
+            </p>
+            <div class="field-group">
+                <label>Resolution Summary <span style="color:#dc2626;">*</span></label>
+                <textarea id="complete_note" placeholder="Briefly describe how the task was resolved…" style="min-height:90px;"></textarea>
+            </div>
+            <div class="field-group">
+                <label>Completion Date</label>
+                <input type="date" id="complete_date">
+            </div>
+            <div class="field-group">
+                <label>Notify Student of Completion?</label>
+                <div style="display:flex;gap:16px;margin-top:4px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:400;cursor:pointer;">
+                        <input type="checkbox" checked style="width:auto;padding:0;border:none;"> Email
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:400;cursor:pointer;">
+                        <input type="checkbox" style="width:auto;padding:0;border:none;"> SMS
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('completeModal')">Cancel</button>
+            <button class="btn-primary-action" style="background:linear-gradient(135deg,#065f46,#059669);border-color:#059669;" onclick="submitComplete()">
+                <i class="bi bi-check-circle-fill"></i> Confirm Completion
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: Reassign Task                    -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-overlay" id="reassignModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#094781);">
+            <h3><i class="bi bi-person-gear" style="margin-right:7px;"></i> Reassign Task</h3>
+            <button class="modal-close" onclick="closeModal('reassignModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.87rem;color:#374151;margin:0 0 18px;">
+                Reassigning <strong id="reassignTaskId"></strong> for <strong id="reassignStudentName"></strong>.
+            </p>
+            <div class="field-group">
+                <label>New Assignee <span style="color:#dc2626;">*</span></label>
+                <select id="reassign_to">
+                    <option value="">Select PM / Admin…</option>
+                    <option>Thabo Letlela</option>
+                    <option>Priya Naidoo</option>
+                    <option>Anele Sithole</option>
+                    <option>Zanele Khumalo</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label>Reason for Reassignment</label>
+                <textarea id="reassign_reason" placeholder="Optional: explain why this is being reassigned…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('reassignModal')">Cancel</button>
+            <button class="btn-primary-action" onclick="submitReassign()">
+                <i class="bi bi-person-check-fill"></i> Confirm Reassignment
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    /* ── Page tabs ── */
+    const pageTabPanes = { 'tab-my': null, 'tab-all': null, 'tab-overdue': null, 'tab-done': null };
+
+    function switchPageTab(el, key) {
+        document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+
+        const rows = document.querySelectorAll('#taskBody tr');
+        rows.forEach(r => {
+            r.style.display = '';
+            if (key === 'tab-overdue' && r.dataset.status !== 'overdue') r.style.display = 'none';
+            if (key === 'tab-done'    && r.dataset.status !== 'done')    r.style.display = 'none';
+            if (key === 'tab-my')  { /* show all for demo */ }
+            if (key === 'tab-all') { /* show all for demo */ }
+        });
+        checkEmpty();
+    }
+
+    /* ── Filter logic ── */
+    function applyFilters() {
+        const search   = document.getElementById('searchInput').value.toLowerCase();
+        const type     = document.getElementById('filterType').value;
+        const priority = document.getElementById('filterPriority').value;
+        const status   = document.getElementById('filterStatus').value;
+        const assignee = document.getElementById('filterAssignee').value;
+
+        document.querySelectorAll('#taskBody tr').forEach(r => {
+            const matchSearch   = !search   || r.dataset.name.includes(search) || r.dataset.id.toLowerCase().includes(search);
+            const matchType     = !type     || r.dataset.type === type;
+            const matchPriority = !priority || r.dataset.priority === priority;
+            const matchStatus   = !status   || r.dataset.status === status;
+            const matchAssignee = !assignee || r.dataset.assignee === assignee;
+            r.style.display = (matchSearch && matchType && matchPriority && matchStatus && matchAssignee) ? '' : 'none';
+        });
+        checkEmpty();
+    }
+
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('filterType').value = '';
+        document.getElementById('filterPriority').value = '';
+        document.getElementById('filterStatus').value = '';
+        document.getElementById('filterAssignee').value = '';
+        applyFilters();
+    }
+
+    function checkEmpty() {
+        const visible = [...document.querySelectorAll('#taskBody tr')].some(r => r.style.display !== 'none');
+        document.getElementById('emptyState').style.display = visible ? 'none' : 'block';
+    }
+
+    /* ── Modal helpers ── */
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    /* ── View modal ── */
+    function openViewModal(taskId) {
+        // In a real app, fetch task data by taskId. For demo use static data.
+        openModal('viewModal');
+    }
+
+    /* ── View modal tabs ── */
+    function switchVTab(el, paneId) {
+        document.querySelectorAll('.vtab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.vtab-pane').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById(paneId).classList.add('active');
+    }
+
+    /* ── Complete modal ── */
+    function openCompleteModal(taskId, studentName) {
+        document.getElementById('completeTaskId').textContent = taskId;
+        document.getElementById('completeStudentName').textContent = studentName;
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('complete_date').value = today;
+        document.getElementById('complete_note').value = '';
+        openModal('completeModal');
+    }
+
+    function submitComplete() {
+        const note = document.getElementById('complete_note').value.trim();
+        if (!note) { alert('Please enter a resolution summary.'); return; }
+        closeModal('completeModal');
+        alert('Task marked as complete.');
+    }
+
+    /* ── Reassign modal ── */
+    function openReassignModal(taskId, studentName) {
+        document.getElementById('reassignTaskId').textContent = taskId;
+        document.getElementById('reassignStudentName').textContent = studentName;
+        document.getElementById('reassign_to').value = '';
+        document.getElementById('reassign_reason').value = '';
+        openModal('reassignModal');
+    }
+
+    function submitReassign() {
+        const to = document.getElementById('reassign_to').value;
+        if (!to) { alert('Please select a new assignee.'); return; }
+        closeModal('reassignModal');
+        alert('Task reassigned to ' + to + '.');
+    }
+
+    /* ── Create modal ── */
+    const taskDescriptions = {
+        'check-in':     'Student must redo the check-in for this semester. Please schedule a session with the student.',
+        'lease':        'Student must upload a signed lease agreement for their current accommodation.',
+        'transcript':   'Student must upload their latest official academic transcript.',
+        'id':           'Student must upload a clear certified copy of their ID document.',
+        'income':       'Student must upload proof of household income (payslip, SASSA letter, or sworn affidavit).',
+        'bank':         'Student must upload a bank statement covering the last 3 months.',
+        'registration': 'Student must upload proof of registration for the current academic year.',
+        'contact':      'Student must update their contact number and emergency contact details.',
+        'banking':      'Student must provide updated banking details for payment processing.',
+        'other':        '',
+    };
+
+    function prefillTaskDesc(type) {
+        const ta = document.getElementById('ct_desc');
+        ta.value = taskDescriptions[type] || '';
+    }
+
+    /* ── Set default create-task due date (14 days from today) ── */
+    (function () {
+        const d = new Date();
+        d.setDate(d.getDate() + 14);
+        const el = document.getElementById('ct_due');
+        if (el) el.value = d.toISOString().split('T')[0];
+    })();
+
+    function submitCreateTask() {
+        const student  = document.getElementById('ct_student').value.trim();
+        const type     = document.getElementById('ct_type').value;
+        const desc     = document.getElementById('ct_desc').value.trim();
+        const assignee = document.getElementById('ct_assignee').value;
+        const priority = document.getElementById('ct_priority').value;
+        const due      = document.getElementById('ct_due').value;
+        if (!student || !type || !desc || !assignee || !priority || !due) {
+            alert('Please complete all required fields.');
+            return;
+        }
+        closeModal('createModal');
+        alert('Task created and assigned to ' + assignee + '.');
+    }
+</script>
+</body>
+</html>
