@@ -706,7 +706,8 @@ input[name="student-tabs"] { display: none; }
 #tab4:checked ~ .tabs label[for="tab4"],
 #tab5:checked ~ .tabs label[for="tab5"],
 #tab6:checked ~ .tabs label[for="tab6"],
-#tab7:checked ~ .tabs label[for="tab7"] {
+#tab7:checked ~ .tabs label[for="tab7"],
+#tab8:checked ~ .tabs label[for="tab8"] {
     background: #fff;
     color: var(--primary-color);
     border-color: #dee2e6;
@@ -721,7 +722,8 @@ input[name="student-tabs"] { display: none; }
 #tab4:checked ~ .tab-content-4,
 #tab5:checked ~ .tab-content-5,
 #tab6:checked ~ .tab-content-6,
-#tab7:checked ~ .tab-content-7 { display: block; }
+#tab7:checked ~ .tab-content-7,
+#tab8:checked ~ .tab-content-8 { display: block; }
 
 /* ===== Buttons ===== */
 .btn-primary-action {
