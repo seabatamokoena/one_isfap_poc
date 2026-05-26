@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Check-In – ISFAP</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="OneISFAPStyle.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        /* ── Step wizard ── */
+        .step-wizard {
+            display: flex; align-items: center; gap: 0;
+            margin-bottom: 28px; background: #fff;
+            border-radius: 12px; padding: 18px 24px;
+            box-shadow: 0 3px 12px rgba(9,71,129,0.09);
+        }
+        .step-item { display: flex; align-items: center; flex: 1; }
+        .step-item:last-child { flex: none; }
+        .step-circle {
+            width: 38px; height: 38px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.95rem; font-weight: 800; flex-shrink: 0;
+            border: 2.5px solid #d1dce8; background: #fff; color: #94a3b8;
+            transition: all 0.25s;
+        }
+        .step-circle.active  { background: #094781; border-color: #094781; color: #fff; }
+        .step-circle.done    { background: #059669; border-color: #059669; color: #fff; }
+        .step-label {
+            display: flex; flex-direction: column; margin-left: 10px;
+        }
+        .step-label span { font-size: 0.72rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .step-label strong { font-size: 0.88rem; color: #334155; font-weight: 700; }
+        .step-label strong.active { color: #094781; }
+        .step-connector { flex: 1; height: 2px; background: #e2e8f0; margin: 0 12px; border-radius: 2px; }
+        .step-connector.done { background: #059669; }
+
+        /* ── Student header card ── */
+        .student-hdr {
+            background: #fff;
+            border-radius: 12px; padding: 18px 24px;
+            box-shadow: 0 3px 12px rgba(9,71,129,0.09);
+            display: flex; align-items: center; gap: 18px;
+            margin-bottom: 22px; border-left: 5px solid #094781;
+        }
+        .student-avatar {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: linear-gradient(135deg,#094781,#1093DB);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: #fff; font-weight: 800; flex-shrink: 0;
+        }
+        .student-meta label { font-size: 0.73rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+        .student-meta p { margin: 0; font-size: 0.83rem; color: #64748b; }
+
+        /* ── Section panel ── */
+        .section-panel { display: none; }
+        .section-panel.active { display: block; }
+
+        .section-header {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 20px; padding-bottom: 14px;
+            border-bottom: 2px solid #e8eef5;
+        }
+        .section-icon {
+            width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .si-academic  { background: #dbeafe; color: #1e40af; }
+        .si-psycho    { background: #ede9fe; color: #5b21b6; }
+        .si-accom     { background: #d1fae5; color: #065f46; }
+        .si-review    { background: #fef3c7; color: #92400e; }
+
+        /* ── Question cards ── */
+        .q-card {
+            background: #fff; border-radius: 12px;
+            padding: 20px 24px; margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(9,71,129,0.07);
+            border: 1.5px solid #e8eef5; transition: border-color 0.2s;
+        }
+        .q-card:focus-within { border-color: #094781; }
+        .q-num {
+            font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 6px;
+        }
+        .q-text {
+            font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 14px;
+        }
+        .q-hint { font-size: 0.8rem; color: #64748b; margin-bottom: 12px; margin-top: -8px; }
+
+        /* ── Radio pill options ── */
+        .radio-group { display: flex; flex-direction: column; gap: 8px; }
+        .radio-pill {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-radius: 9px;
+            border: 1.5px solid #e2e8f0; cursor: pointer;
+            transition: all 0.15s; background: #fff;
+        }
+        .radio-pill:hover { border-color: #94aec7; background: #f0f8ff; }
+        .radio-pill input[type="radio"] { accent-color: #094781; width: 16px; height: 16px; flex-shrink: 0; }
+        .radio-pill.selected { border-color: #094781; background: #e8f1fb; }
+        .rp-label { font-size: 0.88rem; font-weight: 600; color: #334155; }
+        .rp-sub   { font-size: 0.76rem; color: #64748b; }
+
+        /* ── Accommodation option cards ── */
+        .accom-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+        .accom-card {
+            border: 2px solid #e2e8f0; border-radius: 12px;
+            padding: 20px 16px; cursor: pointer; text-align: center;
+            transition: all 0.2s; background: #fff; position: relative;
+        }
+        .accom-card:hover { border-color: #094781; background: #f0f8ff; }
+        .accom-card.selected { border-color: #094781; background: #e8f1fb; box-shadow: 0 0 0 3px rgba(9,71,129,0.12); }
+        .accom-card.selected::after {
+            content: '\F272'; font-family: "bootstrap-icons"; position: absolute;
+            top: 10px; right: 12px; font-size: 1rem; color: #094781; font-weight: 900;
+        }
+        .accom-icon { font-size: 2rem; margin-bottom: 10px; }
+        .accom-title { font-size: 0.88rem; font-weight: 700; color: #1e293b; }
+        .accom-sub { font-size: 0.76rem; color: #64748b; margin-top: 4px; }
+        .accom-card input[type="radio"] { display: none; }
+
+        /* ── Likert / rating scale ── */
+        .likert-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .likert-btn {
+            flex: 1; min-width: 60px; padding: 10px 6px; border-radius: 9px;
+            border: 1.5px solid #e2e8f0; cursor: pointer; text-align: center;
+            background: #fff; transition: all 0.15s;
+        }
+        .likert-btn:hover { border-color: #094781; background: #f0f8ff; }
+        .likert-btn.sel { border-color: #094781; background: #094781; color: #fff; }
+        .likert-btn.sel .lb-emoji { filter: grayscale(0); }
+        .lb-emoji { font-size: 1.4rem; display: block; }
+        .lb-label { font-size: 0.7rem; font-weight: 700; margin-top: 4px; display: block; }
+
+        /* ── Conditional reveal ── */
+        .cond-reveal { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #e2e8f0; }
+        .cond-reveal.show { display: block; }
+
+        /* ── File upload zone ── */
+        .upload-zone {
+            border: 2px dashed #acc8cb; border-radius: 10px;
+            padding: 28px 20px; text-align: center; background: #f8fcff;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .upload-zone:hover { border-color: #094781; background: #e8f1fb; }
+        .upload-zone.has-file { border-color: #059669; background: #f0fdf4; border-style: solid; }
+        .upload-zone input[type="file"] { display: none; }
+        .upload-icon { font-size: 2rem; color: #94a3b8; margin-bottom: 8px; }
+        .upload-zone.has-file .upload-icon { color: #059669; }
+        .upload-text { font-size: 0.86rem; color: #64748b; }
+        .upload-file-name { font-size: 0.84rem; font-weight: 700; color: #059669; margin-top: 6px; }
+
+        /* ── Address & map ── */
+        .addr-row { display: flex; gap: 10px; align-items: flex-end; }
+        .addr-row input[type="text"] {
+            flex: 1; padding: 10px 14px; border: 1.5px solid #d1dce8;
+            border-radius: 8px; font-size: 0.88rem; color: #1e293b;
+        }
+        .addr-row input[type="text"]:focus { outline: none; border-color: #094781; }
+        .btn-locate {
+            padding: 10px 18px; background: #094781; color: #fff;
+            border: none; border-radius: 8px; font-size: 0.86rem;
+            font-weight: 700; cursor: pointer; white-space: nowrap;
+            display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+        }
+        .btn-locate:hover { background: #0d6ebd; }
+        .btn-locate.loading { opacity: 0.7; pointer-events: none; }
+
+        #mapWrapper { display: none; margin-top: 16px; }
+        #mapWrapper.show { display: block; }
+        #map {
+            height: 300px; border-radius: 10px;
+            border: 1.5px solid #acc8cb;
+            box-shadow: 0 4px 14px rgba(9,71,129,0.12);
+            z-index: 0;
+        }
+        .map-info {
+            display: flex; gap: 14px; margin-top: 12px; flex-wrap: wrap;
+        }
+        .map-chip {
+            display: flex; align-items: center; gap: 7px;
+            background: #fff; border: 1.5px solid #e2e8f0; border-radius: 8px;
+            padding: 8px 14px; font-size: 0.83rem;
+        }
+        .map-chip i { color: #094781; font-size: 1rem; }
+        .map-chip strong { color: #094781; }
+        .map-error { color: #dc2626; font-size: 0.83rem; margin-top: 8px; display: none; }
+
+        /* ── Textarea ── */
+        .q-textarea {
+            width: 100%; padding: 10px 14px; border: 1.5px solid #d1dce8;
+            border-radius: 8px; font-size: 0.87rem; color: #1e293b;
+            resize: vertical; min-height: 80px; box-sizing: border-box;
+            font-family: inherit;
+        }
+        .q-textarea:focus { outline: none; border-color: #094781; }
+
+        /* ── Nav buttons ── */
+        .form-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 24px; padding-top: 18px; border-top: 1px solid #e8eef5;
+        }
+        .btn-nav-prev {
+            padding: 11px 22px; background: #fff; color: #475569;
+            border: 1.5px solid #d1dce8; border-radius: 8px;
+            font-size: 0.88rem; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; gap: 7px; transition: all 0.15s;
+        }
+        .btn-nav-prev:hover { border-color: #094781; color: #094781; }
+        .btn-nav-next {
+            padding: 11px 26px; background: linear-gradient(135deg,#094781,#1093DB);
+            color: #fff; border: none; border-radius: 8px;
+            font-size: 0.88rem; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 14px rgba(9,71,129,0.3); transition: all 0.15s;
+        }
+        .btn-nav-next:hover { box-shadow: 0 6px 18px rgba(9,71,129,0.4); transform: translateY(-1px); }
+
+        /* ── Review section ── */
+        .review-section { margin-bottom: 20px; }
+        .review-section-title {
+            font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.05em; color: #094781; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 7px;
+        }
+        .review-row {
+            display: flex; gap: 10px; padding: 9px 0;
+            border-bottom: 1px solid #f0f4f8; align-items: flex-start;
+        }
+        .review-row:last-child { border-bottom: none; }
+        .review-q { flex: 1; font-size: 0.83rem; color: #64748b; }
+        .review-a { flex: 1.5; font-size: 0.85rem; font-weight: 700; color: #1e293b; }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            z-index: 1000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff; border-radius: 14px; width: 480px;
+            max-width: 96vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            text-align: center; padding: 40px 32px;
+        }
+        .success-icon { font-size: 3.5rem; color: #059669; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <!-- Students (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="checkin.html">Check-In Monitor</a></li>
+                <li><a href="checkin_form.html" class="active">New Check-In</a></li>
+                <li><a href="watchlist.html">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-file-earmark-person-fill"></i> Applications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="applications.html">All Applications</a></li>
+                <li><a href="#">Application Documents</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="tasks.html">My Tasks</a></li>
+                <li><a href="tasks.html">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="#">Agreements</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-check-fill"></i> Funding Selection
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funding_selection.html">Student Selection</a></li>
+                <li><a href="shortlist.html">Shortlisted Students</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-heart-pulse-fill"></i> Student Wellness
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="wellness.html">Wellness Overview</a></li>
+                <li><a href="#">Goals</a></li>
+                <li><a href="#">Achievements</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <details>
+            <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="allowance_limits.html">Allowance Limits</a></li>
+                <li><a href="#">Academic Calendar</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Audit Log</a></li>
+            </ul>
+        </details>
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="login.html" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="#">Dashboard</a>
+        <i class="bi bi-chevron-right"></i>
+        <a href="checkin.html">Check-In Monitor</a>
+        <i class="bi bi-chevron-right"></i>
+        <span>New Check-In</span>
+    </div>
+
+    <!-- Page header -->
+    <div class="page-header">
+        <h2><i class="bi bi-clipboard2-check-fill"></i> Student Check-In Form</h2>
+        <div style="font-size:0.83rem;color:#64748b;">Semester 1 · 2026</div>
+    </div>
+
+    <!-- Student header card -->
+    <div class="student-hdr">
+        <div class="student-avatar">SN</div>
+        <div style="flex:1;">
+            <div style="font-size:1.05rem;font-weight:800;color:#1e293b;">Sipho Ndlovu</div>
+            <p>STU-2025-0014 &nbsp;·&nbsp; Bachelor of Engineering (Mechanical) · Year 2 &nbsp;·&nbsp; University of Johannesburg</p>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:0.75rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Programme Manager</div>
+            <div style="font-size:0.88rem;font-weight:700;color:#094781;">Thabo Letlela</div>
+        </div>
+    </div>
+
+    <!-- Step wizard -->
+    <div class="step-wizard">
+        <div class="step-item">
+            <div class="step-circle active" id="sc-1"><i class="bi bi-mortarboard-fill"></i></div>
+            <div class="step-label">
+                <span>Step 1</span>
+                <strong class="active">Academic</strong>
+            </div>
+        </div>
+        <div class="step-connector" id="conn-1"></div>
+        <div class="step-item">
+            <div class="step-circle" id="sc-2"><i class="bi bi-heart-fill"></i></div>
+            <div class="step-label">
+                <span>Step 2</span>
+                <strong id="sl-2">Psycho-Social</strong>
+            </div>
+        </div>
+        <div class="step-connector" id="conn-2"></div>
+        <div class="step-item">
+            <div class="step-circle" id="sc-3"><i class="bi bi-house-door-fill"></i></div>
+            <div class="step-label">
+                <span>Step 3</span>
+                <strong id="sl-3">Accommodation</strong>
+            </div>
+        </div>
+        <div class="step-connector" id="conn-3"></div>
+        <div class="step-item">
+            <div class="step-circle" id="sc-4"><i class="bi bi-check-all"></i></div>
+            <div class="step-label">
+                <span>Step 4</span>
+                <strong id="sl-4">Review &amp; Submit</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- STEP 1: ACADEMIC              -->
+    <!-- ============================= -->
+    <div class="section-panel active" id="step-1">
+        <div class="panel">
+            <div class="section-header">
+                <div class="section-icon si-academic"><i class="bi bi-mortarboard-fill"></i></div>
+                <div>
+                    <div style="font-size:1rem;font-weight:800;color:#1e293b;">Academic Check-In</div>
+                    <div style="font-size:0.82rem;color:#64748b;">Questions about your academic progress and needs this semester.</div>
+                </div>
+            </div>
+
+            <!-- Q1 -->
+            <div class="q-card">
+                <div class="q-num">Question 1 of 3</div>
+                <div class="q-text">How would you rate your overall academic performance so far this semester?</div>
+                <div class="radio-group" id="acad-q1">
+                    <label class="radio-pill" onclick="selectPill(this,'acad-q1')">
+                        <input type="radio" name="acad_performance" value="excellent">
+                        <div><div class="rp-label">🏆 Excellent</div><div class="rp-sub">Averaging 75% or above across all modules</div></div>
+                    </label>
+                    <label class="radio-pill" onclick="selectPill(this,'acad-q1')">
+                        <input type="radio" name="acad_performance" value="good">
+                        <div><div class="rp-label">👍 Good</div><div class="rp-sub">Averaging between 60% and 74%</div></div>
+                    </label>
+                    <label class="radio-pill" onclick="selectPill(this,'acad-q1')">
+                        <input type="radio" name="acad_performance" value="average">
+                        <div><div class="rp-label">😐 Average</div><div class="rp-sub">Averaging between 50% and 59%</div></div>
+                    </label>
+                    <label class="radio-pill" onclick="selectPill(this,'acad-q1')">
+                        <input type="radio" name="acad_performance" value="struggling">
+                        <div><div class="rp-label">⚠️ Struggling</div><div class="rp-sub">Below 50% — finding it difficult to keep up</div></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="q-card">
+                <div class="q-num">Question 2 of 3</div>
+                <div class="q-text">Are you attending more than 80% of your scheduled lectures and tutorials?</div>
+                <div class="radio-group" id="acad-q2">
+                    <label class="radio-pill" onclick="selectPill(this,'acad-q2'); toggleReveal('acad-q2-no', false)">
+                        <input type="radio" name="acad_attendance" value="yes">
+                        <div><div class="rp-label">✅ Yes</div><div class="rp-sub">I attend the vast majority of my scheduled sessions</div></div>
+                    </label>
+                    <label class="radio-pill" onclick="selectPill(this,'acad-q2'); toggleReveal('acad-q2-no', true)">
+                        <input type="radio" name="acad_attendance" value="no">
+                        <div><div class="rp-label">❌ No</div><div class="rp-sub">I have missed a significant number of sessions</div></div>
+                    </label>
+                </div>
+                <div class="cond-reveal" id="acad-q2-no">
+                    <label style="font-size:0.82rem;font-weight:700;color:#555;display:block;margin-bottom:6px;">Please explain the reason(s) for your absences:</label>
+                    <textarea class="q-textarea" placeholder="e.g. health issues, transport problems, family circumstances…"></textarea>
+                </div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="q-card">
+                <div class="q-num">Question 3 of 3</div>
+                <div class="q-text">Do you require any additional academic support or tutoring for any of your modules?</div>
+                <div class="radio-group" id="acad-q3">
+                    <label class="radio-pill" onclick="selectPill(this,'acad-q3'); toggleReveal('acad-q3-yes', true)">
+                        <input type="radio" name="acad_support" value="yes">
+                        <div><div class="rp-label">✅ Yes, I need support</div><div class="rp-sub">I would benefit from tutoring or additional help</div></div>
+                    </label>
+                    <label class="radio-pill" onclick="selectPill(this,'acad-q3'); toggleReveal('acad-q3-yes', false)">
+                        <input type="radio" name="acad_support" value="no">
+                        <div><div class="rp-label">🙂 No, I am coping well</div><div class="rp-sub">I am managing my modules independently</div></div>
+                    </label>
+                </div>
+                <div class="cond-reveal" id="acad-q3-yes">
+                    <label style="font-size:0.82rem;font-weight:700;color:#555;display:block;margin-bottom:6px;">Which module(s) do you need support in?</label>
+                    <textarea class="q-textarea" placeholder="List the module name(s) and describe what kind of help would be most useful…"></textarea>
+                </div>
+            </div>
+
+            <div class="form-nav">
+                <span></span>
+                <button class="btn-nav-next" onclick="goToStep(2)">
+                    Next: Psycho-Social <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- STEP 2: PSYCHO-SOCIAL        -->
+    <!-- ============================= -->
+    <div class="section-panel" id="step-2">
+        <div class="panel">
+            <div class="section-header">
+                <div class="section-icon si-psycho"><i class="bi bi-heart-fill"></i></div>
+                <div>
+                    <div style="font-size:1rem;font-weight:800;color:#1e293b;">Psycho-Social Check-In</div>
+                    <div style="font-size:0.82rem;color:#64748b;">Your wellbeing matters. Please answer honestly — responses are confidential.</div>
+                </div>
+            </div>
+
+            <!-- Q1 -->
+            <div class="q-card">
+                <div class="q-num">Question 1 of 3</div>
+                <div class="q-text">How would you rate your overall mental and emotional wellbeing this month?</div>
+                <div class="q-hint">Select the option that best describes how you have been feeling.</div>
+                <div class="likert-row" id="psycho-q1">
+                    <div class="likert-btn" onclick="selectLikert(this,'psycho-q1','Very Poor')">
+                        <span class="lb-emoji">😞</span>
+                        <span class="lb-label">Very Poor</span>
+                    </div>
+                    <div class="likert-btn" onclick="selectLikert(this,'psycho-q1','Poor')">
+                        <span class="lb-emoji">😟</span>
+                        <span class="lb-label">Poor</span>
+                    </div>
+                    <div class="likert-btn" onclick="selectLikert(this,'psycho-q1','Okay')">
+                        <span class="lb-emoji">😐</span>
+                        <span class="lb-label">Okay</span>
+                    </div>
+                    <div class="likert-btn" onclick="selectLikert(this,'psycho-q1','Good')">
+                        <span class="lb-emoji">🙂</span>
+                        <span class="lb-label">Good</span>
+                    </div>
+                    <div class="likert-btn" onclick="selectLikert(this,'psycho-q1','Excellent')">
+                        <span class="lb-emoji">😊</span>
+                        <span class="lb-label">Excellent</span>
+                    </div>
+                </div>
+                <input type="hidden" id="psycho-q1-val" value="">
+            </div>
+
+            <!-- Q2 -->
+            <div class="q-card">
+                <div class="q-num">Question 2 of 3</div>
+                <div class="q-text">Are you currently experiencing any personal, social or emotional challenges that may be affecting your studies?</div>
+                <div class="radio-group" id="psycho-q2">
+                    <label class="radio-pill" onclick="selectPill(this,'psycho-q2'); toggleReveal('psycho-q2-yes', true)">
+                        <input type="radio" name="psycho_challenges" value="yes">
+                        <div><div class="rp-label">✅ Yes</div><div class="rp-sub">I am experiencing challenges I would like to share</div></div>
+                    </label>
+                    <label class="radio-pill" onclick="selectPill(this,'psycho-q2'); toggleReveal('psycho-q2-yes', false)">
+                        <input type="radio" name="psycho_challenges" value="no">
+                        <div><div class="rp-label">🙂 No</div><div class="rp-sub">I am not experiencing significant challenges at the moment</div></div>
+                    </label>
+                </div>
+                <div class="cond-reveal" id="psycho-q2-yes">
+                    <label style="font-size:0.82rem;font-weight:700;color:#555;display:block;margin-bottom:6px;">Please describe the challenges you are facing (this will only be shared with your Programme Manager):</label>
+                    <textarea class="q-textarea" placeholder="Share as much or as little as you are comfortable with…"></textarea>
+                </div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="q-card">
+                <div class="q-num">Question 3 of 3</div>
+                <div class="q-text">Do you have a reliable support system you can turn to when you are struggling?</div>
+                <div class="q-hint">A support system may include family members, friends, a mentor, a peer, or a counsellor.</div>
+                <div class="radio-group" id="psycho-q3">
+                    <label class="radio-pill" onclick="selectPill(this,'psycho-q3')">
+                        <input type="radio" name="psycho_support" value="yes">
+                        <div><div class="rp-label">✅ Yes, I have strong support</div><div class="rp-sub">I have people I can rely on and talk to</div></div>
+                    </label>
+                    <label class="radio-pill" onclick="selectPill(this,'psycho-q3')">
+                        <input type="radio" name="psycho_support" value="somewhat">
+                        <div><div class="rp-label">🤔 Somewhat</div><div class="rp-sub">I have some support but it is limited or inconsistent</div></div>
+                    </label>
+                    <label class="radio-pill" onclick="selectPill(this,'psycho-q3')">
+                        <input type="radio" name="psycho_support" value="no">
+                        <div><div class="rp-label">😔 No, I feel isolated</div><div class="rp-sub">I do not have anyone I feel comfortable reaching out to</div></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-nav">
+                <button class="btn-nav-prev" onclick="goToStep(1)">
+                    <i class="bi bi-arrow-left"></i> Back
+                </button>
+                <button class="btn-nav-next" onclick="goToStep(3)">
+                    Next: Accommodation <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- STEP 3: ACCOMMODATION         -->
+    <!-- ============================= -->
+    <div class="section-panel" id="step-3">
+        <div class="panel">
+            <div class="section-header">
+                <div class="section-icon si-accom"><i class="bi bi-house-door-fill"></i></div>
+                <div>
+                    <div style="font-size:1rem;font-weight:800;color:#1e293b;">Accommodation Check-In</div>
+                    <div style="font-size:0.82rem;color:#64748b;">Tell us about your current living situation so we can ensure your allowances are correctly allocated.</div>
+                </div>
+            </div>
+
+            <!-- Q1 – Accommodation type -->
+            <div class="q-card">
+                <div class="q-num">Question 1 of 3</div>
+                <div class="q-text">Where are you currently staying?</div>
+                <div class="q-hint">Select the option that best describes your current accommodation arrangement.</div>
+                <div class="accom-grid">
+                    <div class="accom-card" onclick="selectAccom(this,'res-meal')">
+                        <input type="radio" name="accom_type" value="res-meal">
+                        <div class="accom-icon">🏛️</div>
+                        <div class="accom-title">University Residence</div>
+                        <div class="accom-sub">With meals included</div>
+                    </div>
+                    <div class="accom-card" onclick="selectAccom(this,'res-nomeal')">
+                        <input type="radio" name="accom_type" value="res-nomeal">
+                        <div class="accom-icon">🏠</div>
+                        <div class="accom-title">University Residence</div>
+                        <div class="accom-sub">Self-catering (no meals)</div>
+                    </div>
+                    <div class="accom-card" onclick="selectAccom(this,'private')">
+                        <input type="radio" name="accom_type" value="private">
+                        <div class="accom-icon">🏘️</div>
+                        <div class="accom-title">Private Accommodation</div>
+                        <div class="accom-sub">Renting outside of campus</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q2 – Lease agreement (private only) -->
+            <div class="q-card cond-reveal" id="q-lease">
+                <div class="q-num">Question 2 of 3</div>
+                <div class="q-text">Please upload your current signed lease agreement.</div>
+                <div class="q-hint">Accepted formats: PDF, JPG, PNG. Maximum file size: 5 MB.</div>
+
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('leaseFile').click()"
+                     ondragover="event.preventDefault();this.style.borderColor='#094781';"
+                     ondragleave="this.style.borderColor=''"
+                     ondrop="handleDrop(event)">
+                    <input type="file" id="leaseFile" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(this)">
+                    <div class="upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                    <div class="upload-text">Click to browse or drag &amp; drop your lease agreement here</div>
+                    <div class="upload-file-name" id="fileName"></div>
+                </div>
+            </div>
+
+            <!-- Q3 – Address & map (private only) -->
+            <div class="q-card cond-reveal" id="q-address">
+                <div class="q-num">Question 3 of 3</div>
+                <div class="q-text">What is your residential address?</div>
+                <div class="q-hint">Enter your full street address. The system will locate it on the map and calculate the distance to your campus.</div>
+
+                <div class="addr-row">
+                    <input type="text" id="addressInput" placeholder="e.g. 12 University Road, Auckland Park, Johannesburg, 2092">
+                    <button class="btn-locate" id="locateBtn" onclick="locateAddress()">
+                        <i class="bi bi-geo-alt-fill"></i> Locate on Map
+                    </button>
+                </div>
+                <div class="map-error" id="mapError"><i class="bi bi-exclamation-triangle"></i> Address not found. Please try a more specific address.</div>
+
+                <div id="mapWrapper">
+                    <div id="map"></div>
+                    <div class="map-info" id="mapInfo">
+                        <div class="map-chip">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <div>
+                                <div style="font-size:0.72rem;color:#94a3b8;font-weight:600;">Student Address</div>
+                                <strong id="mapAddrDisplay">—</strong>
+                            </div>
+                        </div>
+                        <div class="map-chip">
+                            <i class="bi bi-building-fill"></i>
+                            <div>
+                                <div style="font-size:0.72rem;color:#94a3b8;font-weight:600;">Campus</div>
+                                <strong>UJ Auckland Park Campus</strong>
+                            </div>
+                        </div>
+                        <div class="map-chip" style="border-color:#094781;background:#e8f1fb;">
+                            <i class="bi bi-signpost-split-fill"></i>
+                            <div>
+                                <div style="font-size:0.72rem;color:#94a3b8;font-weight:600;">Distance to Campus</div>
+                                <strong id="distDisplay" style="font-size:1rem;">— km</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fallback Q2+Q3 for non-private (single card) -->
+            <div class="q-card cond-reveal" id="q-resname">
+                <div class="q-num">Question 2 of 3</div>
+                <div class="q-text">Please provide the name of your residence.</div>
+                <input type="text" id="resName" placeholder="e.g. Milner Hall, South Campus Residence Block B…"
+                    style="width:100%;padding:10px 14px;border:1.5px solid #d1dce8;border-radius:8px;font-size:0.88rem;box-sizing:border-box;">
+            </div>
+            <div class="q-card cond-reveal" id="q-mealplan">
+                <div class="q-num">Question 3 of 3</div>
+                <div class="q-text">Are you satisfied with your current accommodation arrangement?</div>
+                <div class="radio-group" id="accom-q3">
+                    <label class="radio-pill" onclick="selectPill(this,'accom-q3')">
+                        <input type="radio" name="accom_satisfied" value="yes">
+                        <div><div class="rp-label">✅ Yes, I am satisfied</div><div class="rp-sub">My accommodation meets my needs</div></div>
+                    </label>
+                    <label class="radio-pill" onclick="selectPill(this,'accom-q3'); toggleReveal('accom-concern',true)">
+                        <input type="radio" name="accom_satisfied" value="no">
+                        <div><div class="rp-label">⚠️ No, I have concerns</div><div class="rp-sub">There are issues I would like to raise</div></div>
+                    </label>
+                </div>
+                <div class="cond-reveal" id="accom-concern">
+                    <label style="font-size:0.82rem;font-weight:700;color:#555;display:block;margin-bottom:6px;">Please describe your concerns:</label>
+                    <textarea class="q-textarea" placeholder="Describe any issues with your accommodation arrangement…"></textarea>
+                </div>
+            </div>
+
+            <div class="form-nav">
+                <button class="btn-nav-prev" onclick="goToStep(2)">
+                    <i class="bi bi-arrow-left"></i> Back
+                </button>
+                <button class="btn-nav-next" onclick="goToStep(4)">
+                    Review Answers <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- STEP 4: REVIEW & SUBMIT       -->
+    <!-- ============================= -->
+    <div class="section-panel" id="step-4">
+        <div class="panel">
+            <div class="section-header">
+                <div class="section-icon si-review"><i class="bi bi-check-all"></i></div>
+                <div>
+                    <div style="font-size:1rem;font-weight:800;color:#1e293b;">Review &amp; Submit</div>
+                    <div style="font-size:0.82rem;color:#64748b;">Please review all responses before submitting the check-in record.</div>
+                </div>
+            </div>
+
+            <!-- Academic review -->
+            <div class="review-section">
+                <div class="review-section-title">
+                    <i class="bi bi-mortarboard-fill"></i> Academic
+                </div>
+                <div class="review-row">
+                    <div class="review-q">Academic performance rating</div>
+                    <div class="review-a" id="rev-acad-perf">—</div>
+                </div>
+                <div class="review-row">
+                    <div class="review-q">Attending &gt;80% of lectures?</div>
+                    <div class="review-a" id="rev-acad-attend">—</div>
+                </div>
+                <div class="review-row">
+                    <div class="review-q">Requires academic support?</div>
+                    <div class="review-a" id="rev-acad-support">—</div>
+                </div>
+            </div>
+
+            <!-- Psycho-social review -->
+            <div class="review-section">
+                <div class="review-section-title">
+                    <i class="bi bi-heart-fill"></i> Psycho-Social
+                </div>
+                <div class="review-row">
+                    <div class="review-q">Wellbeing rating</div>
+                    <div class="review-a" id="rev-psycho-well">—</div>
+                </div>
+                <div class="review-row">
+                    <div class="review-q">Experiencing challenges?</div>
+                    <div class="review-a" id="rev-psycho-chall">—</div>
+                </div>
+                <div class="review-row">
+                    <div class="review-q">Has support system?</div>
+                    <div class="review-a" id="rev-psycho-supp">—</div>
+                </div>
+            </div>
+
+            <!-- Accommodation review -->
+            <div class="review-section">
+                <div class="review-section-title">
+                    <i class="bi bi-house-door-fill"></i> Accommodation
+                </div>
+                <div class="review-row">
+                    <div class="review-q">Accommodation type</div>
+                    <div class="review-a" id="rev-accom-type">—</div>
+                </div>
+                <div class="review-row" id="rev-row-dist" style="display:none;">
+                    <div class="review-q">Distance to campus</div>
+                    <div class="review-a" id="rev-accom-dist">—</div>
+                </div>
+                <div class="review-row" id="rev-row-lease" style="display:none;">
+                    <div class="review-q">Lease agreement uploaded</div>
+                    <div class="review-a" id="rev-accom-lease">—</div>
+                </div>
+            </div>
+
+            <div style="background:#f0fdf4;border:1.5px solid #a7f3d0;border-radius:10px;padding:14px 18px;margin-top:8px;display:flex;align-items:center;gap:12px;">
+                <i class="bi bi-shield-check" style="font-size:1.4rem;color:#059669;flex-shrink:0;"></i>
+                <div style="font-size:0.83rem;color:#065f46;">
+                    By submitting, you confirm that all responses are accurate and truthful. This check-in record will be saved to the student's profile and is accessible to your assigned Programme Manager.
+                </div>
+            </div>
+
+            <div class="form-nav">
+                <button class="btn-nav-prev" onclick="goToStep(3)">
+                    <i class="bi bi-arrow-left"></i> Back
+                </button>
+                <button class="btn-nav-next" style="background:linear-gradient(135deg,#064e3b,#059669);box-shadow:0 4px 14px rgba(5,150,105,0.3);" onclick="submitCheckin()">
+                    <i class="bi bi-check-circle-fill"></i> Submit Check-In
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div><!-- end main-content -->
+
+
+<!-- ============================= -->
+<!-- MODAL: Success confirmation   -->
+<!-- ============================= -->
+<div class="modal-overlay" id="successModal">
+    <div class="modal-box">
+        <div class="success-icon"><i class="bi bi-check-circle-fill"></i></div>
+        <h2 style="margin:0 0 8px;color:#065f46;font-size:1.2rem;">Check-In Submitted!</h2>
+        <p style="margin:0 0 20px;color:#475569;font-size:0.88rem;">
+            Sipho Ndlovu's Semester 1 · 2026 check-in has been recorded successfully. The student's Programme Manager has been notified.
+        </p>
+        <div style="background:#f0fdf4;border-radius:8px;padding:12px 16px;margin-bottom:20px;text-align:left;">
+            <div style="font-size:0.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Reference Number</div>
+            <div style="font-size:1rem;font-weight:800;color:#059669;">CHK-2026-0514</div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;">
+            <a href="checkin.html" class="btn-nav-next" style="text-decoration:none;padding:10px 20px;">
+                <i class="bi bi-arrow-left"></i> Back to Monitor
+            </a>
+            <a href="checkin_form.html" class="btn-nav-next" style="text-decoration:none;padding:10px 20px;background:linear-gradient(135deg,#094781,#1093DB);">
+                <i class="bi bi-plus-lg"></i> New Check-In
+            </a>
+        </div>
+    </div>
+</div>
+
+
+<script>
+/* ═══════════════════════════════════════════ */
+/*  CAMPUS coordinates (UJ Auckland Park)      */
+/* ═══════════════════════════════════════════ */
+const CAMPUS_LAT  = -26.1752;
+const CAMPUS_LNG  = 27.9792;
+const CAMPUS_NAME = 'UJ Auckland Park Campus';
+
+let map = null, studentMarker = null, campusMarker = null, routeLine = null;
+let mapInited = false;
+let currentAccom = '';
+
+/* ── Step navigation ── */
+let currentStep = 1;
+function goToStep(n) {
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    document.getElementById('step-' + n).classList.add('active');
+
+    // Update wizard
+    for (let i = 1; i <= 4; i++) {
+        const sc = document.getElementById('sc-' + i);
+        const sl = document.getElementById('sl-' + i);
+        sc.classList.remove('active','done');
+        if (sl) sl.classList.remove('active');
+        if (i < n)       { sc.classList.add('done'); sc.innerHTML = '<i class="bi bi-check-lg"></i>'; }
+        else if (i === n){ sc.classList.add('active'); sc.innerHTML = scIcons[i]; if(sl) sl.classList.add('active'); }
+        else             { sc.innerHTML = scIcons[i]; }
+        if (i < 4) {
+            const conn = document.getElementById('conn-' + i);
+            conn.classList.toggle('done', i < n);
+        }
+    }
+    // Init map if entering step 3 and private accom selected
+    if (n === 3 && currentAccom === 'private') initMap();
+    // Populate review when entering step 4
+    if (n === 4) populateReview();
+
+    currentStep = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+const scIcons = {
+    1: '<i class="bi bi-mortarboard-fill"></i>',
+    2: '<i class="bi bi-heart-fill"></i>',
+    3: '<i class="bi bi-house-door-fill"></i>',
+    4: '<i class="bi bi-check-all"></i>'
+};
+
+/* ── Radio pills ── */
+function selectPill(el, groupId) {
+    document.querySelectorAll('#' + groupId + ' .radio-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+/* ── Conditional reveal ── */
+function toggleReveal(id, show) {
+    document.getElementById(id).classList.toggle('show', show);
+}
+
+/* ── Likert scale ── */
+function selectLikert(el, groupId, val) {
+    document.querySelectorAll('#' + groupId + ' .likert-btn').forEach(b => b.classList.remove('sel'));
+    el.classList.add('sel');
+    document.getElementById(groupId + '-val').value = val;
+}
+
+/* ── Accommodation selection ── */
+function selectAccom(el, type) {
+    document.querySelectorAll('.accom-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    el.querySelector('input[type="radio"]').checked = true;
+    currentAccom = type;
+
+    const isPrivate = type === 'private';
+    document.getElementById('q-lease').classList.toggle('show', isPrivate);
+    document.getElementById('q-address').classList.toggle('show', isPrivate);
+    document.getElementById('q-resname').classList.toggle('show', !isPrivate);
+    document.getElementById('q-mealplan').classList.toggle('show', !isPrivate);
+
+    if (isPrivate && !mapInited) initMap();
+}
+
+/* ── File upload ── */
+function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+        setFile(input.files[0].name);
+    }
+}
+function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadZone').style.borderColor = '';
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        setFile(e.dataTransfer.files[0].name);
+    }
+}
+function setFile(name) {
+    const zone = document.getElementById('uploadZone');
+    zone.classList.add('has-file');
+    zone.querySelector('.upload-icon').innerHTML = '<i class="bi bi-file-earmark-check-fill"></i>';
+    zone.querySelector('.upload-text').textContent = 'Lease agreement attached:';
+    document.getElementById('fileName').textContent = name;
+}
+
+/* ── Leaflet map init ── */
+function initMap() {
+    if (mapInited) return;
+    mapInited = true;
+    map = L.map('map').setView([CAMPUS_LAT, CAMPUS_LNG], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+        maxZoom: 18
+    }).addTo(map);
+    // Campus marker
+    campusMarker = L.marker([CAMPUS_LAT, CAMPUS_LNG], {
+        icon: L.divIcon({
+            className: '',
+            html: '<div style="background:#094781;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 3px 10px rgba(9,71,129,0.4);border:2px solid #fff;">🏛</div>',
+            iconSize: [36, 36], iconAnchor: [18, 18]
+        })
+    }).addTo(map).bindPopup('<strong>' + CAMPUS_NAME + '</strong>');
+}
+
+/* ── Address geocoding (Nominatim) ── */
+async function locateAddress() {
+    const addr = document.getElementById('addressInput').value.trim();
+    if (!addr) return;
+    const btn = document.getElementById('locateBtn');
+    const errEl = document.getElementById('mapError');
+    btn.classList.add('loading');
+    btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Locating…';
+    errEl.style.display = 'none';
+
+    try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&countrycodes=za&limit=1`;
+        const res = await fetch(url, { headers: { 'Accept-Language': 'en', 'User-Agent': 'ISFAPCheckinPOC/1.0' } });
+        const data = await res.json();
+
+        if (data.length === 0) {
+            errEl.style.display = 'block';
+        } else {
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            const display = data[0].display_name;
+
+            // Show map wrapper
+            const wrapper = document.getElementById('mapWrapper');
+            wrapper.classList.add('show');
+            setTimeout(() => { if (map) map.invalidateSize(); }, 100);
+
+            // Remove old student marker and line
+            if (studentMarker) map.removeLayer(studentMarker);
+            if (routeLine) map.removeLayer(routeLine);
+
+            // Add student marker
+            studentMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div style="background:#dc2626;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 3px 10px rgba(220,38,38,0.4);border:2px solid #fff;">🏠</div>',
+                    iconSize: [36, 36], iconAnchor: [18, 18]
+                })
+            }).addTo(map).bindPopup('<strong>Student Address</strong><br>' + display);
+
+            // Draw dashed line between student and campus
+            routeLine = L.polyline([[lat, lng], [CAMPUS_LAT, CAMPUS_LNG]], {
+                color: '#094781', weight: 2.5, dashArray: '8 6', opacity: 0.7
+            }).addTo(map);
+
+            // Fit map to both points
+            map.fitBounds([[lat, lng], [CAMPUS_LAT, CAMPUS_LNG]], { padding: [40, 40] });
+
+            // Distance (Haversine)
+            const dist = haversine(lat, lng, CAMPUS_LAT, CAMPUS_LNG);
+            document.getElementById('distDisplay').textContent = dist.toFixed(1) + ' km';
+            document.getElementById('mapAddrDisplay').textContent = display.split(',').slice(0, 3).join(',');
+
+            // Save for review
+            window._distKm = dist.toFixed(1);
+        }
+    } catch (e) {
+        errEl.style.display = 'block';
+        errEl.textContent = '⚠ Unable to reach location service. Please check your connection.';
+    } finally {
+        btn.classList.remove('loading');
+        btn.innerHTML = '<i class="bi bi-geo-alt-fill"></i> Locate on Map';
+    }
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/* ── Populate review ── */
+function populateReview() {
+    const getRadio = (name) => {
+        const el = document.querySelector(`input[name="${name}"]:checked`);
+        return el ? el.value : '—';
+    };
+    const labels = {
+        acad_performance: { excellent:'🏆 Excellent', good:'👍 Good', average:'😐 Average', struggling:'⚠️ Struggling' },
+        acad_attendance:  { yes:'✅ Yes', no:'❌ No' },
+        acad_support:     { yes:'✅ Yes – needs support', no:'🙂 No – coping well' },
+        psycho_challenges:{ yes:'✅ Yes', no:'🙂 No' },
+        psycho_support:   { yes:'✅ Strong support', somewhat:'🤔 Somewhat', no:'😔 Feels isolated' },
+        accom_type: { 'res-meal':'🏛️ University Residence (with meals)', 'res-nomeal':'🏠 University Residence (self-catering)', private:'🏘️ Private Accommodation' }
+    };
+
+    document.getElementById('rev-acad-perf').textContent   = labels.acad_performance[getRadio('acad_performance')] || '—';
+    document.getElementById('rev-acad-attend').textContent  = labels.acad_attendance[getRadio('acad_attendance')]   || '—';
+    document.getElementById('rev-acad-support').textContent = labels.acad_support[getRadio('acad_support')]         || '—';
+    document.getElementById('rev-psycho-well').textContent  = document.getElementById('psycho-q1-val').value || '—';
+    document.getElementById('rev-psycho-chall').textContent = labels.psycho_challenges[getRadio('psycho_challenges')] || '—';
+    document.getElementById('rev-psycho-supp').textContent  = labels.psycho_support[getRadio('psycho_support')]     || '—';
+
+    const accomVal = getRadio('accom_type');
+    document.getElementById('rev-accom-type').textContent   = labels.accom_type[accomVal] || '—';
+
+    const isPrivate = accomVal === 'private';
+    document.getElementById('rev-row-dist').style.display  = isPrivate ? '' : 'none';
+    document.getElementById('rev-row-lease').style.display = isPrivate ? '' : 'none';
+    if (isPrivate) {
+        document.getElementById('rev-accom-dist').textContent  = window._distKm ? window._distKm + ' km from campus' : '—';
+        const fn = document.getElementById('fileName').textContent;
+        document.getElementById('rev-accom-lease').textContent = fn || '—';
+    }
+}
+
+/* ── Submit ── */
+function submitCheckin() {
+    document.getElementById('successModal').classList.add('open');
+}
+</script>
+</body>
+</html>
