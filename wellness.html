@@ -1,0 +1,1106 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Wellness – ISFAP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="OneISFAPStyle.css">
+    <style>
+        /* ── Type badges ── */
+        .wtype-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 8px;
+            font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+        }
+        .wt-task    { background:#dbeafe; color:#1e40af; }
+        .wt-goal    { background:#ede9fe; color:#5b21b6; }
+        .wt-achieve { background:#d1fae5; color:#065f46; }
+
+        /* ── Status badges ── */
+        .wstatus-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 11px; border-radius: 20px;
+            font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+        }
+        .ws-notstarted { background:#f1f5f9; color:#475569; }
+        .ws-progress   { background:#fef3c7; color:#92400e; }
+        .ws-done       { background:#d1fae5; color:#065f46; }
+        .ws-overdue    { background:#fee2e2; color:#991b1b; }
+
+        /* ── Set-by chip ── */
+        .setby-chip {
+            font-size: 0.74rem; color: #64748b; font-style: italic;
+        }
+
+        /* ── Student cell ── */
+        .student-cell { display:flex; flex-direction:column; gap:2px; }
+        .student-name { font-size:0.87rem; font-weight:700; color:#1e293b; }
+        .student-id   { font-size:0.75rem; color:#94a3b8; }
+
+        /* ── Wellness banner ── */
+        .well-banner {
+            background: linear-gradient(135deg, #1e3a5f, #094781);
+            border-radius: 12px; padding: 20px 28px; color:#fff;
+            display:flex; align-items:center; gap:28px; margin-bottom:24px; flex-wrap:wrap;
+        }
+        .well-banner-icon {
+            width:56px; height:56px; background:rgba(255,255,255,0.15);
+            border-radius:14px; display:flex; align-items:center; justify-content:center;
+            font-size:1.7rem; flex-shrink:0;
+        }
+        .banner-stats { display:flex; gap:28px; margin-left:auto; flex-wrap:wrap; }
+        .bstat { text-align:center; }
+        .bstat-val { font-size:1.6rem; font-weight:800; line-height:1; }
+        .bstat-lbl { font-size:0.72rem; opacity:0.75; margin-top:3px; text-transform:uppercase; letter-spacing:0.04em; }
+
+        /* ── Page tabs ── */
+        .page-tabs { display:flex; gap:0; border-bottom:2px solid #e2e8f0; margin-bottom:20px; }
+        .page-tab {
+            padding:11px 22px; font-size:0.87rem; font-weight:700; color:#64748b;
+            cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px;
+            display:flex; align-items:center; gap:7px; transition:all 0.15s;
+        }
+        .page-tab.active { color:#094781; border-bottom-color:#094781; }
+        .page-tab-count {
+            font-size:0.72rem; font-weight:800; padding:2px 7px; border-radius:20px;
+            background:#dbeafe; color:#094781;
+        }
+
+        /* ── Progress bar ── */
+        .prog-wrap { background:#e2e8f0; border-radius:20px; height:7px; overflow:hidden; margin-top:5px; min-width:80px; }
+        .prog-bar  { height:100%; border-radius:20px; background: linear-gradient(90deg, #094781, #1093DB); }
+
+        /* ── Action icon buttons ── */
+        .act-btn {
+            width:32px; height:32px; border-radius:7px; border:1.5px solid #e2e8f0;
+            background:#fff; display:inline-flex; align-items:center; justify-content:center;
+            cursor:pointer; font-size:0.9rem; color:#475569; transition:all 0.15s;
+        }
+        .act-btn:hover         { border-color:#094781; color:#094781; background:#e8f1fb; }
+        .act-btn.green:hover   { border-color:#059669; color:#059669; background:#f0fdf4; }
+        .act-btn.red:hover     { border-color:#dc2626; color:#dc2626; background:#fff8f8; }
+
+        /* ── Modals ── */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.45);
+            z-index:1000; display:none; align-items:center; justify-content:center;
+        }
+        .modal-overlay.open { display:flex; }
+        .modal-box {
+            background:#fff; border-radius:14px;
+            width:620px; max-width:96vw; max-height:90vh; overflow-y:auto;
+            box-shadow:0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-box.wide { width:760px; }
+        .modal-header {
+            padding:18px 24px; color:#fff;
+            display:flex; align-items:center; justify-content:space-between;
+            position:sticky; top:0; z-index:1;
+        }
+        .modal-header h3 { margin:0; font-size:1rem; font-weight:700; }
+        .modal-body  { padding:24px; }
+        .modal-footer {
+            padding:14px 24px; background:#f8fafc; border-top:1px solid #e8eef5;
+            display:flex; gap:10px; justify-content:flex-end;
+            position:sticky; bottom:0;
+        }
+        .modal-close { background:none; border:none; color:#fff; font-size:1.3rem; cursor:pointer; }
+
+        .field-group { margin-bottom:16px; }
+        .field-group label { display:block; font-size:0.8rem; font-weight:700; color:#555; margin-bottom:5px; }
+        .field-group input, .field-group select, .field-group textarea {
+            width:100%; padding:9px 12px; border:1.5px solid #d1dce8; border-radius:7px;
+            font-size:0.87rem; color:#2d3a4a; background:#fff; box-sizing:border-box;
+        }
+        .field-group textarea { resize:vertical; min-height:80px; }
+        .field-group input:focus, .field-group select:focus, .field-group textarea:focus { outline:none; border-color:#094781; }
+
+        .ro-label { font-size:0.78rem; font-weight:700; color:#64748b; margin-bottom:4px; display:block; }
+        .ro-field { background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:7px; padding:9px 12px; font-size:0.87rem; color:#1e293b; }
+        .ro-group { margin-bottom:14px; }
+
+        /* ── View tabs (in modal) ── */
+        .vtabs { display:flex; border-bottom:2px solid #e8eef5; margin-bottom:18px; }
+        .vtab {
+            padding:10px 18px; font-size:0.83rem; font-weight:700; color:#64748b;
+            cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.15s;
+        }
+        .vtab.active { color:#094781; border-bottom-color:#094781; }
+        .vtab-pane { display:none; }
+        .vtab-pane.active { display:block; }
+
+        /* ── Timeline ── */
+        .tl-item { display:flex; gap:12px; padding:11px 0; border-bottom:1px solid #f0f4f8; }
+        .tl-item:last-child { border-bottom:none; }
+        .tl-dot { width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.85rem; margin-top:2px; }
+        .tl-blue  { background:#dbeafe; color:#1e40af; }
+        .tl-green { background:#d1fae5; color:#065f46; }
+        .tl-amber { background:#fef3c7; color:#92400e; }
+        .tl-red   { background:#fee2e2; color:#991b1b; }
+        .tl-time  { font-size:0.73rem; color:#94a3b8; margin-top:3px; }
+
+        /* ── Achievement card (detail view) ── */
+        .ach-card {
+            display:flex; align-items:center; gap:14px;
+            background:linear-gradient(135deg,#f0fdf4,#d1fae5);
+            border:1.5px solid #a7f3d0; border-radius:10px; padding:14px 18px; margin-bottom:12px;
+        }
+        .ach-icon { font-size:1.8rem; color:#065f46; }
+    </style>
+</head>
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<nav class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <img src="images/logo.png" alt="ISFAP Logo" style="height:64px;object-fit:contain;">
+    </a>
+    <div class="px-2 py-3 flex-1" style="overflow-y:auto;">
+
+        <a href="#" class="nav-link" style="margin-bottom:4px;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <details>
+            <summary>
+                <i class="bi bi-people-fill"></i> Students
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="student_list.html">List</a></li>
+                <li><a href="checkin.html">Check-In</a></li>
+                <li><a href="watchlist.html">Watchlist</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-file-earmark-person-fill"></i> Applications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="applications.html">All Applications</a></li>
+                <li><a href="#">Application Documents</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-badge-fill"></i> Programme Managers
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#">List</a></li>
+                <li><a href="#">Assignments</a></li>
+                <li><a href="#">Performance</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-house-fill"></i> Landlords
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="landlords.html">List</a></li>
+                <li><a href="#">Properties</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-check2-square"></i> Tasks
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="tasks.html">My Tasks</a></li>
+                <li><a href="tasks.html">All Tasks</a></li>
+                <li><a href="#">Create Task</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-chat-dots-fill"></i> Communications
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="#"><i class="bi bi-envelope"></i> Send Email</a></li>
+                <li><a href="#"><i class="bi bi-chat-text"></i> Send SMS</a></li>
+                <li><a href="#"><i class="bi bi-clock-history"></i> History</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-credit-card-fill"></i> Payments
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="payments.html">Overview</a></li>
+                <li><a href="create_batch.html">Create Batch</a></li>
+                <li><a href="payment_history.html">Payment History</a></li>
+                <li><a href="#">Reconciliation</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-bank2"></i> Funder Management
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funders.html">Funders</a></li>
+                <li><a href="#">Agreements</a></li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>
+                <i class="bi bi-person-check-fill"></i> Funding Selection
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="funding_selection.html">Student Selection</a></li>
+                <li><a href="shortlist.html">Shortlisted Students</a></li>
+            </ul>
+        </details>
+
+        <!-- Student Wellness (ACTIVE) -->
+        <details open>
+            <summary>
+                <i class="bi bi-heart-pulse-fill"></i> Student Wellness
+                <i class="bi bi-chevron-right chevron"></i>
+            </summary>
+            <ul class="sub-nav">
+                <li><a href="wellness.html" class="active">Wellness Overview</a></li>
+                <li><a href="#">Goals</a></li>
+                <li><a href="#">Achievements</a></li>
+            </ul>
+        </details>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;"></div>
+
+        <a href="#" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+        <details>
+            <summary><i class="bi bi-gear-fill"></i> Settings <i class="bi bi-chevron-right chevron"></i></summary>
+            <ul class="sub-nav">
+                <li><a href="allowance_limits.html">Allowance Limits</a></li>
+                <li><a href="#">Academic Calendar</a></li>
+                <li><a href="#">User Management</a></li>
+                <li><a href="#">Audit Log</a></li>
+            </ul>
+        </details>
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.15);">
+        <a href="login.html" class="nav-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+    </div>
+</nav>
+
+<!-- ========== MAIN CONTENT ========== -->
+<div class="main-content">
+
+    <!-- Page header -->
+    <div class="page-header">
+        <h2><i class="bi bi-heart-pulse-fill"></i> Student Wellness</h2>
+        <button class="btn-primary-action" onclick="openModal('addModal')">
+            <i class="bi bi-plus-lg"></i> Add Entry
+        </button>
+    </div>
+
+    <!-- Banner -->
+    <div class="well-banner">
+        <div class="well-banner-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+        <div>
+            <div style="font-size:1.1rem;font-weight:800;">Student Wellness Dashboard</div>
+            <div style="font-size:0.85rem;opacity:0.8;margin-top:3px;">Semester 1 · 2026 · Tasks, Goals &amp; Achievements</div>
+        </div>
+        <div class="banner-stats">
+            <div class="bstat"><div class="bstat-val">14</div><div class="bstat-lbl">Active Goals</div></div>
+            <div class="bstat"><div class="bstat-val" style="color:#6ee7b7;">22</div><div class="bstat-lbl">Achievements</div></div>
+            <div class="bstat"><div class="bstat-val" style="color:#fde68a;">9</div><div class="bstat-lbl">In Progress</div></div>
+            <div class="bstat"><div class="bstat-val" style="color:#fca5a5;">3</div><div class="bstat-lbl">Overdue</div></div>
+        </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="summary-strip" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px;">
+        <div class="stat-card total">
+            <div class="stat-icon" style="background:#e8f1fb;color:#094781;"><i class="bi bi-clipboard2-heart"></i></div>
+            <div class="stat-info">
+                <label>Wellness Tasks</label>
+                <div class="stat-card-val">18</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#7c3aed;">
+            <div class="stat-icon" style="background:#ede9fe;color:#5b21b6;"><i class="bi bi-bullseye"></i></div>
+            <div class="stat-info">
+                <label>Active Goals</label>
+                <div class="stat-card-val" style="color:#5b21b6;">14</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#16a34a;">
+            <div class="stat-icon" style="background:#dcfce7;color:#16a34a;"><i class="bi bi-trophy"></i></div>
+            <div class="stat-info">
+                <label>Achievements</label>
+                <div class="stat-card-val" style="color:#16a34a;">22</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color:#dc2626;">
+            <div class="stat-icon" style="background:#fee2e2;color:#dc2626;"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="stat-info">
+                <label>Needs Attention</label>
+                <div class="stat-card-val" style="color:#dc2626;">3</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page-level tabs -->
+    <div class="page-tabs">
+        <div class="page-tab active" onclick="switchPageTab(this,'tab-all')">
+            <i class="bi bi-grid"></i> All Entries <span class="page-tab-count">54</span>
+        </div>
+        <div class="page-tab" onclick="switchPageTab(this,'tab-tasks')">
+            <i class="bi bi-clipboard2-heart"></i> Wellness Tasks <span class="page-tab-count">18</span>
+        </div>
+        <div class="page-tab" onclick="switchPageTab(this,'tab-goals')">
+            <i class="bi bi-bullseye"></i> Goals <span class="page-tab-count">14</span>
+        </div>
+        <div class="page-tab" onclick="switchPageTab(this,'tab-achieve')">
+            <i class="bi bi-trophy"></i> Achievements <span class="page-tab-count">22</span>
+        </div>
+    </div>
+
+    <!-- Filter panel -->
+    <div class="filter-panel">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+            <div>
+                <label>Search</label>
+                <input type="search" id="searchInput" placeholder="Student name or entry title…" oninput="applyFilters()" style="min-width:220px;">
+            </div>
+            <div>
+                <label>Type</label>
+                <select id="filterType" onchange="applyFilters()">
+                    <option value="">All Types</option>
+                    <option value="task">Wellness Task</option>
+                    <option value="goal">Goal</option>
+                    <option value="achievement">Achievement</option>
+                </select>
+            </div>
+            <div>
+                <label>Status</label>
+                <select id="filterStatus" onchange="applyFilters()">
+                    <option value="">All Statuses</option>
+                    <option value="notstarted">Not Started</option>
+                    <option value="progress">In Progress</option>
+                    <option value="done">Completed</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+            <div>
+                <label>Set By</label>
+                <select id="filterSetby" onchange="applyFilters()">
+                    <option value="">All</option>
+                    <option value="self">Student (Self)</option>
+                    <option value="pm">Programme Manager</option>
+                    <option value="counsellor">Counsellor</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-end;">
+                <button type="button" style="padding:9px 18px;background:#063154;color:#fff;font-weight:700;border:none;border-radius:6px;font-size:0.86rem;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(9,71,129,0.3);">
+                    <i class="bi bi-search"></i> Search
+                </button>
+                <button type="button" onclick="clearFilters()" style="padding:9px 12px;background:#fff;color:#666;font-weight:600;border:1px solid var(--border-color);border-radius:6px;font-size:0.86rem;cursor:pointer;" title="Reset filters">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wellness grid -->
+    <div class="hist-table-wrapper">
+        <div class="hist-table-header">
+            <h3><i class="bi bi-table"></i> Wellness Records</h3>
+            <span style="font-size:0.82rem;opacity:0.85;">Showing 12 of 54 entries</span>
+        </div>
+        <div class="table-scroller">
+        <table class="hist-table" id="wellnessTable">
+            <thead>
+                <tr>
+                    <th class="sortable">#</th>
+                    <th class="sortable">Student</th>
+                    <th>Type</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th class="sortable">Set By</th>
+                    <th class="sortable">Status</th>
+                    <th>Progress</th>
+                    <th class="sortable">Target Date <i class="bi bi-arrow-down-up" style="font-size:0.68rem;opacity:0.6;"></i></th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="wellnessBody">
+
+                <!-- Row 1 -->
+                <tr data-type="task" data-status="progress" data-setby="pm" data-name="sipho ndlovu">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-001</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Sipho Ndlovu</span>
+                            <span class="student-id">STU-2025-0014</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-task"><i class="bi bi-clipboard2-heart"></i> Wellness Task</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Attend counselling session</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Monthly one-on-one session with student counsellor to address academic stress and social adjustment.</td>
+                    <td><span class="setby-chip"><i class="bi bi-person-badge"></i> Programme Manager</span></td>
+                    <td><span class="wstatus-badge ws-progress"><i class="bi bi-hourglass-split"></i> In Progress</span></td>
+                    <td>
+                        <div class="prog-wrap"><div class="prog-bar" style="width:50%;"></div></div>
+                        <div style="font-size:0.72rem;color:#64748b;margin-top:3px;">1 of 2 sessions</div>
+                    </td>
+                    <td style="font-size:0.82rem;font-weight:700;color:#094781;">30 Jun 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View details" onclick="openViewModal('WEL-001')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('WEL-001','Sipho Ndlovu')"><i class="bi bi-check-lg"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr data-type="goal" data-status="progress" data-setby="self" data-name="nomsa dlamini">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-002</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Nomsa Dlamini</span>
+                            <span class="student-id">STU-2025-0021</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-goal"><i class="bi bi-bullseye"></i> Goal</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Improve GPA to 65%</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Student has set a goal to raise their average from 58% to 65% by end of Semester 1.</td>
+                    <td><span class="setby-chip"><i class="bi bi-person"></i> Self</span></td>
+                    <td><span class="wstatus-badge ws-progress"><i class="bi bi-hourglass-split"></i> In Progress</span></td>
+                    <td>
+                        <div class="prog-wrap"><div class="prog-bar" style="width:60%;"></div></div>
+                        <div style="font-size:0.72rem;color:#64748b;margin-top:3px;">Current: 62%</div>
+                    </td>
+                    <td style="font-size:0.82rem;font-weight:700;color:#094781;">30 Nov 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View details" onclick="openViewModal('WEL-002')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('WEL-002','Nomsa Dlamini')"><i class="bi bi-check-lg"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 3 – Achievement -->
+                <tr data-type="achievement" data-status="done" data-setby="pm" data-name="thabo mokoena">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-003</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Thabo Mokoena</span>
+                            <span class="student-id">STU-2025-0033</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-achieve"><i class="bi bi-trophy"></i> Achievement</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">5 consecutive check-ins completed</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Student maintained consistent monthly check-ins for 5 consecutive months without a miss.</td>
+                    <td><span class="setby-chip"><i class="bi bi-person-badge"></i> Programme Manager</span></td>
+                    <td><span class="wstatus-badge ws-done"><i class="bi bi-check-circle-fill"></i> Completed</span></td>
+                    <td>
+                        <div style="font-size:0.8rem;color:#065f46;font-weight:700;"><i class="bi bi-trophy-fill"></i> Awarded</div>
+                    </td>
+                    <td style="font-size:0.82rem;color:#64748b;">15 May 2026</td>
+                    <td style="text-align:center;">
+                        <button class="act-btn" title="View details" onclick="openViewModal('WEL-003')"><i class="bi bi-eye"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 4 – Overdue -->
+                <tr data-type="task" data-status="overdue" data-setby="counsellor" data-name="zanele khumalo">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-004</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Zanele Khumalo</span>
+                            <span class="student-id">STU-2025-0047</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-task"><i class="bi bi-clipboard2-heart"></i> Wellness Task</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Complete financial literacy module</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Online financial literacy course assigned to help student manage allowance and avoid over-spending.</td>
+                    <td><span class="setby-chip"><i class="bi bi-heart"></i> Counsellor</span></td>
+                    <td><span class="wstatus-badge ws-overdue"><i class="bi bi-exclamation-circle-fill"></i> Overdue</span></td>
+                    <td>
+                        <div class="prog-wrap"><div class="prog-bar" style="width:20%;background:linear-gradient(90deg,#dc2626,#f87171);"></div></div>
+                        <div style="font-size:0.72rem;color:#dc2626;margin-top:3px;">20% complete</div>
+                    </td>
+                    <td style="font-size:0.82rem;font-weight:700;color:#dc2626;">10 May 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View details" onclick="openViewModal('WEL-004')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('WEL-004','Zanele Khumalo')"><i class="bi bi-check-lg"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 5 -->
+                <tr data-type="goal" data-status="notstarted" data-setby="self" data-name="refilwe molapo">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-005</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Refilwe Molapo</span>
+                            <span class="student-id">STU-2025-0091</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-goal"><i class="bi bi-bullseye"></i> Goal</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Join a campus study group</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Student wants to find a peer study group for their Engineering modules to improve collaborative learning.</td>
+                    <td><span class="setby-chip"><i class="bi bi-person"></i> Self</span></td>
+                    <td><span class="wstatus-badge ws-notstarted"><i class="bi bi-circle"></i> Not Started</span></td>
+                    <td>
+                        <div class="prog-wrap"><div class="prog-bar" style="width:0%;"></div></div>
+                        <div style="font-size:0.72rem;color:#94a3b8;margin-top:3px;">0% progress</div>
+                    </td>
+                    <td style="font-size:0.82rem;color:#64748b;">31 Jul 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View details" onclick="openViewModal('WEL-005')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('WEL-005','Refilwe Molapo')"><i class="bi bi-check-lg"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 6 – Achievement -->
+                <tr data-type="achievement" data-status="done" data-setby="counsellor" data-name="lungelo zulu">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-006</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Lungelo Zulu</span>
+                            <span class="student-id">STU-2025-0058</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-achieve"><i class="bi bi-trophy"></i> Achievement</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Completed mental health awareness course</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Student completed the university's mental health awareness e-learning course and earned a certificate.</td>
+                    <td><span class="setby-chip"><i class="bi bi-heart"></i> Counsellor</span></td>
+                    <td><span class="wstatus-badge ws-done"><i class="bi bi-check-circle-fill"></i> Completed</span></td>
+                    <td>
+                        <div style="font-size:0.8rem;color:#065f46;font-weight:700;"><i class="bi bi-trophy-fill"></i> Awarded</div>
+                    </td>
+                    <td style="font-size:0.82rem;color:#64748b;">20 Apr 2026</td>
+                    <td style="text-align:center;">
+                        <button class="act-btn" title="View details" onclick="openViewModal('WEL-006')"><i class="bi bi-eye"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 7 -->
+                <tr data-type="task" data-status="notstarted" data-setby="pm" data-name="priya naidoo">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-007</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Priya Naidoo</span>
+                            <span class="student-id">STU-2025-0065</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-task"><i class="bi bi-clipboard2-heart"></i> Wellness Task</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Register with university health services</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Student must register with the campus clinic to access subsidised healthcare as part of ISFAP requirements.</td>
+                    <td><span class="setby-chip"><i class="bi bi-person-badge"></i> Programme Manager</span></td>
+                    <td><span class="wstatus-badge ws-notstarted"><i class="bi bi-circle"></i> Not Started</span></td>
+                    <td>
+                        <div class="prog-wrap"><div class="prog-bar" style="width:0%;"></div></div>
+                        <div style="font-size:0.72rem;color:#94a3b8;margin-top:3px;">Not started</div>
+                    </td>
+                    <td style="font-size:0.82rem;color:#64748b;">15 Jun 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View details" onclick="openViewModal('WEL-007')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('WEL-007','Priya Naidoo')"><i class="bi bi-check-lg"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 8 -->
+                <tr data-type="goal" data-status="done" data-setby="self" data-name="anele sithole">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-008</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Anele Sithole</span>
+                            <span class="student-id">STU-2025-0072</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-goal"><i class="bi bi-bullseye"></i> Goal</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Attend all scheduled lectures for 8 weeks</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Student set a personal attendance goal to attend 100% of lectures for 8 consecutive weeks.</td>
+                    <td><span class="setby-chip"><i class="bi bi-person"></i> Self</span></td>
+                    <td><span class="wstatus-badge ws-done"><i class="bi bi-check-circle-fill"></i> Completed</span></td>
+                    <td>
+                        <div class="prog-wrap"><div class="prog-bar" style="width:100%;"></div></div>
+                        <div style="font-size:0.72rem;color:#065f46;margin-top:3px;">8 of 8 weeks ✓</div>
+                    </td>
+                    <td style="font-size:0.82rem;color:#64748b;">15 Mar 2026</td>
+                    <td style="text-align:center;">
+                        <button class="act-btn" title="View details" onclick="openViewModal('WEL-008')"><i class="bi bi-eye"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 9 -->
+                <tr data-type="task" data-status="progress" data-setby="counsellor" data-name="siyanda mthethwa">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-009</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Siyanda Mthethwa</span>
+                            <span class="student-id">STU-2025-0077</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-task"><i class="bi bi-clipboard2-heart"></i> Wellness Task</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Weekly stress journaling</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Student assigned weekly reflective journaling exercise to track stress triggers and coping mechanisms.</td>
+                    <td><span class="setby-chip"><i class="bi bi-heart"></i> Counsellor</span></td>
+                    <td><span class="wstatus-badge ws-progress"><i class="bi bi-hourglass-split"></i> In Progress</span></td>
+                    <td>
+                        <div class="prog-wrap"><div class="prog-bar" style="width:75%;"></div></div>
+                        <div style="font-size:0.72rem;color:#64748b;margin-top:3px;">6 of 8 weeks</div>
+                    </td>
+                    <td style="font-size:0.82rem;font-weight:700;color:#094781;">30 Jun 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View details" onclick="openViewModal('WEL-009')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('WEL-009','Siyanda Mthethwa')"><i class="bi bi-check-lg"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 10 – Achievement -->
+                <tr data-type="achievement" data-status="done" data-setby="pm" data-name="tumelo motaung">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-010</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Tumelo Motaung</span>
+                            <span class="student-id">STU-2024-0001</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-achieve"><i class="bi bi-trophy"></i> Achievement</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Dean's Merit List – Semester 2, 2025</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Student achieved an average of 75%+ in Semester 2, 2025, earning a place on the Dean's Merit List.</td>
+                    <td><span class="setby-chip"><i class="bi bi-person-badge"></i> Programme Manager</span></td>
+                    <td><span class="wstatus-badge ws-done"><i class="bi bi-check-circle-fill"></i> Completed</span></td>
+                    <td>
+                        <div style="font-size:0.8rem;color:#065f46;font-weight:700;"><i class="bi bi-trophy-fill"></i> Awarded</div>
+                    </td>
+                    <td style="font-size:0.82rem;color:#64748b;">30 Nov 2025</td>
+                    <td style="text-align:center;">
+                        <button class="act-btn" title="View details" onclick="openViewModal('WEL-010')"><i class="bi bi-eye"></i></button>
+                    </td>
+                </tr>
+
+                <!-- Row 11 -->
+                <tr data-type="goal" data-status="progress" data-setby="counsellor" data-name="karabo sithole">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-011</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Karabo Sithole</span>
+                            <span class="student-id">STU-2025-0088</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-goal"><i class="bi bi-bullseye"></i> Goal</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Establish a consistent sleep schedule</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Goal to maintain a regular sleep schedule (10pm–6am) for improved cognitive performance and mood regulation.</td>
+                    <td><span class="setby-chip"><i class="bi bi-heart"></i> Counsellor</span></td>
+                    <td><span class="wstatus-badge ws-progress"><i class="bi bi-hourglass-split"></i> In Progress</span></td>
+                    <td>
+                        <div class="prog-wrap"><div class="prog-bar" style="width:40%;"></div></div>
+                        <div style="font-size:0.72rem;color:#64748b;margin-top:3px;">3 of 8 weeks</div>
+                    </td>
+                    <td style="font-size:0.82rem;font-weight:700;color:#094781;">31 Jul 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View details" onclick="openViewModal('WEL-011')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('WEL-011','Karabo Sithole')"><i class="bi bi-check-lg"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 12 – Overdue -->
+                <tr data-type="task" data-status="overdue" data-setby="pm" data-name="lerato molefe">
+                    <td style="color:#64748b;font-size:0.82rem;font-weight:700;">WEL-012</td>
+                    <td>
+                        <div class="student-cell">
+                            <span class="student-name">Lerato Molefe</span>
+                            <span class="student-id">STU-2025-0103</span>
+                        </div>
+                    </td>
+                    <td><span class="wtype-badge wt-task"><i class="bi bi-clipboard2-heart"></i> Wellness Task</span></td>
+                    <td style="font-weight:700;font-size:0.86rem;">Meet with academic mentor</td>
+                    <td style="font-size:0.83rem;color:#475569;max-width:200px;white-space:normal;overflow-wrap:break-word;">Student must meet with their assigned academic mentor to discuss semester plan and study techniques.</td>
+                    <td><span class="setby-chip"><i class="bi bi-person-badge"></i> Programme Manager</span></td>
+                    <td><span class="wstatus-badge ws-overdue"><i class="bi bi-exclamation-circle-fill"></i> Overdue</span></td>
+                    <td>
+                        <div class="prog-wrap"><div class="prog-bar" style="width:0%;background:linear-gradient(90deg,#dc2626,#f87171);"></div></div>
+                        <div style="font-size:0.72rem;color:#dc2626;margin-top:3px;">Not started</div>
+                    </td>
+                    <td style="font-size:0.82rem;font-weight:700;color:#dc2626;">01 May 2026</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="act-btn" title="View details" onclick="openViewModal('WEL-012')"><i class="bi bi-eye"></i></button>
+                            <button class="act-btn green" title="Mark complete" onclick="openCompleteModal('WEL-012','Lerato Molefe')"><i class="bi bi-check-lg"></i></button>
+                        </div>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+        <!-- Empty state -->
+        <div id="emptyState" style="display:none;text-align:center;padding:48px 24px;color:#94a3b8;">
+            <i class="bi bi-inbox" style="font-size:2.5rem;display:block;margin-bottom:12px;"></i>
+            No wellness entries match the current filters.
+        </div>
+        </div><!-- end table-scroller -->
+    </div><!-- end hist-table-wrapper -->
+
+</div><!-- end main-content -->
+
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: View Wellness Detail             -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal-box wide">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#094781);">
+            <h3><i class="bi bi-eye-fill" style="margin-right:7px;"></i> Wellness Entry Detail</h3>
+            <button class="modal-close" onclick="closeModal('viewModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Header row -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e8eef5;">
+                <div>
+                    <div style="font-size:0.75rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Entry ID</div>
+                    <div id="vw-id" style="font-size:1rem;font-weight:800;color:#094781;">WEL-001</div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <span class="wtype-badge wt-task" id="vw-type-badge"><i class="bi bi-clipboard2-heart"></i> Wellness Task</span>
+                    <span class="wstatus-badge ws-progress" id="vw-status-badge"><i class="bi bi-hourglass-split"></i> In Progress</span>
+                </div>
+            </div>
+
+            <!-- Tab navigation -->
+            <div class="vtabs">
+                <div class="vtab active" onclick="switchVtab(this,'vt-details')">Details</div>
+                <div class="vtab" onclick="switchVtab(this,'vt-progress')">Progress &amp; Notes</div>
+                <div class="vtab" onclick="switchVtab(this,'vt-activity')">Activity Log</div>
+            </div>
+
+            <!-- Tab: Details -->
+            <div class="vtab-pane active" id="vt-details">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="ro-group" style="grid-column:1/-1;">
+                        <span class="ro-label">Title</span>
+                        <div class="ro-field" id="vw-title" style="font-weight:700;">Attend counselling session</div>
+                    </div>
+                    <div class="ro-group">
+                        <span class="ro-label">Student</span>
+                        <div class="ro-field" id="vw-student">Sipho Ndlovu (STU-2025-0014)</div>
+                    </div>
+                    <div class="ro-group">
+                        <span class="ro-label">Set By</span>
+                        <div class="ro-field" id="vw-setby">Programme Manager</div>
+                    </div>
+                    <div class="ro-group">
+                        <span class="ro-label">Target Date</span>
+                        <div class="ro-field" id="vw-target">30 Jun 2026</div>
+                    </div>
+                    <div class="ro-group">
+                        <span class="ro-label">Date Created</span>
+                        <div class="ro-field" id="vw-created">03 Mar 2026</div>
+                    </div>
+                    <div class="ro-group" style="grid-column:1/-1;">
+                        <span class="ro-label">Description</span>
+                        <div class="ro-field" id="vw-desc">Monthly one-on-one session with student counsellor to address academic stress and social adjustment. Session to be held at the Student Services Centre, Room 2B.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Progress & Notes -->
+            <div class="vtab-pane" id="vt-progress">
+                <!-- Progress bar -->
+                <div style="margin-bottom:20px;padding:16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                        <span style="font-size:0.83rem;font-weight:700;color:#094781;">Overall Progress</span>
+                        <span style="font-size:0.83rem;font-weight:700;color:#094781;">50%</span>
+                    </div>
+                    <div class="prog-wrap" style="height:10px;">
+                        <div class="prog-bar" style="width:50%;"></div>
+                    </div>
+                    <div style="font-size:0.78rem;color:#64748b;margin-top:6px;">1 of 2 sessions completed</div>
+                </div>
+
+                <!-- PM Notes -->
+                <div class="ro-group">
+                    <span class="ro-label">Programme Manager Notes</span>
+                    <div class="ro-field" style="min-height:80px;">Session 1 completed on 15 April 2026. Student engaged well. Counsellor flagged mild anxiety around exam preparation. Session 2 scheduled for 30 June 2026.</div>
+                </div>
+                <div class="ro-group">
+                    <span class="ro-label">Student Self-Reflection</span>
+                    <div class="ro-field" style="min-height:60px;">I found the first session very helpful. I feel more confident about talking to my lecturers when I'm struggling.</div>
+                </div>
+
+                <!-- Add note -->
+                <div class="field-group" style="margin-top:10px;">
+                    <label>Add a Note</label>
+                    <textarea placeholder="Type a progress note or observation…"></textarea>
+                </div>
+                <button style="padding:9px 20px;background:#094781;color:#fff;border:none;border-radius:7px;font-size:0.86rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <i class="bi bi-plus-lg"></i> Save Note
+                </button>
+            </div>
+
+            <!-- Tab: Activity Log -->
+            <div class="vtab-pane" id="vt-activity">
+                <div class="tl-item">
+                    <div class="tl-dot tl-green"><i class="bi bi-check-lg"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Session 1 completed</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Student attended counselling session at Student Services Centre.</div>
+                        <div class="tl-time">15 Apr 2026 · Thabo Letlela (PM)</div>
+                    </div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-dot tl-blue"><i class="bi bi-plus-lg"></i></div>
+                    <div>
+                        <div style="font-size:0.84rem;font-weight:700;color:#1e293b;">Entry created</div>
+                        <div style="font-size:0.82rem;color:#475569;margin-top:2px;">Wellness task created and assigned to student. Session dates communicated via SMS.</div>
+                        <div class="tl-time">03 Mar 2026 · Thabo Letlela (PM)</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('viewModal')">Close</button>
+            <button class="btn-primary-action" onclick="openCompleteModal('WEL-001','Sipho Ndlovu');closeModal('viewModal');">
+                <i class="bi bi-check-lg"></i> Mark Complete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: Add Wellness Entry               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal-box wide">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1e3a5f,#094781);">
+            <h3><i class="bi bi-plus-circle-fill" style="margin-right:7px;"></i> Add Wellness Entry</h3>
+            <button class="modal-close" onclick="closeModal('addModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="field-group" style="grid-column:1/-1;">
+                    <label>Student</label>
+                    <select>
+                        <option value="">— Select student —</option>
+                        <option>Sipho Ndlovu (STU-2025-0014)</option>
+                        <option>Nomsa Dlamini (STU-2025-0021)</option>
+                        <option>Thabo Mokoena (STU-2025-0033)</option>
+                        <option>Zanele Khumalo (STU-2025-0047)</option>
+                        <option>Refilwe Molapo (STU-2025-0091)</option>
+                        <option>Lungelo Zulu (STU-2025-0058)</option>
+                        <option>Siyanda Mthethwa (STU-2025-0077)</option>
+                        <option>Lerato Molefe (STU-2025-0103)</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Entry Type</label>
+                    <select id="addType">
+                        <option value="">— Select type —</option>
+                        <option value="task">Wellness Task</option>
+                        <option value="goal">Goal</option>
+                        <option value="achievement">Achievement</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Set By</label>
+                    <select>
+                        <option value="pm">Programme Manager</option>
+                        <option value="counsellor">Counsellor</option>
+                        <option value="self">Student (Self)</option>
+                    </select>
+                </div>
+                <div class="field-group" style="grid-column:1/-1;">
+                    <label>Title</label>
+                    <input type="text" placeholder="e.g. Attend monthly counselling session">
+                </div>
+                <div class="field-group" style="grid-column:1/-1;">
+                    <label>Description</label>
+                    <textarea placeholder="Describe what the student needs to do, the goal they are working towards, or the achievement being recognised…"></textarea>
+                </div>
+                <div class="field-group">
+                    <label>Target / Award Date</label>
+                    <input type="date">
+                </div>
+                <div class="field-group">
+                    <label>Initial Status</label>
+                    <select>
+                        <option value="notstarted">Not Started</option>
+                        <option value="progress">In Progress</option>
+                        <option value="done">Completed / Awarded</option>
+                    </select>
+                </div>
+                <div class="field-group" style="grid-column:1/-1;">
+                    <label>Notes (optional)</label>
+                    <textarea placeholder="Any additional context or instructions for the student or PM…"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('addModal')">Cancel</button>
+            <button class="btn-primary-action"><i class="bi bi-check-lg"></i> Save Entry</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL: Mark Complete                    -->
+<!-- ═══════════════════════════════════════ -->
+<div class="modal-overlay" id="completeModal">
+    <div class="modal-box">
+        <div class="modal-header" style="background:linear-gradient(135deg,#064e3b,#059669);">
+            <h3><i class="bi bi-check-circle-fill" style="margin-right:7px;"></i> Mark as Complete</h3>
+            <button class="modal-close" onclick="closeModal('completeModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin:0 0 16px;font-size:0.9rem;color:#334155;">
+                You are marking entry <strong id="cmp-id">WEL-001</strong> for <strong id="cmp-student">Sipho Ndlovu</strong> as complete.
+            </p>
+            <div class="ach-card">
+                <div class="ach-icon"><i class="bi bi-trophy-fill"></i></div>
+                <div>
+                    <div style="font-weight:700;color:#065f46;font-size:0.9rem;">Great work!</div>
+                    <div style="font-size:0.83rem;color:#047857;margin-top:2px;">Completing this entry will update the student's wellness record and notify their Programme Manager.</div>
+                </div>
+            </div>
+            <div class="field-group" style="margin-top:16px;">
+                <label>Completion Notes</label>
+                <textarea placeholder="Describe the outcome — what was achieved, any observations, next steps…" style="min-height:90px;"></textarea>
+            </div>
+            <div class="field-group">
+                <label>Completion Date</label>
+                <input type="date" value="2026-05-26">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="closeModal('completeModal')">Cancel</button>
+            <button style="padding:10px 22px;background:linear-gradient(135deg,#064e3b,#059669);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:7px;">
+                <i class="bi bi-check-lg"></i> Confirm Complete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+/* ── Modal helpers ── */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+/* ── View modal ── */
+const wellnessData = {
+    'WEL-001': { title:'Attend counselling session', student:'Sipho Ndlovu (STU-2025-0014)', setby:'Programme Manager', target:'30 Jun 2026', created:'03 Mar 2026', status:'In Progress', type:'Wellness Task', typeClass:'wt-task', statusClass:'ws-progress', statusIcon:'bi-hourglass-split', desc:'Monthly one-on-one session with student counsellor to address academic stress and social adjustment. Session to be held at the Student Services Centre, Room 2B.' },
+    'WEL-002': { title:'Improve GPA to 65%', student:'Nomsa Dlamini (STU-2025-0021)', setby:'Self', target:'30 Nov 2026', created:'10 Jan 2026', status:'In Progress', type:'Goal', typeClass:'wt-goal', statusClass:'ws-progress', statusIcon:'bi-hourglass-split', desc:"Student has set a personal academic goal to raise their semester average from 58% to 65% by the end of Semester 1 2026." },
+    'WEL-003': { title:'5 consecutive check-ins completed', student:'Thabo Mokoena (STU-2025-0033)', setby:'Programme Manager', target:'15 May 2026', created:'15 Jan 2026', status:'Completed', type:'Achievement', typeClass:'wt-achieve', statusClass:'ws-done', statusIcon:'bi-check-circle-fill', desc:"Student maintained consistent monthly check-ins for 5 consecutive months. An outstanding commitment to the ISFAP programme requirements." },
+    'WEL-004': { title:'Complete financial literacy module', student:'Zanele Khumalo (STU-2025-0047)', setby:'Counsellor', target:'10 May 2026', created:'05 Mar 2026', status:'Overdue', type:'Wellness Task', typeClass:'wt-task', statusClass:'ws-overdue', statusIcon:'bi-exclamation-circle-fill', desc:'Online financial literacy course assigned to help student manage allowance responsibly and avoid over-spending. Module available on the student portal.' },
+    'WEL-005': { title:'Join a campus study group', student:'Refilwe Molapo (STU-2025-0091)', setby:'Self', target:'31 Jul 2026', created:'01 Apr 2026', status:'Not Started', type:'Goal', typeClass:'wt-goal', statusClass:'ws-notstarted', statusIcon:'bi-circle', desc:'Student wants to find a peer study group for their Engineering modules to improve collaborative learning and reduce feelings of academic isolation.' },
+    'WEL-006': { title:'Completed mental health awareness course', student:'Lungelo Zulu (STU-2025-0058)', setby:'Counsellor', target:'20 Apr 2026', created:'01 Feb 2026', status:'Completed', type:'Achievement', typeClass:'wt-achieve', statusClass:'ws-done', statusIcon:'bi-check-circle-fill', desc:"Student completed the university's mental health awareness e-learning course and earned a certificate of completion recognised by the Student Wellness Centre." },
+    'WEL-007': { title:'Register with university health services', student:'Priya Naidoo (STU-2025-0065)', setby:'Programme Manager', target:'15 Jun 2026', created:'01 May 2026', status:'Not Started', type:'Wellness Task', typeClass:'wt-task', statusClass:'ws-notstarted', statusIcon:'bi-circle', desc:'Student must register with the campus clinic to access subsidised healthcare and mental health services as part of ISFAP programme requirements.' },
+    'WEL-008': { title:'Attend all scheduled lectures for 8 weeks', student:'Anele Sithole (STU-2025-0072)', setby:'Self', target:'15 Mar 2026', created:'15 Jan 2026', status:'Completed', type:'Goal', typeClass:'wt-goal', statusClass:'ws-done', statusIcon:'bi-check-circle-fill', desc:'Student set a personal attendance goal to attend 100% of scheduled lectures for 8 consecutive weeks. All 8 weeks completed with no absences recorded.' },
+    'WEL-009': { title:'Weekly stress journaling', student:'Siyanda Mthethwa (STU-2025-0077)', setby:'Counsellor', target:'30 Jun 2026', created:'10 Mar 2026', status:'In Progress', type:'Wellness Task', typeClass:'wt-task', statusClass:'ws-progress', statusIcon:'bi-hourglass-split', desc:'Student assigned weekly reflective journaling exercise to track stress triggers and develop personal coping mechanisms. Journal reviewed monthly by counsellor.' },
+    'WEL-010': { title:"Dean's Merit List – Semester 2, 2025", student:'Tumelo Motaung (STU-2024-0001)', setby:'Programme Manager', target:'30 Nov 2025', created:'05 Dec 2025', status:'Completed', type:'Achievement', typeClass:'wt-achieve', statusClass:'ws-done', statusIcon:'bi-check-circle-fill', desc:"Student achieved an average of 75%+ in Semester 2, 2025, earning a place on the Dean's Merit List. Certificate issued by the Faculty of Science & Engineering." },
+    'WEL-011': { title:'Establish a consistent sleep schedule', student:'Karabo Sithole (STU-2025-0088)', setby:'Counsellor', target:'31 Jul 2026', created:'05 Apr 2026', status:'In Progress', type:'Goal', typeClass:'wt-goal', statusClass:'ws-progress', statusIcon:'bi-hourglass-split', desc:'Goal to maintain a regular sleep schedule (10pm–6am) for improved cognitive performance and mood regulation. Progress tracked via weekly self-report submitted to counsellor.' },
+    'WEL-012': { title:'Meet with academic mentor', student:'Lerato Molefe (STU-2025-0103)', setby:'Programme Manager', target:'01 May 2026', created:'01 Apr 2026', status:'Overdue', type:'Wellness Task', typeClass:'wt-task', statusClass:'ws-overdue', statusIcon:'bi-exclamation-circle-fill', desc:'Student must meet with their assigned academic mentor to discuss semester plan, set study targets, and learn effective study techniques. PM has sent 2 reminders.' }
+};
+
+function openViewModal(id) {
+    const d = wellnessData[id];
+    if (!d) return;
+    document.getElementById('vw-id').textContent = id;
+    document.getElementById('vw-title').textContent = d.title;
+    document.getElementById('vw-student').textContent = d.student;
+    document.getElementById('vw-setby').textContent = d.setby;
+    document.getElementById('vw-target').textContent = d.target;
+    document.getElementById('vw-created').textContent = d.created;
+    document.getElementById('vw-desc').textContent = d.desc;
+    const typeBadge = document.getElementById('vw-type-badge');
+    typeBadge.className = 'wtype-badge ' + d.typeClass;
+    typeBadge.innerHTML = (d.typeClass === 'wt-task' ? '<i class="bi bi-clipboard2-heart"></i> ' : d.typeClass === 'wt-goal' ? '<i class="bi bi-bullseye"></i> ' : '<i class="bi bi-trophy"></i> ') + d.type;
+    const statusBadge = document.getElementById('vw-status-badge');
+    statusBadge.className = 'wstatus-badge ' + d.statusClass;
+    statusBadge.innerHTML = `<i class="bi ${d.statusIcon}"></i> ${d.status}`;
+    // Reset to first tab
+    document.querySelectorAll('#viewModal .vtab').forEach((t,i) => t.classList.toggle('active', i===0));
+    document.querySelectorAll('#viewModal .vtab-pane').forEach((p,i) => p.classList.toggle('active', i===0));
+    openModal('viewModal');
+}
+
+function openCompleteModal(id, student) {
+    document.getElementById('cmp-id').textContent = id;
+    document.getElementById('cmp-student').textContent = student;
+    openModal('completeModal');
+}
+
+/* ── Vtab switching ── */
+function switchVtab(el, paneId) {
+    const modal = el.closest('.modal-body');
+    modal.querySelectorAll('.vtab').forEach(t => t.classList.remove('active'));
+    modal.querySelectorAll('.vtab-pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    modal.querySelector('#' + paneId).classList.add('active');
+}
+
+/* ── Page tabs ── */
+function switchPageTab(el, tabId) {
+    document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+}
+
+/* ── Filters ── */
+function applyFilters() {
+    const search = (document.getElementById('searchInput').value || '').toLowerCase();
+    const type   = (document.getElementById('filterType').value   || '').toLowerCase();
+    const status = (document.getElementById('filterStatus').value || '').toLowerCase();
+    const setby  = (document.getElementById('filterSetby').value  || '').toLowerCase();
+    let visible = 0;
+    document.querySelectorAll('#wellnessBody tr').forEach(row => {
+        const name   = (row.dataset.name   || '').toLowerCase();
+        const rType  = (row.dataset.type   || '').toLowerCase();
+        const rStat  = (row.dataset.status || '').toLowerCase();
+        const rSetby = (row.dataset.setby  || '').toLowerCase();
+        const title  = row.cells[3] ? row.cells[3].textContent.toLowerCase() : '';
+        const show = (!search || name.includes(search) || title.includes(search))
+                  && (!type   || rType  === type)
+                  && (!status || rStat  === status)
+                  && (!setby  || rSetby === setby);
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
+}
+
+function clearFilters() {
+    ['searchInput','filterType','filterStatus','filterSetby'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    applyFilters();
+}
+</script>
+</body>
+</html>
